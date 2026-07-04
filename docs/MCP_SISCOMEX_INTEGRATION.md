@@ -33,7 +33,7 @@ Se a intenção agora é retomar a frente de comex (PUCOMEX) em paralelo à vert
 O MCP (Model Context Protocol) expõe ferramentas que o Claude Code (ou qualquer host MCP) pode chamar diretamente. A ideia: em vez de o agente precisar "adivinhar" como consultar a norma ou o Siscomex, ele chama uma ferramenta com contrato bem definido.
 
 ```
-mcp-server-compliance/
+mcp-server/
 ├── src/
 │   ├── server.py              # entrypoint do MCP server
 │   ├── tools/
