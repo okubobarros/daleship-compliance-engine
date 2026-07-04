@@ -2,3 +2,4 @@ asyncpg
 pyyaml
 python-dotenv
 httpx
+pdfplumber

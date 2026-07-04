@@ -20,7 +20,8 @@ class FonteConfig:
     loader: str                # nome do loader registrado ('file' | 'http')
     caminho: str | None = None         # para loader 'file': arquivo sob ingestion/seeds/
     data_vigencia_inicio: date | None = None
-    bloqueado: bool = False    # True = fonte represada (ex.: LPCO Anvisa/MAPA até confirmação do Bonano)
+    bloqueado: bool = False    # True = fonte represada (ex.: LPCO de órgão fora do escopo inicial)
+    sem_embedding: bool = False  # True = ingerir lexical-only (ex.: NCM, consulta por código exato)
     descricao: str = ""
 
     @classmethod
@@ -36,6 +37,7 @@ class FonteConfig:
             caminho=d.get("caminho"),
             data_vigencia_inicio=vigencia,
             bloqueado=bool(d.get("bloqueado", False)),
+            sem_embedding=bool(d.get("sem_embedding", False)),
             descricao=d.get("descricao", ""),
         )
 

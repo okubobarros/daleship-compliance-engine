@@ -9,6 +9,7 @@ rodável sem a chave, e a busca híbrida degrada com segurança para lexical —
 """
 from __future__ import annotations
 
+import asyncio
 import os
 
 import httpx
@@ -44,15 +45,30 @@ class VoyageEmbedder:
         async with httpx.AsyncClient(timeout=60) as client:
             for i in range(0, len(textos), BATCH_SIZE):
                 lote = textos[i : i + BATCH_SIZE]
-                resp = await client.post(
-                    VOYAGE_URL,
-                    headers={"Authorization": f"Bearer {self._api_key}"},
-                    json={"input": lote, "model": VOYAGE_MODEL, "input_type": input_type},
-                )
-                resp.raise_for_status()
-                dados = resp.json()["data"]
+                dados = await self._post_com_retry(client, lote, input_type)
                 resultados.extend(item["embedding"] for item in dados)
         return resultados
+
+    async def _post_com_retry(self, client, lote, input_type, tentativas=7):
+        """POST com backoff em rate limit (429) e erros transitórios — necessário para
+        ingest grande (ex.: ~15k NCM) não falhar no meio. O free tier da Voyage tem RPM
+        baixo (~3/min), então respeitamos Retry-After e usamos espera longa em 429."""
+        for tentativa in range(tentativas):
+            resp = await client.post(
+                VOYAGE_URL,
+                headers={"Authorization": f"Bearer {self._api_key}"},
+                json={"input": lote, "model": VOYAGE_MODEL, "input_type": input_type},
+            )
+            if resp.status_code == 429 or resp.status_code >= 500:
+                if tentativa == tentativas - 1:
+                    resp.raise_for_status()
+                retry_after = resp.headers.get("retry-after")
+                espera = float(retry_after) if retry_after else min(25.0, 5 * (tentativa + 1))
+                await asyncio.sleep(espera)
+                continue
+            resp.raise_for_status()
+            return resp.json()["data"]
+        raise RuntimeError("Voyage: esgotadas as tentativas de embedding.")
 
 
 def get_embedder() -> NullEmbedder | VoyageEmbedder:

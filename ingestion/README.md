@@ -31,11 +31,16 @@ mcp-server/.venv/Scripts/python.exe ingestion/pipeline.py ingestion/config/fonte
 
 - Provedor fechado: **Voyage AI, modelo `voyage-law-2`** (especialização jurídica, dim **1024**, contexto 16k, free tier 50M tokens). Cliente em `mcp-server/src/embeddings.py` (camada compartilhada).
 - A coluna `normas.embedding` é `VECTOR(1024)` (migration `infra/migrations/0001_...`). Sem `VOYAGE_API_KEY`, o pipeline usa `NullEmbedder` (embedding NULL) e a busca degrada para lexical — nunca inventa fonte.
-- A busca é **híbrida** (lexical + semântica combinadas em `rag_search`), nunca uma substituindo a outra.
+- A busca é **híbrida** (lexical + semântica combinadas em `rag_search`), nunca uma substituindo a outra. O caminho semântico tem **limiar de distância** (`DISTANCIA_MAXIMA` em `rag_search.py`, provisório 0.65) para não "citar" o vizinho mais próximo quando a query está fora do domínio — recalibrar com o golden eval set.
+- **Rate limit**: o free tier da Voyage é ~3 req/min. Por isso fontes de consulta por código exato (NCM) usam `sem_embedding: true` (busca lexical, sem gastar Voyage); embedding fica reservado a normas em prosa, onde a semântica agrega.
 
-## Pendências / próxima fila de loaders
+## Estado da base (Frente 2)
 
-- **NCM (loader `ncm_json`)**: implementado com health-check da parada programada. A coleta real depende do Portal Único estar fora da janela 01:00–03:00, e da conferência dos nomes de campo do payload na primeira execução.
-- **Loader `http`** (ainda stub) para, nesta ordem: **RGI → Soluções de Consulta → Tratamento Administrativo → Acordos**. Cada uma precisa de coletor + verificação, salvando em `seeds/` (loader `file`) ou implementando o fetch dedicado.
+- **NCM** (`loader: ncm_json`, `sem_embedding: true`): 15.156 códigos indexados, lexical (consulta por código). Health-check da parada programada 01:00–03:00 embutido.
+- **RGI** (`loader: rgi_nesh`): 6 regras extraídas da NESH (IN RFB 2.169/2023), com embedding — busca híbrida verificada. O loader resolve o PDF vigente na página (não assume o nome) e detecta a seção RGI dinamicamente.
+
+## Pendências / próxima fila
+
+- **Loaders `http` a implementar**, nesta ordem: **Soluções de Consulta → Tratamento Administrativo**. (Acordos saiu do escopo Fase 1 — não aciona anuência.)
 - **Anuência Anvisa/MAPA**: desbloqueadas, mas ainda com loader `http` — falta o coletor da legislação de LPCO por NCM/procedimento.
 - **Fontes bloqueadas (robots.txt)**: NÃO fazer scraping em `siscomex.desenvolvimento.gov.br`. Usar as alternativas em `gov.br/siscomex` (ver comentários em `config/fontes_comex.yaml`).

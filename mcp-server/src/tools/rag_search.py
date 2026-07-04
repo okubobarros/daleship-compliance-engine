@@ -16,6 +16,13 @@ from db.connection import get_pool
 
 K = 5
 
+# Limiar de distância de cosseno (pgvector `<=>`) acima do qual um vizinho semântico é
+# considerado IRRELEVANTE e descartado — sem isso, a busca vetorial sempre devolve os K
+# mais próximos e uma query fora do domínio "citaria" a norma menos distante (fura o
+# grounding). Calibrado numa amostra pequena (só RGI): no-domínio ≤ ~0.60, fora ≥ ~0.75.
+# PROVISÓRIO — recalibrar com o golden eval set quando a base tiver mais fontes.
+DISTANCIA_MAXIMA = 0.65
+
 _COLUNAS = (
     "id, orgao, tipo_documento, identificador, texto, fonte_url, "
     "data_vigencia_inicio, data_vigencia_fim"
@@ -55,6 +62,7 @@ async def buscar_norma(query: str, orgao: str | None = None) -> dict:
                     WHERE data_vigencia_fim IS NULL
                       AND embedding IS NOT NULL
                       AND ($2::text IS NULL OR orgao = $2)
+                      AND embedding <=> $1::vector < {DISTANCIA_MAXIMA}
                     ORDER BY embedding <=> $1::vector
                     LIMIT {K}
                 """

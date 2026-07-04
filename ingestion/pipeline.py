@@ -22,6 +22,7 @@ import sys
 from datetime import date
 
 import asyncpg
+import httpx
 import yaml
 from dotenv import load_dotenv
 
@@ -46,84 +47,82 @@ def _emb_literal(vetor: list[float] | None) -> str | None:
     return "[" + ",".join(str(x) for x in vetor) + "]"
 
 
-async def _classificar(
-    conn: asyncpg.Connection, fonte: FonteConfig, unidade: UnidadeNormativa
-) -> tuple[str, str | None]:
-    """Retorna (acao, id_existente): acao ∈ {'inalterado','inserir','versionar'}."""
-    existente = await conn.fetchrow(
-        """
-        SELECT id, texto FROM normas
-        WHERE orgao = $1 AND tipo_documento = $2 AND identificador = $3
-          AND data_vigencia_fim IS NULL
-        """,
-        fonte.orgao,
-        fonte.tipo_documento,
-        unidade.identificador,
-    )
-    if existente is None:
-        return "inserir", None
-    if existente["texto"] == unidade.texto:
-        return "inalterado", str(existente["id"])
-    return "versionar", str(existente["id"])
-
-
-async def _escrever(
-    conn: asyncpg.Connection,
-    fonte: FonteConfig,
-    unidade: UnidadeNormativa,
-    acao: str,
-    id_existente: str | None,
-    embedding: list[float] | None,
-) -> None:
-    vigencia = fonte.data_vigencia_inicio or date.today()
-    if acao == "versionar":
-        await conn.execute(
-            "UPDATE normas SET data_vigencia_fim = $1 WHERE id = $2", vigencia, id_existente
-        )
-    await conn.execute(
-        """
-        INSERT INTO normas
-            (orgao, tipo_documento, identificador, texto, fonte_url, data_vigencia_inicio, embedding)
-        VALUES ($1, $2, $3, $4, $5, $6, $7::vector)
-        """,
-        fonte.orgao,
-        fonte.tipo_documento,
-        unidade.identificador,
-        unidade.texto,
-        fonte.fonte_url,
-        vigencia,
-        _emb_literal(embedding),
-    )
-
-
 async def _ingerir_fonte(
     conn: asyncpg.Connection, fonte: FonteConfig, embedder, total: dict
 ) -> None:
+    """Carga em lote: 1 SELECT dos vigentes da fonte, classificação em memória,
+    executemany para versionar (fechar antigas) e inserir — evita 2 round-trips por
+    unidade (inviável para ~15k NCM contra Postgres remoto)."""
     unidades = get_loader(fonte.loader)(fonte)
+    vigencia = fonte.data_vigencia_inicio or date.today()
 
-    classificadas = []
+    # Existentes vigentes desta fonte, num único fetch: identificador -> (id, texto).
+    linhas = await conn.fetch(
+        """
+        SELECT id, identificador, texto FROM normas
+        WHERE orgao = $1 AND tipo_documento = $2 AND data_vigencia_fim IS NULL
+        """,
+        fonte.orgao,
+        fonte.tipo_documento,
+    )
+    existentes = {r["identificador"]: (r["id"], r["texto"]) for r in linhas}
+
+    a_versionar_ids: list = []       # ids de versões antigas a fechar
+    a_inserir: list[UnidadeNormativa] = []
     for u in unidades:
-        acao, id_existente = await _classificar(conn, fonte, u)
-        classificadas.append((u, acao, id_existente))
-
-    # Embeda só o que será escrito (novo/alterado) — poupa token no que não mudou.
-    a_escrever = [c for c in classificadas if c[1] != "inalterado"]
-    embeddings: list[list[float] | None] = []
-    if a_escrever:
-        embeddings = await embedder.embed([c[0].texto for c in a_escrever], input_type="document")
-
-    idx = 0
-    for unidade, acao, id_existente in classificadas:
-        if acao == "inalterado":
+        atual = existentes.get(u.identificador)
+        if atual is None:
+            a_inserir.append(u)
+            total["inserido"] += 1
+        elif atual[1] == u.texto:
             total["inalterado"] += 1
-            continue
-        await _escrever(conn, fonte, unidade, acao, id_existente, embeddings[idx])
-        idx += 1
-        total["inserido" if acao == "inserir" else "versionado"] += 1
+        else:
+            a_versionar_ids.append(atual[0])
+            a_inserir.append(u)
+            total["versionado"] += 1
+
+    if not a_inserir:
+        return
+
+    # Embeda só o que será escrito. Fontes sem_embedding (NCM = código exato) não embedam.
+    if fonte.sem_embedding:
+        embeddings: list[list[float] | None] = [None] * len(a_inserir)
+    else:
+        embeddings = await embedder.embed([u.texto for u in a_inserir], input_type="document")
+
+    async with conn.transaction():
+        if a_versionar_ids:
+            await conn.execute(
+                "UPDATE normas SET data_vigencia_fim = $1 WHERE id = ANY($2::uuid[])",
+                vigencia,
+                a_versionar_ids,
+            )
+        await conn.executemany(
+            """
+            INSERT INTO normas
+                (orgao, tipo_documento, identificador, texto, fonte_url, data_vigencia_inicio, embedding)
+            VALUES ($1, $2, $3, $4, $5, $6, $7::vector)
+            """,
+            [
+                (
+                    fonte.orgao,
+                    fonte.tipo_documento,
+                    u.identificador,
+                    u.texto,
+                    fonte.fonte_url,
+                    vigencia,
+                    _emb_literal(emb),
+                )
+                for u, emb in zip(a_inserir, embeddings)
+            ],
+        )
 
 
-async def ingerir(config_path: pathlib.Path) -> None:
+async def ingerir(config_path: pathlib.Path, filtro_tipo: str | None = None) -> None:
     fontes = carregar_fontes(config_path)
+    if filtro_tipo:
+        fontes = [f for f in fontes if f.tipo_documento.lower() == filtro_tipo.lower()]
+        print(f"Filtro por tipo_documento='{filtro_tipo}': {len(fontes)} fonte(s).")
     embedder = get_embedder()
     print(f"Embedder: {type(embedder).__name__} (disponível={getattr(embedder, 'disponivel', False)})")
     conn = await asyncpg.connect(os.environ["DATABASE_URL"])
@@ -144,7 +143,7 @@ async def ingerir(config_path: pathlib.Path) -> None:
             except NotImplementedError as e:
                 total["sem_loader"] += 1
                 print(f"[SEM LOADER] {rotulo}: {e}")
-            except RuntimeError as e:
+            except (RuntimeError, httpx.HTTPError) as e:
                 total["indisponivel"] += 1
                 print(f"[INDISPONÍVEL] {rotulo}: {e}")
         print("Resumo:", total)
@@ -153,7 +152,8 @@ async def ingerir(config_path: pathlib.Path) -> None:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Uso: python ingestion/pipeline.py <config.yaml>")
+    if len(sys.argv) not in (2, 3):
+        print("Uso: python ingestion/pipeline.py <config.yaml> [tipo_documento]")
         raise SystemExit(2)
-    asyncio.run(ingerir(pathlib.Path(sys.argv[1])))
+    filtro = sys.argv[2] if len(sys.argv) == 3 else None
+    asyncio.run(ingerir(pathlib.Path(sys.argv[1]), filtro))

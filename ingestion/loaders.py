@@ -11,8 +11,10 @@ O loader 'ncm_json' consome o JSON oficial da nomenclatura NCM do Portal Único.
 """
 from __future__ import annotations
 
+import io
 import json
 import pathlib
+import re
 from typing import Callable
 
 import httpx
@@ -23,6 +25,9 @@ SEEDS_DIR = pathlib.Path(__file__).resolve().parent / "seeds"
 
 # Endpoint oficial do JSON da nomenclatura NCM (Portal Único Siscomex).
 NCM_JSON_URL = "https://portalunico.siscomex.gov.br/classif/api/publico/nomenclatura/download/json"
+
+# User-Agent de navegador — gov.br às vezes recusa clientes sem UA.
+_UA = {"User-Agent": "Mozilla/5.0 (compatible; daleship-compliance-engine/1.0)"}
 
 _LOADERS: dict[str, Callable[[FonteConfig], list[UnidadeNormativa]]] = {}
 
@@ -80,6 +85,8 @@ def parse_ncm_payload(payload: dict) -> list[UnidadeNormativa]:
     for item in itens:
         codigo = (item.get("Codigo") or item.get("codigo") or "").strip()
         descricao = (item.get("Descricao") or item.get("descricao") or "").strip()
+        # A fonte traz tags HTML (ex.: <i>champagne</i>) — remover para citação limpa.
+        descricao = re.sub(r"<[^>]+>", "", descricao)
         if not codigo:
             continue
         unidades.append(
@@ -90,10 +97,11 @@ def parse_ncm_payload(payload: dict) -> list[UnidadeNormativa]:
 
 def _portal_em_parada(resp: httpx.Response) -> bool:
     """Detecta a parada programada diária do Portal Único (01:00–03:00): a chamada
-    redireciona para parada-programada.json. Não indexar o conteúdo de status."""
-    if resp.is_redirect:
-        return "parada-programada" in resp.headers.get("location", "")
-    return False
+    acaba em parada-programada.json. Não indexar o conteúdo de status.
+
+    (Segue redirects normais, ex.: 307 que só acrescenta ?perfil=PUBLICO — a parada é
+    identificada pela URL FINAL, não por qualquer redirect.)"""
+    return "parada-programada" in str(resp.url)
 
 
 @register("ncm_json")
@@ -102,7 +110,7 @@ def ncm_json_loader(fonte: FonteConfig) -> list[UnidadeNormativa]:
 
     Health-check embutido: se o Portal Único estiver na parada programada, aborta
     com mensagem clara em vez de ingerir o payload de status."""
-    with httpx.Client(timeout=120, follow_redirects=False) as client:
+    with httpx.Client(timeout=180, follow_redirects=True, headers=_UA) as client:
         resp = client.get(NCM_JSON_URL)
         if _portal_em_parada(resp):
             raise RuntimeError(
@@ -112,3 +120,93 @@ def ncm_json_loader(fonte: FonteConfig) -> list[UnidadeNormativa]:
         resp.raise_for_status()
         payload = resp.json()
     return parse_ncm_payload(payload)
+
+
+# --- RGI via NESH (Notas Explicativas do Sistema Harmonizado, Receita Federal) ---
+
+def resolver_pdf_nesh(html: str, base_url: str) -> str:
+    """Acha, no HTML da página oficial, o link de download do PDF vigente da NESH.
+
+    Não assume o nome do arquivo (a versão pode mudar). Prefere o link cujo texto de
+    âncora referencia a IN vigente (2.169/2023); descarta explicitamente a 'versão anterior'.
+    """
+    ancoras = re.findall(r'<a[^>]*href="([^"]+\.pdf)"[^>]*>(.*?)</a>', html, re.I | re.S)
+    candidatos = []
+    for href, texto in ancoras:
+        texto_limpo = re.sub(r"<[^>]+>", " ", texto)
+        if "anterior" in texto_limpo.lower():
+            continue
+        candidatos.append((href, texto_limpo))
+    if not candidatos:
+        raise RuntimeError("Nenhum link de PDF da NESH encontrado na página oficial.")
+
+    # Preferência: âncora que cita a IN vigente (2.169 / 2169).
+    for href, texto in candidatos:
+        if "2.169" in texto or "2169" in texto:
+            return httpx.URL(base_url).join(href).__str__()
+    # Fallback: primeiro candidato que não é a versão anterior.
+    href = candidatos[0][0]
+    return httpx.URL(base_url).join(href).__str__()
+
+
+def parse_rgi_texto(texto: str) -> list[UnidadeNormativa]:
+    """Extrai as 6 Regras Gerais de Interpretação do texto da seção RGI da NESH.
+
+    Cada unidade = o enunciado normativo da REGRA N (de 'REGRA N' até 'NOTA EXPLICATIVA').
+    Se qualquer uma das 6 faltar, aborta — nunca indexa RGI parcial (grounding)."""
+    unidades: list[UnidadeNormativa] = []
+    for n in range(1, 7):
+        m = re.search(rf"(?m)^REGRA {n}\s*$", texto)
+        if not m:
+            raise RuntimeError(f"RGI Regra {n} não localizada no texto extraído da NESH.")
+        ini = m.end()
+        mnota = re.search(r"NOTA EXPLICATIVA", texto[ini:])
+        fim = ini + mnota.start() if mnota else len(texto)
+        corpo = re.sub(r"\s+", " ", texto[ini:fim]).strip()
+        if not corpo:
+            raise RuntimeError(f"RGI Regra {n} veio vazia na extração.")
+        unidades.append(UnidadeNormativa(identificador=f"RGI Regra {n}", texto=corpo))
+    return unidades
+
+
+def _extrair_secao_rgi(pdf_bytes: bytes) -> str:
+    """Concatena as páginas da seção RGI, detectadas dinamicamente (não por número fixo):
+    começa na página com 'REGRA 1' + 'valor indicativo'; termina ao chegar na Seção I."""
+    import pdfplumber
+
+    paginas: list[str] = []
+    capturando = False
+    with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
+        for idx, page in enumerate(pdf.pages):
+            if idx > 60 and not capturando:
+                raise RuntimeError("Início da seção RGI não encontrado nas primeiras páginas da NESH.")
+            texto = page.extract_text() or ""
+            up = texto.upper()
+            if not capturando:
+                if "REGRA 1" in up and "VALOR INDICATIVO" in up:
+                    capturando = True
+                    paginas.append(texto)
+                continue
+            if "ANIMAIS VIVOS E PRODUTOS DO REINO ANIMAL" in up and "REGRA" not in up:
+                break  # fronteira: começou a Seção I
+            paginas.append(texto)
+            if len(paginas) > 20:
+                raise RuntimeError("Fim da seção RGI não detectado — estrutura da NESH pode ter mudado.")
+    return "\n".join(paginas)
+
+
+@register("rgi_nesh")
+def rgi_nesh_loader(fonte: FonteConfig) -> list[UnidadeNormativa]:
+    """Coleta as RGI a partir da NESH oficial (Receita Federal).
+
+    fonte_url deve ser a PÁGINA da NESH (não o PDF direto) — o loader resolve o link do
+    PDF vigente ali, baixa, isola a seção RGI e chunka nas 6 regras."""
+    with httpx.Client(timeout=180, follow_redirects=True, headers=_UA) as client:
+        pagina = client.get(fonte.fonte_url)
+        pagina.raise_for_status()
+        pdf_url = resolver_pdf_nesh(pagina.text, str(pagina.url))
+        pdf_resp = client.get(pdf_url)
+        pdf_resp.raise_for_status()
+        pdf_bytes = pdf_resp.content
+    secao = _extrair_secao_rgi(pdf_bytes)
+    return parse_rgi_texto(secao)

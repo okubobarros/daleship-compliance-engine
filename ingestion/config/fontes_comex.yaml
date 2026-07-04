@@ -12,18 +12,24 @@
 
 fontes:
   # Base de tudo: nomenclatura NCM via JSON oficial do Portal Único. Prioridade 1.
+  # sem_embedding: NCM é consulta por código exato (lexical) — ~15k códigos, embedar todos
+  # no free tier da Voyage (~3 req/min) custaria ~40 min sem ganho semântico real.
+  # Se a busca semântica por descrição de NCM se mostrar necessária, remover este flag e re-rodar.
   - orgao: SISCOMEX
     tipo_documento: NCM
     descricao: "Nomenclatura Comum do Mercosul (NCM) — JSON oficial do Portal Único"
     fonte_url: "https://portalunico.siscomex.gov.br/classif/api/publico/nomenclatura/download/json"
     loader: ncm_json
+    sem_embedding: true
     bloqueado: false
 
+  # RGI: texto oficial vigente publicado na NESH (IN RFB nº 2.169/2023). O loader resolve
+  # o link do PDF vigente NA PÁGINA (não assume o nome do arquivo) e chunka nas 6 regras.
   - orgao: RFB
     tipo_documento: RGI
-    descricao: "Regras Gerais de Interpretação do Sistema Harmonizado"
-    fonte_url: "https://www.gov.br/receitafederal/pt-br/assuntos/aduana-e-comercio-exterior/classificacao-fiscal-de-mercadorias"
-    loader: http   # coletar+verificar; próxima na fila depois da NCM
+    descricao: "Regras Gerais de Interpretação do SH (seção inicial da NESH, IN RFB 2.169/2023)"
+    fonte_url: "https://www.gov.br/receitafederal/pt-br/assuntos/aduana-e-comercio-exterior/classificacao-fiscal-de-mercadorias/notas-explicativas-do-sistema-harmonizado"
+    loader: rgi_nesh
     bloqueado: false
 
   - orgao: RFB
@@ -44,9 +50,6 @@ fontes:
     loader: http
     bloqueado: false
 
-  - orgao: MDIC
-    tipo_documento: acordo_comercial
-    descricao: "Acordos comerciais vigentes por país/bloco"
-    fonte_url: "https://www.gov.br/siscomex/pt-br/acordos-comerciais/acordos-comerciais"
-    loader: http
-    bloqueado: false
+# FORA DO ESCOPO DA FASE 1 (decidido): Acordos Comerciais não acionam LPCO/anuência,
+# então saíram da fila da Fase 1. Referência preservada para retomada futura:
+#   https://www.gov.br/siscomex/pt-br/acordos-comerciais/acordos-comerciais
