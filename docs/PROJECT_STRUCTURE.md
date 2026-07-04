@@ -37,10 +37,11 @@ daleship-compliance-engine/
 ├── mcp-server/                     # Camada de ferramentas — usada pelo n8n E pelo app em Python
 │   ├── src/
 │   │   ├── server.py               # entrypoint do servidor MCP
+│   │   ├── embeddings.py           # cliente Voyage (voyage-law-2, 1024) — compartilhado ingestão/busca
 │   │   ├── tools/
-│   │   │   ├── rag_search.py       # busca na base normativa
-│   │   │   ├── siscomex_client.py  # cliente PUCOMEX autenticado
-│   │   │   ├── agrofit_lookup.py   # consulta a precedentes
+│   │   │   ├── rag_search.py       # busca híbrida (lexical + semântica) na base normativa
+│   │   │   ├── siscomex_client.py  # cliente PUCOMEX autenticado (stub até certificado de teste)
+│   │   │   ├── agrofit_lookup.py   # (Fase 2) consulta a precedentes Agrofit
 │   │   │   └── dossie_tools.py     # criação/consulta de dossiê
 │   │   ├── auth/
 │   │   │   └── pucomex_auth.py     # handshake de certificado digital
@@ -100,6 +101,9 @@ daleship-compliance-engine/
 ├── infra/
 │   ├── schema_fase1.sql            # schema Comex (adaptado de ARCHITECTURE.md, sem tabela Agrofit)
 │   ├── apply_schema.py             # aplica o schema no Supabase e verifica tabelas + pgvector
+│   ├── apply_migrations.py         # runner de migrations formais (rastreado em schema_migrations)
+│   ├── migrations/
+│   │   └── 0001_embedding_voyage_law_2_1024.sql  # ajusta normas.embedding para VECTOR(1024)
 │   ├── docker-compose.yml          # (futuro) Postgres + pgvector local, um comando sobe tudo
 │   └── github-actions/
 │       └── ingest-dou.yml          # (futuro) roda o monitoramento do DOU de graça, agendado

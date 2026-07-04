@@ -14,6 +14,9 @@ CREATE TABLE IF NOT EXISTS normas (
     tipo_documento TEXT NOT NULL,     -- 'IN' | 'TEC' | 'solucao_consulta' | 'tratamento_administrativo' | 'acordo_comercial' etc.
     identificador TEXT NOT NULL,
     texto TEXT NOT NULL,
+    -- NOTA: dimensão baseline 1536 é histórica. A decisão de embedding fechou em Voyage
+    -- voyage-law-2 (1024). Após aplicar este schema, rode infra/apply_migrations.py —
+    -- a migration 0001 ajusta esta coluna para VECTOR(1024). Não editar direto em produção.
     embedding VECTOR(1536),
     data_vigencia_inicio DATE NOT NULL,
     data_vigencia_fim DATE,           -- NULL = ainda vigente

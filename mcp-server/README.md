@@ -27,8 +27,16 @@ python server.py
 
 ## Estado atual (Semana 1)
 
-- `rag_search.py`: busca lexical funcional contra a tabela `normas`; busca semântica (embedding) entra
-  quando o pipeline de ingestão popular a coluna `embedding`.
+- `rag_search.py`: busca **híbrida** (lexical + semântica) contra `normas`. A parte semântica usa
+  `embeddings.py` (Voyage `voyage-law-2`, dim 1024) e só contribui quando há `VOYAGE_API_KEY` e normas com
+  embedding; caso contrário degrada para lexical, sem nunca inventar fonte.
+- `embeddings.py`: cliente Voyage compartilhado (ingestão embeda documento, rag_search embeda query).
+  `NullEmbedder` como fallback sem chave.
 - `siscomex_client.py`: ainda não implementado de verdade — depende de certificado digital de teste +
   Chave de Acesso da trading no ambiente de validação PUCOMEX.
-- `dossie_tools.py`: funcional, depende do schema em `infra/schema_fase1.sql` já aplicado no banco.
+- `dossie_tools.py`: funcional, depende do schema em `infra/schema_fase1.sql` + migrations
+  (`infra/apply_migrations.py`) já aplicados.
+
+## Variável adicional
+
+- `VOYAGE_API_KEY` — chave da Voyage AI (embeddings). Sem ela, a busca roda só lexical.

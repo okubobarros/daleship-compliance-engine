@@ -27,7 +27,15 @@ mcp-server/.venv/Scripts/python.exe ingestion/pipeline.py ingestion/config/fonte
 - **Versionamento por vigência**: texto igual = idempotente (skip); texto mudou = fecha a vigência antiga (`data_vigencia_fim`) + insere nova versão; nunca sobrescreve.
 - **Provenance**: toda unidade carrega `orgao`, `tipo_documento`, `identificador`, `fonte_url`, `data_vigencia_inicio`.
 
-## Pendências conhecidas
+## Embeddings
 
-- **Embeddings**: a coluna `embedding VECTOR(1536)` fica NULL até a escolha do provedor de embedding (Voyage/OpenAI/local — Claude não gera embedding). A busca lexical do `rag_search` já funciona sem isso. A dimensão 1536 é suposição a revisar quando o provedor for definido.
-- **Loader `http`**: implementar coleta + chunking por unidade normativa + etapa de verificação para cada fonte da Frente 2 (hoje todas com `loader: http`, portanto ainda não populam a base — precisam de coleta manual → `seeds/` → `loader: file`, ou do loader `http` real).
+- Provedor fechado: **Voyage AI, modelo `voyage-law-2`** (especialização jurídica, dim **1024**, contexto 16k, free tier 50M tokens). Cliente em `mcp-server/src/embeddings.py` (camada compartilhada).
+- A coluna `normas.embedding` é `VECTOR(1024)` (migration `infra/migrations/0001_...`). Sem `VOYAGE_API_KEY`, o pipeline usa `NullEmbedder` (embedding NULL) e a busca degrada para lexical — nunca inventa fonte.
+- A busca é **híbrida** (lexical + semântica combinadas em `rag_search`), nunca uma substituindo a outra.
+
+## Pendências / próxima fila de loaders
+
+- **NCM (loader `ncm_json`)**: implementado com health-check da parada programada. A coleta real depende do Portal Único estar fora da janela 01:00–03:00, e da conferência dos nomes de campo do payload na primeira execução.
+- **Loader `http`** (ainda stub) para, nesta ordem: **RGI → Soluções de Consulta → Tratamento Administrativo → Acordos**. Cada uma precisa de coletor + verificação, salvando em `seeds/` (loader `file`) ou implementando o fetch dedicado.
+- **Anuência Anvisa/MAPA**: desbloqueadas, mas ainda com loader `http` — falta o coletor da legislação de LPCO por NCM/procedimento.
+- **Fontes bloqueadas (robots.txt)**: NÃO fazer scraping em `siscomex.desenvolvimento.gov.br`. Usar as alternativas em `gov.br/siscomex` (ver comentários em `config/fontes_comex.yaml`).

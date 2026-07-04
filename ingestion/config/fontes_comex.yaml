@@ -1,39 +1,46 @@
 # Frente 2 — Bases normativas de comex (não dependem da escolha de órgão anuente).
-# Fontes mapeadas em docs/ComexPilot.md. Cada bloco é uma fonte; adicionar uma nova
-# é acrescentar um bloco aqui, não escrever código.
+# Fontes mapeadas em docs/ComexPilot.md + URLs verificadas pelo especialista (2026-07-04).
+# Cada bloco é uma fonte; adicionar uma nova é acrescentar um bloco aqui, não escrever código.
 #
-# loader 'file': texto normativo já coletado e VERIFICADO, salvo como JSON em ingestion/seeds/.
-# loader 'http': ainda stub — buscar+parsear fonte oficial exige verificação humana antes de indexar.
+# Loaders: 'ncm_json' (JSON oficial da NCM), 'file' (JSON verificado em seeds/),
+# 'http' (stub — fonte cujo coletor ainda não foi implementado).
 #
-# NOTA: as tags de `orgao` abaixo são provisórias (autoridade da fonte) e devem ser
-# conferidas com o especialista de domínio — não são órgãos anuentes, são a origem da base.
+# EVITAR (bloqueio real por robots.txt — NÃO fazer scraping):
+#   - siscomex.desenvolvimento.gov.br (inclui .../tratamento/ e .../consulta_tratamento.jsf)
+# HEALTH-CHECK: portalunico.siscomex.gov.br/portal/parada-programada.json indica parada
+#   programada diária (01:00–03:00). Não é fonte de dado — só sinal de disponibilidade.
 
 fontes:
-  - orgao: CAMEX
-    tipo_documento: TEC
-    descricao: "Tarifa Externa Comum — NCMs e alíquotas"
-    fonte_url: "https://www.gov.br/mdic/pt-br/assuntos/camex/estrategia-comercial/tarifas/tarifa-externa-comum/tarifa-externa-comum-1"
-    loader: http   # coletar planilha oficial (Excel/Word), converter em unidades por NCM, verificar, migrar para 'file'
+  # Base de tudo: nomenclatura NCM via JSON oficial do Portal Único. Prioridade 1.
+  - orgao: SISCOMEX
+    tipo_documento: NCM
+    descricao: "Nomenclatura Comum do Mercosul (NCM) — JSON oficial do Portal Único"
+    fonte_url: "https://portalunico.siscomex.gov.br/classif/api/publico/nomenclatura/download/json"
+    loader: ncm_json
     bloqueado: false
 
   - orgao: RFB
     tipo_documento: RGI
     descricao: "Regras Gerais de Interpretação do Sistema Harmonizado"
     fonte_url: "https://www.gov.br/receitafederal/pt-br/assuntos/aduana-e-comercio-exterior/classificacao-fiscal-de-mercadorias"
-    loader: http
+    loader: http   # coletar+verificar; próxima na fila depois da NCM
     bloqueado: false
 
   - orgao: RFB
     tipo_documento: solucao_consulta
-    descricao: "Soluções de Consulta / ementas CECLAM (NCM sugerida pela RFB)"
-    fonte_url: "https://www.gov.br/receitafederal/pt-br/assuntos/aduana-e-comercio-exterior/classificacao-fiscal-de-mercadorias"
+    descricao: "Soluções de Consulta / SD (busca pré-filtrada SC;SD no SIJUT2)"
+    # Ponto de partida do loader (verificado acessível):
+    fonte_url: "http://normas.receita.fazenda.gov.br/sijut2consulta/consulta.action?facetsExistentes=&orgaosSelecionados=&tiposAtosSelecionados=72%3B+73&lblTiposAtosSelecionados=SC%3B+SD&tipoAtoFacet=&siglaOrgaoFacet=&anoAtoFacet=&termoBusca=&numero_ato=&tipoData=2&dt_inicio=&dt_fim=&ano_ato=&x=9&y=11&p=1"
+    # Alternativa/ementário: https://atosdecisorios.receita.fazenda.gov.br/consultaweb/index.jsf
     loader: http
     bloqueado: false
 
   - orgao: SISCOMEX
     tipo_documento: tratamento_administrativo
-    descricao: "Tratamento Administrativo na Importação por NCM"
-    fonte_url: "https://www.gov.br/siscomex/pt-br/informacoes/tratamento-administrativos/tratamento-administrativo-na-importacao"
+    descricao: "Tratamento Administrativo na Importação (gov.br/siscomex, Plone — sem bloqueio)"
+    # Fonte primária acessível (NÃO usar a versão JSF em siscomex.desenvolvimento.gov.br):
+    fonte_url: "https://www.gov.br/siscomex/pt-br/servicos/tratamento-administrativo-1/tratamento-administrativo-na-importacao/tratamento-administrativo-na-importacao"
+    # Exportação (complementar): https://www.gov.br/siscomex/pt-br/servicos/tratamento-administrativo-1/tratamento-administrativo-de-exportacao-1/tratamento-administrativo-de-exportacao
     loader: http
     bloqueado: false
 

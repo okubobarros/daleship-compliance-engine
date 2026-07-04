@@ -6,9 +6,8 @@ chunkada (uma unidade citável por item). Adicionar suporte a um novo tipo de fo
 
 Princípio de grounding: NUNCA ingerir conteúdo não verificado. O loader 'file' lê
 texto normativo já coletado e conferido (JSON estruturado sob seeds/). O loader
-'http' é stub proposital — buscar+parsear site governamental sem verificação humana
-violaria o princípio de citação confiável, então ele falha explicitamente até ter
-uma etapa de verificação real.
+'http' é stub proposital para fontes cuja coleta+parse ainda não foi implementada.
+O loader 'ncm_json' consome o JSON oficial da nomenclatura NCM do Portal Único.
 """
 from __future__ import annotations
 
@@ -16,9 +15,14 @@ import json
 import pathlib
 from typing import Callable
 
+import httpx
+
 from models import FonteConfig, UnidadeNormativa
 
 SEEDS_DIR = pathlib.Path(__file__).resolve().parent / "seeds"
+
+# Endpoint oficial do JSON da nomenclatura NCM (Portal Único Siscomex).
+NCM_JSON_URL = "https://portalunico.siscomex.gov.br/classif/api/publico/nomenclatura/download/json"
 
 _LOADERS: dict[str, Callable[[FonteConfig], list[UnidadeNormativa]]] = {}
 
@@ -52,7 +56,7 @@ def file_loader(fonte: FonteConfig) -> list[UnidadeNormativa]:
 
 @register("http")
 def http_loader(fonte: FonteConfig) -> list[UnidadeNormativa]:
-    """Stub: busca+chunk de fonte HTTP oficial ainda não implementado.
+    """Stub: coleta+chunk de fonte HTTP oficial ainda não implementada para esta fonte.
 
     Exige etapa de verificação humana do conteúdo parseado antes de virar norma
     citável — não ingerir automaticamente sem isso."""
@@ -60,3 +64,51 @@ def http_loader(fonte: FonteConfig) -> list[UnidadeNormativa]:
         f"Loader 'http' ainda não implementado para {fonte.fonte_url}. "
         "Colete e verifique o conteúdo, salve como JSON em seeds/ e use o loader 'file'."
     )
+
+
+# --- NCM (Portal Único) ---
+
+def parse_ncm_payload(payload: dict) -> list[UnidadeNormativa]:
+    """Transforma o payload JSON da nomenclatura NCM em unidades citáveis.
+
+    Uma unidade por código de nomenclatura. `identificador` = 'NCM <codigo>'.
+    Estrutura esperada (a CONFERIR contra o payload real na primeira coleta com o
+    portal fora da parada programada): {"Nomenclaturas": [{"Codigo","Descricao",...}]}.
+    """
+    itens = payload.get("Nomenclaturas") or payload.get("nomenclaturas") or []
+    unidades: list[UnidadeNormativa] = []
+    for item in itens:
+        codigo = (item.get("Codigo") or item.get("codigo") or "").strip()
+        descricao = (item.get("Descricao") or item.get("descricao") or "").strip()
+        if not codigo:
+            continue
+        unidades.append(
+            UnidadeNormativa(identificador=f"NCM {codigo}", texto=f"{codigo} — {descricao}")
+        )
+    return unidades
+
+
+def _portal_em_parada(resp: httpx.Response) -> bool:
+    """Detecta a parada programada diária do Portal Único (01:00–03:00): a chamada
+    redireciona para parada-programada.json. Não indexar o conteúdo de status."""
+    if resp.is_redirect:
+        return "parada-programada" in resp.headers.get("location", "")
+    return False
+
+
+@register("ncm_json")
+def ncm_json_loader(fonte: FonteConfig) -> list[UnidadeNormativa]:
+    """Baixa o JSON oficial da nomenclatura NCM e chunka por código.
+
+    Health-check embutido: se o Portal Único estiver na parada programada, aborta
+    com mensagem clara em vez de ingerir o payload de status."""
+    with httpx.Client(timeout=120, follow_redirects=False) as client:
+        resp = client.get(NCM_JSON_URL)
+        if _portal_em_parada(resp):
+            raise RuntimeError(
+                "Portal Único em parada programada (01:00–03:00). "
+                "Rodar a coleta da NCM fora dessa janela."
+            )
+        resp.raise_for_status()
+        payload = resp.json()
+    return parse_ncm_payload(payload)
