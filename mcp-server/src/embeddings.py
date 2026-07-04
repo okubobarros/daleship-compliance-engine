@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import time
 
 import httpx
 
@@ -18,15 +19,14 @@ VOYAGE_URL = "https://api.voyageai.com/v1/embeddings"
 VOYAGE_MODEL = "voyage-law-2"
 VOYAGE_DIM = 1024
 
-# Free tier da Voyage (sem cartão): ~3 req/min e ~10K tokens/min. Um lote maior que o
-# teto de tokens/min falha com 429 DETERMINÍSTICO (nenhum backoff resolve). Por isso:
-#  - lotes montados por ORÇAMENTO DE TOKENS estimados (seguro por default p/ free tier);
-#  - pacing proativo entre lotes (60/RPM segundos).
-# Com billing habilitado (tier pago: ~2000 RPM / 3M TPM), suba via env:
-#   VOYAGE_TPM_BUDGET=120000  VOYAGE_RPM=300
-TOKEN_BUDGET_LOTE = int(os.environ.get("VOYAGE_TPM_BUDGET", "8000"))
-RPM = float(os.environ.get("VOYAGE_RPM", "3"))
-MAX_ITENS_LOTE = 96
+# Limites da Voyage. O que MORDE no free tier (sem cartão) é o TPM (~10K tokens/min),
+# não o RPM: 3 lotes de 8K tokens/min = 24K TPM → 429 DETERMINÍSTICO (backoff não resolve
+# o que não cabe na janela de tokens). Por isso o throttle é por JANELA DESLIZANTE DE TPM.
+# Defaults conservadores p/ free tier. Com billing (paid: ~2000 RPM / 3M TPM), suba via env:
+#   VOYAGE_TPM=2000000  VOYAGE_TOKEN_BUDGET_LOTE=100000
+TPM_LIMITE = int(os.environ.get("VOYAGE_TPM", "9000"))          # teto de tokens/60s (margem sob 10K)
+TOKEN_BUDGET_LOTE = int(os.environ.get("VOYAGE_TOKEN_BUDGET_LOTE", "2800"))  # tokens/requisição
+MAX_ITENS_LOTE = int(os.environ.get("VOYAGE_MAX_ITENS_LOTE", "96"))
 
 
 def _tokens_estimados(texto: str) -> int:
@@ -51,6 +51,29 @@ def _montar_lotes(textos: list[str]) -> list[list[str]]:
     return lotes
 
 
+class _LimitadorTPM:
+    """Janela deslizante de 60s: garante que a soma de tokens enviados no último minuto
+    (mais o próximo lote) não ultrapasse TPM_LIMITE — o throttle correto para o free tier."""
+
+    def __init__(self, tpm: int):
+        self._tpm = tpm
+        self._eventos: list[tuple[float, int]] = []  # (monotonic_ts, tokens)
+
+    async def aguardar(self, tokens: int) -> None:
+        if self._tpm <= 0:
+            return
+        while True:
+            agora = time.monotonic()
+            self._eventos = [(t, n) for t, n in self._eventos if agora - t < 60.0]
+            usados = sum(n for _, n in self._eventos)
+            if usados + tokens <= self._tpm or not self._eventos:
+                self._eventos.append((agora, tokens))
+                return
+            # dorme até o evento mais antigo sair da janela de 60s
+            mais_antigo = min(t for t, _ in self._eventos)
+            await asyncio.sleep(max(0.5, 60.0 - (agora - mais_antigo)))
+
+
 class NullEmbedder:
     """Fallback sem chave: não gera embedding (mantém a busca lexical)."""
 
@@ -67,17 +90,17 @@ class VoyageEmbedder:
 
     def __init__(self, api_key: str):
         self._api_key = api_key
+        self._limitador = _LimitadorTPM(TPM_LIMITE)  # compartilhado entre chamadas da instância
 
     async def embed(self, textos: list[str], input_type: str = "document") -> list[list[float]]:
         """Gera embeddings. `input_type`: 'document' na ingestão, 'query' na busca
         (a Voyage otimiza a representação conforme o lado da recuperação)."""
         resultados: list[list[float]] = []
         lotes = _montar_lotes(textos)
-        intervalo = 60.0 / RPM if RPM > 0 else 0.0
         async with httpx.AsyncClient(timeout=60) as client:
             for n, lote in enumerate(lotes, start=1):
-                if n > 1 and intervalo:
-                    await asyncio.sleep(intervalo)  # pacing proativo: não estourar o RPM
+                tokens = sum(_tokens_estimados(t) for t in lote)
+                await self._limitador.aguardar(tokens)  # respeita o TPM antes de enviar
                 dados = await self._post_com_retry(client, lote, input_type)
                 resultados.extend(item["embedding"] for item in dados)
                 if len(lotes) > 10 and n % 10 == 0:

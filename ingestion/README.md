@@ -32,7 +32,7 @@ mcp-server/.venv/Scripts/python.exe ingestion/pipeline.py ingestion/config/fonte
 - Provedor fechado: **Voyage AI, modelo `voyage-law-2`** (especialização jurídica, dim **1024**, contexto 16k, free tier 50M tokens). Cliente em `mcp-server/src/embeddings.py` (camada compartilhada).
 - A coluna `normas.embedding` é `VECTOR(1024)` (migration `infra/migrations/0001_...`). Sem `VOYAGE_API_KEY`, o pipeline usa `NullEmbedder` (embedding NULL) e a busca degrada para lexical — nunca inventa fonte.
 - A busca é **híbrida** (lexical + semântica combinadas em `rag_search`), nunca uma substituindo a outra. O caminho semântico tem **limiar de distância** (`DISTANCIA_MAXIMA` em `rag_search.py`, provisório 0.65) para não "citar" o vizinho mais próximo quando a query está fora do domínio — recalibrar com o golden eval set.
-- **Rate limit**: o free tier da Voyage é ~3 req/min. Por isso fontes de consulta por código exato (NCM) usam `sem_embedding: true` (busca lexical, sem gastar Voyage); embedding fica reservado a normas em prosa, onde a semântica agrega.
+- **Rate limit**: o que morde no free tier da Voyage é o **TPM (~10K tokens/min)**, não o RPM. O cliente faz throttle por **janela deslizante de TPM** (`_LimitadorTPM`), então qualquer carga completa sem 429 — só mais devagar. No free tier, ~2,4M tokens (todas as Soluções de Consulta) levam ~4h; com billing (env `VOYAGE_TPM`/`VOYAGE_TOKEN_BUDGET_LOTE` altos) cai para minutos. Fontes de consulta por código exato (NCM) usam `sem_embedding: true` (lexical, sem gastar Voyage); embedding fica reservado a normas em prosa, onde a semântica agrega.
 
 ## Estado da base (Frente 2)
 
