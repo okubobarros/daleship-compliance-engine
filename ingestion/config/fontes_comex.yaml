@@ -32,13 +32,21 @@ fontes:
     loader: rgi_nesh
     bloqueado: false
 
+  # Soluções de Consulta/Divergência via SIJUT2. A listagem traz a ementa completa inline
+  # (~100 atos/página, paginação GET p=N, total lido da própria página — 159 págs ≈ 15,9k
+  # atos de TODOS os assuntos tributários). O filtro client-side usa o campo oficial
+  # 'Assunto:' da ementa para manter só classificação fiscal (o que o ComexPilot pede:
+  # "NCM sugeridas pela própria RFB"). Cada ato entra com permalink próprio
+  # (link.action?idAto=N) como fonte_url — citação direta ao ato, não à busca.
   - orgao: RFB
     tipo_documento: solucao_consulta
-    descricao: "Soluções de Consulta / SD (busca pré-filtrada SC;SD no SIJUT2)"
-    # Ponto de partida do loader (verificado acessível):
+    descricao: "Soluções de Consulta/SD de Classificação de Mercadorias (SIJUT2, ementas)"
     fonte_url: "http://normas.receita.fazenda.gov.br/sijut2consulta/consulta.action?facetsExistentes=&orgaosSelecionados=&tiposAtosSelecionados=72%3B+73&lblTiposAtosSelecionados=SC%3B+SD&tipoAtoFacet=&siglaOrgaoFacet=&anoAtoFacet=&termoBusca=&numero_ato=&tipoData=2&dt_inicio=&dt_fim=&ano_ato=&x=9&y=11&p=1"
     # Alternativa/ementário: https://atosdecisorios.receita.fazenda.gov.br/consultaweb/index.jsf
-    loader: http
+    loader: sijut2_sc
+    params:
+      filtro_assunto: "Classificação de Mercadorias"
+      delay_s: 1.0
     bloqueado: false
 
   - orgao: SISCOMEX

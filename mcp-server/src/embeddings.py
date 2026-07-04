@@ -17,8 +17,38 @@ import httpx
 VOYAGE_URL = "https://api.voyageai.com/v1/embeddings"
 VOYAGE_MODEL = "voyage-law-2"
 VOYAGE_DIM = 1024
-# Voyage aceita lotes grandes; mantemos conservador por limite de tokens/lote.
-BATCH_SIZE = 96
+
+# Free tier da Voyage (sem cartão): ~3 req/min e ~10K tokens/min. Um lote maior que o
+# teto de tokens/min falha com 429 DETERMINÍSTICO (nenhum backoff resolve). Por isso:
+#  - lotes montados por ORÇAMENTO DE TOKENS estimados (seguro por default p/ free tier);
+#  - pacing proativo entre lotes (60/RPM segundos).
+# Com billing habilitado (tier pago: ~2000 RPM / 3M TPM), suba via env:
+#   VOYAGE_TPM_BUDGET=120000  VOYAGE_RPM=300
+TOKEN_BUDGET_LOTE = int(os.environ.get("VOYAGE_TPM_BUDGET", "8000"))
+RPM = float(os.environ.get("VOYAGE_RPM", "3"))
+MAX_ITENS_LOTE = 96
+
+
+def _tokens_estimados(texto: str) -> int:
+    # Heurística p/ português: ~3 chars/token, com margem.
+    return max(1, len(texto) // 3)
+
+
+def _montar_lotes(textos: list[str]) -> list[list[str]]:
+    """Agrupa textos em lotes que caibam no orçamento de tokens por requisição."""
+    lotes: list[list[str]] = []
+    atual: list[str] = []
+    tokens_atual = 0
+    for t in textos:
+        t_tokens = _tokens_estimados(t)
+        if atual and (tokens_atual + t_tokens > TOKEN_BUDGET_LOTE or len(atual) >= MAX_ITENS_LOTE):
+            lotes.append(atual)
+            atual, tokens_atual = [], 0
+        atual.append(t)
+        tokens_atual += t_tokens
+    if atual:
+        lotes.append(atual)
+    return lotes
 
 
 class NullEmbedder:
@@ -42,11 +72,16 @@ class VoyageEmbedder:
         """Gera embeddings. `input_type`: 'document' na ingestão, 'query' na busca
         (a Voyage otimiza a representação conforme o lado da recuperação)."""
         resultados: list[list[float]] = []
+        lotes = _montar_lotes(textos)
+        intervalo = 60.0 / RPM if RPM > 0 else 0.0
         async with httpx.AsyncClient(timeout=60) as client:
-            for i in range(0, len(textos), BATCH_SIZE):
-                lote = textos[i : i + BATCH_SIZE]
+            for n, lote in enumerate(lotes, start=1):
+                if n > 1 and intervalo:
+                    await asyncio.sleep(intervalo)  # pacing proativo: não estourar o RPM
                 dados = await self._post_com_retry(client, lote, input_type)
                 resultados.extend(item["embedding"] for item in dados)
+                if len(lotes) > 10 and n % 10 == 0:
+                    print(f"  [voyage] lote {n}/{len(lotes)} embedado", flush=True)
         return resultados
 
     async def _post_com_retry(self, client, lote, input_type, tentativas=7):

@@ -47,12 +47,21 @@ def _emb_literal(vetor: list[float] | None) -> str | None:
     return "[" + ",".join(str(x) for x in vetor) + "]"
 
 
+# Unidades gravadas por transação. Em runs longos (embedding no free tier da Voyage leva
+# ~1h para milhares de ementas), cada chunk commitado sobrevive a uma falha posterior —
+# o re-run idempotente pula o que já entrou ('inalterado') e retoma do ponto da falha.
+CHUNK_ESCRITA = 500
+
+
 async def _ingerir_fonte(
     conn: asyncpg.Connection, fonte: FonteConfig, embedder, total: dict
 ) -> None:
-    """Carga em lote: 1 SELECT dos vigentes da fonte, classificação em memória,
-    executemany para versionar (fechar antigas) e inserir — evita 2 round-trips por
-    unidade (inviável para ~15k NCM contra Postgres remoto)."""
+    """Carga em lote: 1 SELECT dos vigentes da fonte, classificação em memória, e
+    escrita incremental em chunks (embed do chunk -> transação do chunk).
+
+    IMPORTANTE (auditabilidade): os contadores em `total` só são incrementados DEPOIS
+    do commit de cada chunk — o Resumo reporta o que foi realmente gravado, nunca
+    intenção. ('inalterado' é contado na classificação: não gera escrita.)"""
     unidades = get_loader(fonte.loader)(fonte)
     vigencia = fonte.data_vigencia_inicio or date.today()
 
@@ -67,55 +76,64 @@ async def _ingerir_fonte(
     )
     existentes = {r["identificador"]: (r["id"], r["texto"]) for r in linhas}
 
-    a_versionar_ids: list = []       # ids de versões antigas a fechar
-    a_inserir: list[UnidadeNormativa] = []
+    # (unidade, id_antigo_a_fechar_ou_None)
+    a_escrever: list[tuple[UnidadeNormativa, object | None]] = []
     for u in unidades:
         atual = existentes.get(u.identificador)
         if atual is None:
-            a_inserir.append(u)
-            total["inserido"] += 1
+            a_escrever.append((u, None))
         elif atual[1] == u.texto:
             total["inalterado"] += 1
         else:
-            a_versionar_ids.append(atual[0])
-            a_inserir.append(u)
-            total["versionado"] += 1
+            a_escrever.append((u, atual[0]))
 
-    if not a_inserir:
+    if not a_escrever:
         return
 
-    # Embeda só o que será escrito. Fontes sem_embedding (NCM = código exato) não embedam.
-    if fonte.sem_embedding:
-        embeddings: list[list[float] | None] = [None] * len(a_inserir)
-    else:
-        embeddings = await embedder.embed([u.texto for u in a_inserir], input_type="document")
+    n_chunks = (len(a_escrever) + CHUNK_ESCRITA - 1) // CHUNK_ESCRITA
+    for c in range(n_chunks):
+        chunk = a_escrever[c * CHUNK_ESCRITA : (c + 1) * CHUNK_ESCRITA]
 
-    async with conn.transaction():
-        if a_versionar_ids:
-            await conn.execute(
-                "UPDATE normas SET data_vigencia_fim = $1 WHERE id = ANY($2::uuid[])",
-                vigencia,
-                a_versionar_ids,
-            )
-        await conn.executemany(
-            """
-            INSERT INTO normas
-                (orgao, tipo_documento, identificador, texto, fonte_url, data_vigencia_inicio, embedding)
-            VALUES ($1, $2, $3, $4, $5, $6, $7::vector)
-            """,
-            [
-                (
-                    fonte.orgao,
-                    fonte.tipo_documento,
-                    u.identificador,
-                    u.texto,
-                    fonte.fonte_url,
+        # Embeda só o chunk. Fontes sem_embedding (NCM = código exato) não embedam.
+        if fonte.sem_embedding:
+            embeddings: list[list[float] | None] = [None] * len(chunk)
+        else:
+            embeddings = await embedder.embed([u.texto for u, _ in chunk], input_type="document")
+
+        # Fechar a vigência antiga e inserir a nova versão na MESMA transação do chunk —
+        # nunca fica um identificador sem versão vigente se algo falhar no meio.
+        ids_antigos = [id_antigo for _, id_antigo in chunk if id_antigo is not None]
+        async with conn.transaction():
+            if ids_antigos:
+                await conn.execute(
+                    "UPDATE normas SET data_vigencia_fim = $1 WHERE id = ANY($2::uuid[])",
                     vigencia,
-                    _emb_literal(emb),
+                    ids_antigos,
                 )
-                for u, emb in zip(a_inserir, embeddings)
-            ],
-        )
+            await conn.executemany(
+                """
+                INSERT INTO normas
+                    (orgao, tipo_documento, identificador, texto, fonte_url, data_vigencia_inicio, embedding)
+                VALUES ($1, $2, $3, $4, $5, $6, $7::vector)
+                """,
+                [
+                    (
+                        fonte.orgao,
+                        fonte.tipo_documento,
+                        u.identificador,
+                        u.texto,
+                        u.fonte_url or fonte.fonte_url,  # permalink por unidade quando existir
+                        vigencia,
+                        _emb_literal(emb),
+                    )
+                    for (u, _), emb in zip(chunk, embeddings)
+                ],
+            )
+        # Só conta o que foi de fato commitado.
+        for _, id_antigo in chunk:
+            total["versionado" if id_antigo is not None else "inserido"] += 1
+        if n_chunks > 1:
+            print(f"  [chunk] {c + 1}/{n_chunks} gravado ({len(chunk)} unidades)", flush=True)
 
 
 async def ingerir(config_path: pathlib.Path, filtro_tipo: str | None = None) -> None:

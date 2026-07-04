@@ -11,10 +11,12 @@ O loader 'ncm_json' consome o JSON oficial da nomenclatura NCM do Portal Único.
 """
 from __future__ import annotations
 
+import html as html_mod
 import io
 import json
 import pathlib
 import re
+import time
 from typing import Callable
 
 import httpx
@@ -193,6 +195,128 @@ def _extrair_secao_rgi(pdf_bytes: bytes) -> str:
             if len(paginas) > 20:
                 raise RuntimeError("Fim da seção RGI não detectado — estrutura da NESH pode ter mudado.")
     return "\n".join(paginas)
+
+
+# --- Soluções de Consulta / Divergência via SIJUT2 (Receita Federal) ---
+
+SIJUT2_PERMALINK = "http://normas.receita.fazenda.gov.br/sijut2consulta/link.action?idAto={id_ato}"
+
+_RE_LINHA = re.compile(r"<tr class='linhaResultados'>(.*?)</tr>", re.S)
+_RE_ID_ATO = re.compile(r"link\.action\?(?:antigo=1&(?:amp;)?)?idAto=(\d+)")
+_RE_TD = re.compile(r"<td[^>]*>(.*?)</td>", re.S)
+_RE_TOTAL_PAGINAS = re.compile(r"de\s+(\d+)\s*<i[^>]*btnProximaPagina2", re.S)
+
+
+def _limpar_celula(td_html: str) -> str:
+    """Comentários fora, <br> vira quebra de linha, tags fora, entidades decodificadas."""
+    sem_comentarios = re.sub(r"<!--.*?-->", "", td_html, flags=re.S)
+    com_quebras = re.sub(r"<br\s*/?>", "\n", sem_comentarios, flags=re.I)
+    sem_tags = re.sub(r"<[^>]+>", "", com_quebras)
+    linhas = [ln.strip() for ln in html_mod.unescape(sem_tags).splitlines()]
+    return "\n".join(ln for ln in linhas if ln)
+
+
+def parse_sijut2_pagina(html: str) -> tuple[list[dict], int | None]:
+    """Extrai os atos de uma página de listagem do SIJUT2.
+
+    Retorna (atos, total_paginas). Cada ato: {id_ato, tipo, numero, orgao_emissor,
+    data_publicacao, ementa}. Colunas da tabela: Tipo | Número | Órgão | Data | Ementa.
+    """
+    atos: list[dict] = []
+    for bloco in _RE_LINHA.findall(html):
+        # idAto vem ANTES de remover comentários: no HTML real ele só aparece dentro
+        # dos <!-- <a href='link.action?idAto=N'> --> comentados.
+        m_id = _RE_ID_ATO.search(bloco)
+        # Comentários também contêm <td> duplicados — remover antes de parsear células,
+        # senão as colunas deslocam.
+        bloco_sem_comentarios = re.sub(r"<!--.*?-->", "", bloco, flags=re.S)
+        celulas = [_limpar_celula(td) for td in _RE_TD.findall(bloco_sem_comentarios)]
+        if m_id is None or len(celulas) < 5:
+            continue  # linha de layout/estrutura inesperada — ignora, não inventa
+        atos.append(
+            {
+                "id_ato": m_id.group(1),
+                "tipo": celulas[0].replace("\n", " ").strip(),
+                "numero": celulas[1].replace("\n", " ").strip(),
+                "orgao_emissor": celulas[2].replace("\n", " ").strip(),
+                "data_publicacao": celulas[3].replace("\n", " ").strip(),
+                "ementa": celulas[4].strip(),
+            }
+        )
+    m_total = _RE_TOTAL_PAGINAS.search(html)
+    total = int(m_total.group(1)) if m_total else None
+    return atos, total
+
+
+def _ato_para_unidade(ato: dict) -> UnidadeNormativa:
+    ano = ato["data_publicacao"][-4:] if len(ato["data_publicacao"]) >= 4 else "s/d"
+    identificador = f"{ato['tipo']} {ato['orgao_emissor']} nº {ato['numero']}/{ano}"
+    return UnidadeNormativa(
+        identificador=identificador,
+        texto=ato["ementa"],
+        fonte_url=SIJUT2_PERMALINK.format(id_ato=ato["id_ato"]),
+    )
+
+
+@register("sijut2_sc")
+def sijut2_sc_loader(fonte: FonteConfig) -> list[UnidadeNormativa]:
+    """Coleta Soluções de Consulta/Divergência da listagem do SIJUT2 (RFB).
+
+    A ementa completa (com o campo oficial 'Assunto:') vem inline na listagem — não é
+    preciso abrir ato por ato. Paginação é GET puro via parâmetro p=N (~100 atos/página).
+
+    params (config):
+      filtro_assunto: só mantém atos cuja linha 'Assunto:' contenha este texto
+                      (ex.: 'Classificação de Mercadorias'). Sem filtro = tudo.
+      max_paginas:    teto de páginas a varrer (para smoke test). Sem teto = todas.
+      delay_s:        pausa de cortesia entre páginas (default 1.0s).
+    """
+    params = fonte.params or {}
+    filtro_assunto = (params.get("filtro_assunto") or "").strip().lower()
+    max_paginas = params.get("max_paginas")
+    delay_s = float(params.get("delay_s", 1.0))
+
+    vistos: set[str] = set()
+    # identificador -> unidade. A listagem vem em data de publicação DECRESCENTE, então a
+    # primeira ocorrência de um identificador é a publicação mais recente — republicações/
+    # retificações antigas do mesmo ato são descartadas para nunca gerar dois "vigentes"
+    # com o mesmo identificador no mesmo lote (invariante do versionamento por vigência).
+    por_identificador: dict[str, UnidadeNormativa] = {}
+    total_paginas: int | None = None
+    pagina = 1
+
+    with httpx.Client(timeout=120, follow_redirects=True, headers=_UA) as client:
+        while True:
+            url = re.sub(r"([?&])p=\d+", rf"\g<1>p={pagina}", fonte.fonte_url)
+            resp = client.get(url)
+            resp.raise_for_status()
+            atos, total = parse_sijut2_pagina(resp.text)
+            if total_paginas is None and total is not None:
+                total_paginas = total
+            if not atos:
+                break  # página vazia = fim (defensivo, mesmo se total não foi lido)
+
+            for ato in atos:
+                if ato["id_ato"] in vistos:
+                    continue  # dedupe: listagem pode deslizar entre fetches
+                vistos.add(ato["id_ato"])
+                if filtro_assunto:
+                    assunto = ato["ementa"].splitlines()[0].lower() if ato["ementa"] else ""
+                    if filtro_assunto not in assunto:
+                        continue
+                unidade = _ato_para_unidade(ato)
+                por_identificador.setdefault(unidade.identificador, unidade)
+
+            limite = min(x for x in (total_paginas, max_paginas) if x is not None) \
+                if (total_paginas or max_paginas) else None
+            if pagina % 25 == 0:
+                print(f"  [sijut2] página {pagina}/{limite or '?'} — {len(por_identificador)} atos no filtro até aqui", flush=True)
+            if limite is not None and pagina >= limite:
+                break
+            pagina += 1
+            time.sleep(delay_s)
+
+    return list(por_identificador.values())
 
 
 @register("rgi_nesh")

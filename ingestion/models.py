@@ -23,6 +23,7 @@ class FonteConfig:
     bloqueado: bool = False    # True = fonte represada (ex.: LPCO de órgão fora do escopo inicial)
     sem_embedding: bool = False  # True = ingerir lexical-only (ex.: NCM, consulta por código exato)
     descricao: str = ""
+    params: dict | None = None  # knobs específicos do loader (ex.: sijut2: max_paginas, filtro_assunto)
 
     @classmethod
     def from_dict(cls, d: dict) -> "FonteConfig":
@@ -39,6 +40,7 @@ class FonteConfig:
             bloqueado=bool(d.get("bloqueado", False)),
             sem_embedding=bool(d.get("sem_embedding", False)),
             descricao=d.get("descricao", ""),
+            params=d.get("params"),
         )
 
 
@@ -48,7 +50,12 @@ class UnidadeNormativa:
 
     `identificador` é a chave estável de versionamento junto de (orgao, tipo_documento).
     Ex.: 'RGI Regra 1', 'TEC NCM 2204.10.10', 'Solução de Consulta COSIT 12/2023'.
+
+    `fonte_url` (opcional) sobrepõe a URL da FonteConfig quando a unidade tem permalink
+    próprio (ex.: cada Solução de Consulta tem seu link.action?idAto=N) — citação mais
+    precisa para o analista do que a URL genérica da página de busca.
     """
 
     identificador: str
     texto: str
+    fonte_url: str | None = None

@@ -38,9 +38,10 @@ mcp-server/.venv/Scripts/python.exe ingestion/pipeline.py ingestion/config/fonte
 
 - **NCM** (`loader: ncm_json`, `sem_embedding: true`): 15.156 códigos indexados, lexical (consulta por código). Health-check da parada programada 01:00–03:00 embutido.
 - **RGI** (`loader: rgi_nesh`): 6 regras extraídas da NESH (IN RFB 2.169/2023), com embedding — busca híbrida verificada. O loader resolve o PDF vigente na página (não assume o nome) e detecta a seção RGI dinamicamente.
+- **Soluções de Consulta** (`loader: sijut2_sc`): coleta as ementas direto da listagem do SIJUT2 (~100 atos/página, paginação GET `p=N`, total lido da página). Filtro client-side pelo campo oficial `Assunto:` (config `params.filtro_assunto`, hoje "Classificação de Mercadorias" — o que o ComexPilot pede). Cada ato entra com **permalink próprio** (`link.action?idAto=N`) como `fonte_url`. Particularidades do HTML tratadas: `idAto` só existe dentro de comentários HTML; comentários duplicam `<td>`s (remover antes de parsear, senão desloca colunas); republicações do mesmo ato (mesmo identificador, `idAto` novo) — mantém-se a publicação mais recente para nunca gerar dois vigentes no mesmo lote.
 
 ## Pendências / próxima fila
 
-- **Loaders `http` a implementar**, nesta ordem: **Soluções de Consulta → Tratamento Administrativo**. (Acordos saiu do escopo Fase 1 — não aciona anuência.)
+- **Tratamento Administrativo** (gov.br/siscomex Plone) — próximo loader da fila. (Acordos saiu do escopo Fase 1 — não aciona anuência.)
 - **Anuência Anvisa/MAPA**: desbloqueadas, mas ainda com loader `http` — falta o coletor da legislação de LPCO por NCM/procedimento.
 - **Fontes bloqueadas (robots.txt)**: NÃO fazer scraping em `siscomex.desenvolvimento.gov.br`. Usar as alternativas em `gov.br/siscomex` (ver comentários em `config/fontes_comex.yaml`).
