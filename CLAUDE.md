@@ -31,22 +31,23 @@ A tese científica original da Fase 1 do PIPE/FAPESP trata roteamento dinâmico 
 | Documento | Escopo real | Observação |
 |---|---|---|
 | `docs/ROADMAP.md` | **Ambas as fases, na ordem correta** | Fonte de verdade sobre sequência — sempre consultar primeiro |
+| `docs/ComexPilot.md` | Fase 1 (Comex) | Levantamento de requisitos bruto do especialista de domínio da trading — fonte primária de fontes normativas a indexar e perguntas de produto já respondidas para a Fase 1, já que não há protótipo anterior a herdar (ver seção 2) |
 | `docs/MCP_SISCOMEX_INTEGRATION.md` | Fase 1 (Comex) | Trata comex como frente ativa, corretamente |
 | `docs/PROJECT_STRUCTURE.md` | Ambas as fases | Estrutura de pastas já contempla `n8n/` (Fase 1) e `app/` (Fase 2) |
 | `docs/PRD.md` | **Fase 2 (MAPA/defensivos)** | Escrito antes da inversão de ordem — os requisitos funcionais valem para a Fase 2, não para o MVP de Comex da Fase 1 |
 | `docs/ARCHITECTURE.md` | **Fase 2 (MAPA/defensivos)**, mas a decisão de stack (LangGraph, pgvector, modelo único) vale como destino final também para quando Comex migrar de n8n para código | Ler junto com a seção 2 deste arquivo |
-| `docs/DATA_SOURCES.md` | **Fase 2 (MAPA/defensivos)** | Para as fontes de Comex (NCM, Tratamento Administrativo, Soluções de Consulta), usar a base já indexada no protótipo FAPESP original, não este documento |
+| `docs/DATA_SOURCES.md` | **Fase 2 (MAPA/defensivos)** | Para as fontes de Comex (NCM, Tratamento Administrativo, Soluções de Consulta), **não existe base já indexada em nenhum protótipo anterior** (ver correção na seção 2) — usar `docs/ComexPilot.md` como mapa de fontes a indexar do zero |
 | `docs/CUSTOMER_JOURNEY.md` | **Fase 2 (MAPA/defensivos)** | A jornada da Fase 1 (Comex-demo) está descrita de forma mais enxuta dentro do próprio `docs/ROADMAP.md` e `docs/MVP_PRODUCT_SPEC.md` |
 | `docs/STAKEHOLDER_VISION.md` | **Fase 2 (MAPA/defensivos)**, mas os princípios de UX/negócio/CIO se aplicam igualmente à Fase 1 | Ler com essa ressalva |
 | `docs/MVP_PRODUCT_SPEC.md` | **Fase 1 (Comex-demo)** | Este é o documento de produto correto para a fase atual |
 | `docs/DOU_SISCOMEX_MONITORING.md` | Ambas — mas na Fase 1 só a parte de Comex/Siscomex é relevante; a parte de defensivos entra na Fase 2 | — |
 | `docs/INFRA_COST_GUARDRAILS.md` | Ambas as fases | Guardrails e stack de custo mínimo valem igualmente |
 
-**Se estiver decidindo o que fazer agora e a orientação parecer ambígua**: siga `docs/ROADMAP.md` → Fase 1 → Comex, com `docs/MVP_PRODUCT_SPEC.md` como referência de produto e `docs/MCP_SISCOMEX_INTEGRATION.md` como referência técnica. Os documentos focados em MAPA/defensivos (`PRD`, `ARCHITECTURE`, `DATA_SOURCES`, `CUSTOMER_JOURNEY`, `STAKEHOLDER_VISION`) só voltam a ser a referência ativa quando o `ROADMAP.md` indicar a transição para a Fase 2.
+**Se estiver decidindo o que fazer agora e a orientação parecer ambígua**: siga `docs/ROADMAP.md` → Fase 1 → Comex, com `docs/ComexPilot.md` como fonte de requisitos, `docs/MVP_PRODUCT_SPEC.md` como referência de produto e `docs/MCP_SISCOMEX_INTEGRATION.md` como referência técnica. Os documentos focados em MAPA/defensivos (`PRD`, `ARCHITECTURE`, `DATA_SOURCES`, `CUSTOMER_JOURNEY`, `STAKEHOLDER_VISION`) só voltam a ser a referência ativa quando o `ROADMAP.md` indicar a transição para a Fase 2.
 
 ## 6. Stack (Fase 1 — Comex)
 
-- Orquestração: n8n (reaproveitando o protótipo do PIPE/FAPESP)
+- Orquestração: n8n (construído do zero nesta fase, guiado por `docs/ComexPilot.md` — não há protótipo anterior a reaproveitar, ver seção 2)
 - MCP server: Python, compartilhado entre Fase 1 e Fase 2 (ver `docs/MCP_SISCOMEX_INTEGRATION.md`)
 - Banco: Postgres + pgvector
 - LLM: um único modelo forte (não implementar roteamento multi-modelo)
