@@ -1,0 +1,45 @@
+# Frente 2 — Bases normativas de comex (não dependem da escolha de órgão anuente).
+# Fontes mapeadas em docs/ComexPilot.md. Cada bloco é uma fonte; adicionar uma nova
+# é acrescentar um bloco aqui, não escrever código.
+#
+# loader 'file': texto normativo já coletado e VERIFICADO, salvo como JSON em ingestion/seeds/.
+# loader 'http': ainda stub — buscar+parsear fonte oficial exige verificação humana antes de indexar.
+#
+# NOTA: as tags de `orgao` abaixo são provisórias (autoridade da fonte) e devem ser
+# conferidas com o especialista de domínio — não são órgãos anuentes, são a origem da base.
+
+fontes:
+  - orgao: CAMEX
+    tipo_documento: TEC
+    descricao: "Tarifa Externa Comum — NCMs e alíquotas"
+    fonte_url: "https://www.gov.br/mdic/pt-br/assuntos/camex/estrategia-comercial/tarifas/tarifa-externa-comum/tarifa-externa-comum-1"
+    loader: http   # coletar planilha oficial (Excel/Word), converter em unidades por NCM, verificar, migrar para 'file'
+    bloqueado: false
+
+  - orgao: RFB
+    tipo_documento: RGI
+    descricao: "Regras Gerais de Interpretação do Sistema Harmonizado"
+    fonte_url: "https://www.gov.br/receitafederal/pt-br/assuntos/aduana-e-comercio-exterior/classificacao-fiscal-de-mercadorias"
+    loader: http
+    bloqueado: false
+
+  - orgao: RFB
+    tipo_documento: solucao_consulta
+    descricao: "Soluções de Consulta / ementas CECLAM (NCM sugerida pela RFB)"
+    fonte_url: "https://www.gov.br/receitafederal/pt-br/assuntos/aduana-e-comercio-exterior/classificacao-fiscal-de-mercadorias"
+    loader: http
+    bloqueado: false
+
+  - orgao: SISCOMEX
+    tipo_documento: tratamento_administrativo
+    descricao: "Tratamento Administrativo na Importação por NCM"
+    fonte_url: "https://www.gov.br/siscomex/pt-br/informacoes/tratamento-administrativos/tratamento-administrativo-na-importacao"
+    loader: http
+    bloqueado: false
+
+  - orgao: MDIC
+    tipo_documento: acordo_comercial
+    descricao: "Acordos comerciais vigentes por país/bloco"
+    fonte_url: "https://www.gov.br/siscomex/pt-br/acordos-comerciais/acordos-comerciais"
+    loader: http
+    bloqueado: false

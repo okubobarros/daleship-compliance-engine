@@ -85,14 +85,30 @@ daleship-compliance-engine/
 │   ├── requirements.txt
 │   └── README.md
 │
+├── ingestion/                      # Pipeline genérico de ingestão normativa (compartilhado Fase 1 e Fase 2)
+│   ├── config/                     # fontes descritas em YAML, parametrizadas por órgão
+│   │   ├── fontes_comex.yaml       # Frente 2: TEC/NCM, RGI, Soluções de Consulta, Trat. Admin, Acordos
+│   │   ├── fontes_anuencia.yaml    # LPCO por órgão (Anvisa/MAPA no escopo inicial, demais bloqueados)
+│   │   └── fontes_teste.yaml       # teste de fumaça (dado sintético)
+│   ├── seeds/                      # texto normativo já coletado e VERIFICADO (JSON), consumido pelo loader 'file'
+│   ├── loaders.py                  # loaders plugáveis (file / http-stub)
+│   ├── pipeline.py                 # orquestrador: config -> loader -> upsert versionado em `normas`
+│   ├── models.py
+│   ├── requirements.txt
+│   └── README.md
+│
 ├── infra/
-│   ├── docker-compose.yml          # Postgres + pgvector local, um comando sobe tudo
+│   ├── schema_fase1.sql            # schema Comex (adaptado de ARCHITECTURE.md, sem tabela Agrofit)
+│   ├── apply_schema.py             # aplica o schema no Supabase e verifica tabelas + pgvector
+│   ├── docker-compose.yml          # (futuro) Postgres + pgvector local, um comando sobe tudo
 │   └── github-actions/
-│       └── ingest-dou.yml          # roda o monitoramento do DOU de graça, agendado
+│       └── ingest-dou.yml          # (futuro) roda o monitoramento do DOU de graça, agendado
 │
 └── scripts/
-    └── setup_local_dev.sh          # um script só para preparar o ambiente do zero
+    └── setup_local_dev.sh          # (futuro) um script só para preparar o ambiente do zero
 ```
+
+> Nota: `ingestion/` no topo é compartilhado (popula a tabela `normas` usada já na Fase 1). O `app/ingestion/` listado dentro de `app/` acima é o destino Fase 2 para os robôs específicos de defensivos (Agrofit, DOU) — a lógica genérica de versionamento/provenance mora no `ingestion/` de topo e é reaproveitada.
 
 ## Por que essa organização (explicação sem jargão)
 

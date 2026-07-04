@@ -1,0 +1,6 @@
+[
+  {
+    "identificador": "TESTE-SMOKE-001",
+    "texto": "REGISTRO SINTÉTICO DE TESTE DO PIPELINE DE INGESTÃO. NÃO É NORMA REAL. Serve apenas para validar escrita, versionamento e recuperação end-to-end contra o banco. Deve ser removido após o teste de fumaça."
+  }
+]

@@ -1,0 +1,112 @@
+{
+  "name": "comex_conciliacao",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a1000000-0000-4000-8000-000000000001",
+      "name": "Início Manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {},
+      "id": "a1000000-0000-4000-8000-000000000002",
+      "name": "Receber Documentos (Invoice, Packing List, B/L)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [440, 300],
+      "notes": "Placeholder: upload dos 3 documentos. Aceitar PDF/imagem/Excel como estão (fricção mínima)."
+    },
+    {
+      "parameters": {},
+      "id": "a1000000-0000-4000-8000-000000000003",
+      "name": "Extração (documento -> JSON)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "notes": "Placeholder para o nó de IA de extração. A saída DEVE ser validada por schema (Pydantic-equivalente) antes de seguir — Guardrail 2 do INFRA_COST_GUARDRAILS.md."
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Nó de CÓDIGO (determinístico), não nó de IA — conciliação Invoice x Packing List x B/L.\n// Compara campos-chave entre os três documentos e emite divergências estruturadas.\n// Esqueleto: preencher com as regras reais de conciliação na Semana 2.\nconst dados = $input.first().json;\nconst divergencias = [];\n// TODO Semana 2: comparar quantidade, peso, valor, NCM, partes entre invoice/packingList/bl.\nreturn [{ json: { divergencias, origem: dados } }];"
+      },
+      "id": "a1000000-0000-4000-8000-000000000004",
+      "name": "Conciliação Invoice x Packing List x B/L",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [920, 300],
+      "notes": "Determinístico. ROADMAP Semana 2."
+    },
+    {
+      "parameters": {},
+      "id": "a1000000-0000-4000-8000-000000000005",
+      "name": "Verificação de Anuência (LPCO)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1160, 300],
+      "notes": "BLOQUEADO até confirmação do perfil de mercadoria do Bonano (escopo: Anvisa + MAPA). Consulta a norma via MCP tool buscar_norma_regulatoria."
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Nó de CÓDIGO (não IA) — Guardrail 1 (grounding obrigatório) do INFRA_COST_GUARDRAILS.md.\n// Descarta qualquer apontamento cuja citação não tenha norma.id rastreável na base.\nconst apontamentos = ($input.first().json.apontamentos) || [];\nconst validos = [];\nfor (const a of apontamentos) {\n  if (a.norma_citada_id) {\n    validos.push(a);\n  } else {\n    validos.push({ ...a, descricao: 'sem base normativa localizada', norma_citada_id: null, bloqueado_por_grounding: true });\n  }\n}\nreturn [{ json: { apontamentos: validos } }];"
+      },
+      "id": "a1000000-0000-4000-8000-000000000006",
+      "name": "Checagem de Grounding (código, não IA)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1400, 300],
+      "notes": "Nunca deixar passar citação sem norma.id. CLAUDE.md §4.1."
+    },
+    {
+      "parameters": {},
+      "id": "a1000000-0000-4000-8000-000000000007",
+      "name": "Pausa: Revisão Humana",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1640, 300],
+      "notes": "Placeholder do ponto de aprovação humana (Wait/approval). Nenhum resultado é final antes disso — CLAUDE.md §4.2."
+    },
+    {
+      "parameters": {},
+      "id": "a1000000-0000-4000-8000-000000000008",
+      "name": "Registro append-only + Log Auditoria",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1880, 300],
+      "notes": "Grava correção estruturada + evento no Postgres via MCP (INSERT only, nunca UPDATE/DELETE em log). CLAUDE.md §4.3."
+    }
+  ],
+  "connections": {
+    "Início Manual": {
+      "main": [[{ "node": "Receber Documentos (Invoice, Packing List, B/L)", "type": "main", "index": 0 }]]
+    },
+    "Receber Documentos (Invoice, Packing List, B/L)": {
+      "main": [[{ "node": "Extração (documento -> JSON)", "type": "main", "index": 0 }]]
+    },
+    "Extração (documento -> JSON)": {
+      "main": [[{ "node": "Conciliação Invoice x Packing List x B/L", "type": "main", "index": 0 }]]
+    },
+    "Conciliação Invoice x Packing List x B/L": {
+      "main": [[{ "node": "Verificação de Anuência (LPCO)", "type": "main", "index": 0 }]]
+    },
+    "Verificação de Anuência (LPCO)": {
+      "main": [[{ "node": "Checagem de Grounding (código, não IA)", "type": "main", "index": 0 }]]
+    },
+    "Checagem de Grounding (código, não IA)": {
+      "main": [[{ "node": "Pausa: Revisão Humana", "type": "main", "index": 0 }]]
+    },
+    "Pausa: Revisão Humana": {
+      "main": [[{ "node": "Registro append-only + Log Auditoria", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "00000000-0000-4000-8000-00000000000a",
+  "meta": {
+    "templateid": "daleship-comex-conciliacao-skeleton"
+  },
+  "tags": []
+}

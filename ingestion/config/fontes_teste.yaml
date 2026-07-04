@@ -1,0 +1,11 @@
+# Config de teste de fumaça — prova o pipeline ponta a ponta com dado SINTÉTICO.
+# Não indexa norma real. Usa o loader 'file' com o fixture claramente marcado como teste.
+fontes:
+  - orgao: TESTE
+    tipo_documento: smoke
+    descricao: "Teste de fumaça do pipeline — remover a linha depois"
+    fonte_url: "https://exemplo.invalido/teste"
+    loader: file
+    caminho: smoke_teste.json
+    data_vigencia_inicio: "2026-07-04"
+    bloqueado: false

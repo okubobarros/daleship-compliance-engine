@@ -1,0 +1,62 @@
+# Frente 1 (represada) — Normas de anuência (LPCO) por órgão anuente.
+#
+# Escopo inicial = 2 órgãos (Anvisa + MAPA), como placeholder até o Bonano confirmar o
+# perfil de mercadoria da trading. Decisão de disciplina de validação (golden eval set +
+# checagem de grounding com poucos órgãos primeiro), não limitação técnica.
+#
+# Todos marcados bloqueado: true até:
+#   - Anvisa/MAPA: confirmação do perfil de mercadoria + coleta da legislação específica de LPCO.
+#   - Demais órgãos: entram DEPOIS, e a adição é só trocar bloqueado -> false e apontar o loader/fonte.
+#     Isso é exatamente o ponto do pipeline genérico: novo órgão = nova config, não reescrita.
+
+fontes:
+  - orgao: ANVISA
+    tipo_documento: LPCO
+    descricao: "Legislação de anuência Anvisa por NCM/procedimento — aguardando perfil de mercadoria do Bonano"
+    fonte_url: "https://www.gov.br/anvisa/pt-br"
+    loader: http
+    bloqueado: true
+
+  - orgao: MAPA
+    tipo_documento: LPCO
+    descricao: "Legislação de anuência MAPA por NCM/procedimento — aguardando perfil de mercadoria do Bonano"
+    fonte_url: "https://www.gov.br/agricultura/pt-br"
+    loader: http
+    bloqueado: true
+
+  # --- Órgãos fora do escopo inicial (entram na Fase 1 tardia / Fase 2). ---
+  # Mantidos aqui para deixar explícito que expandir = destravar config, não recodar.
+  - orgao: INMETRO
+    tipo_documento: LPCO
+    descricao: "Fora do escopo inicial (2 órgãos). Destravar quando o padrão estiver validado."
+    fonte_url: "https://www.gov.br/inmetro/pt-br"
+    loader: http
+    bloqueado: true
+
+  - orgao: IBAMA
+    tipo_documento: LPCO
+    descricao: "Fora do escopo inicial (2 órgãos)."
+    fonte_url: "https://www.gov.br/ibama/pt-br"
+    loader: http
+    bloqueado: true
+
+  - orgao: ANATEL
+    tipo_documento: LPCO
+    descricao: "Fora do escopo inicial (2 órgãos)."
+    fonte_url: "https://www.gov.br/anatel/pt-br"
+    loader: http
+    bloqueado: true
+
+  - orgao: ANP
+    tipo_documento: LPCO
+    descricao: "Fora do escopo inicial (2 órgãos)."
+    fonte_url: "https://www.gov.br/anp/pt-br"
+    loader: http
+    bloqueado: true
+
+  - orgao: EXERCITO
+    tipo_documento: LPCO
+    descricao: "Fora do escopo inicial (2 órgãos)."
+    fonte_url: "https://www.gov.br/defesa/pt-br/assuntos/exercito"
+    loader: http
+    bloqueado: true
