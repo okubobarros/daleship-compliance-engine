@@ -23,7 +23,10 @@ daleship-compliance-engine/
 │   ├── STAKEHOLDER_VISION.md
 │   ├── DOU_SISCOMEX_MONITORING.md
 │   ├── INFRA_COST_GUARDRAILS.md
-│   └── MCP_SISCOMEX_INTEGRATION.md
+│   ├── MCP_SISCOMEX_INTEGRATION.md
+│   ├── MVP_PRODUCT_SPEC.md
+│   ├── PROJECT_STRUCTURE.md
+│   └── ComexPilot.md               # levantamento de requisitos bruto do especialista de domínio da trading
 │
 ├── n8n/                            # FASE 1 — demonstração de Comex
 │   ├── workflows/
@@ -96,7 +99,7 @@ daleship-compliance-engine/
 Pensem nas quatro pastas principais como quatro "departamentos" da empresa:
 
 - **`docs/`** é a sala de reuniões — onde ficam as decisões já tomadas, para qualquer pessoa (ou o próprio Claude Code) reler antes de agir.
-- **`n8n/`** é a oficina rápida — onde vocês montam e testam a demonstração de Comex sem precisar escrever muito código, reaproveitando o que já existe do projeto FAPESP.
+- **`n8n/`** é a oficina rápida — onde vocês montam e testam a demonstração de Comex do zero, sem precisar escrever muito código para a integração.
 - **`mcp-server/`** é o balcão de atendimento compartilhado — tanto a oficina rápida (`n8n/`) quanto a fábrica principal (`app/`) batem nesse balcão para consultar norma, consultar Siscomex, etc. Construir isso uma vez e os dois lados usam.
 - **`app/`** é a fábrica principal — o produto de verdade, em código, que vai crescer e durar. É aqui que mora a maior parte do valor de longo prazo da empresa.
 
@@ -104,7 +107,7 @@ Pensem nas quatro pastas principais como quatro "departamentos" da empresa:
 
 | Peça | O que é, em termos simples | Por que essa escolha |
 |---|---|---|
-| **n8n** | Ferramenta visual de automação — você conecta "caixinhas" numa tela em vez de escrever código para tarefas de integração | Vocês já têm experiência com ela do protótipo FAPESP; ganha tempo na Fase 1 |
+| **n8n** | Ferramenta visual de automação — você conecta "caixinhas" numa tela em vez de escrever código para tarefas de integração | Mais rápido para prototipar do zero do que já ir para LangGraph; ganha tempo na Fase 1 |
 | **Python** | A linguagem de programação da parte séria do sistema | Padrão da indústria para IA/agentes; todas as bibliotecas que precisamos (LangGraph, RAG) são em Python |
 | **LangGraph** | Uma biblioteca que organiza "o que a IA faz, em que ordem, com pausa para humano revisar" | É como um fluxograma que vira código — dá controle fino sobre cada etapa do raciocínio |
 | **FastAPI** | Framework para expor o sistema Python como um serviço que outras coisas (site, n8n, apps) podem chamar | Padrão simples e rápido para times pequenos |

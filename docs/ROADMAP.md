@@ -2,7 +2,7 @@
 
 **Referência:** PRD.md, ARCHITECTURE.md, DATA_SOURCES.md, MCP_SISCOMEX_INTEGRATION.md
 
-**Mudança de estratégia (registrada aqui para contexto):** a ordem de exposição ao mercado foi invertida. Fase 1 usa o motor já validado no protótipo FAPESP (extração, explicabilidade, trilha auditável) aplicado ao domínio de Comex, para gerar uma demonstração rápida a uma trading real. Fase 2 é a transição para a vertical MAPA/Bioinsumos, que continua sendo a aposta de negócio principal (ver `Simulacao_Daleship_v2.xlsx` — Comex tem a pior margem estrutural das quatro simulações). **Fase 1 é validação técnica e porta de entrada comercial, não a tese de receita de longo prazo.**
+**Mudança de estratégia (registrada aqui para contexto):** a ordem de exposição ao mercado foi invertida. Fase 1 é o motor de raciocínio (extração, explicabilidade, trilha auditável) construído do zero e aplicado ao domínio de Comex, guiado pelo levantamento de requisitos em `docs/ComexPilot.md`, para gerar uma demonstração rápida a uma trading real. **Não há protótipo n8n do PIPE/FAPESP pronto para reaproveitar** — essa é uma frente paralela e independente, sem nada construído ainda. Fase 2 é a transição para a vertical MAPA/Bioinsumos, que continua sendo a aposta de negócio principal (ver `Simulacao_Daleship_v2.xlsx` — Comex tem a pior margem estrutural das quatro simulações). **Fase 1 é validação técnica e porta de entrada comercial, não a tese de receita de longo prazo.**
 
 ---
 
@@ -10,12 +10,12 @@
 
 Essa pergunta tem resposta diferente por fase, não uma resposta única.
 
-### Fase 1 (Comex-demo): reaproveitar n8n, não reescrever
+### Fase 1 (Comex-demo): n8n para prototipar rápido do zero, não LangGraph ainda
 
-O protótipo da Fase 1 do PIPE já foi construído em n8n (mencionado no projeto original como ferramenta do MVP de custeio preliminar). Reaproveitar isso para a demo de comex ganha tempo real:
+Não existe workflow n8n pronto de nenhum protótipo anterior — a Fase 1 é construída do zero. Mesmo assim, n8n (em vez de já ir direto para LangGraph) ganha tempo real nesse primeiro ciclo:
 
-- **n8n já suporta MCP nativamente** — como cliente (chama servidores MCP externos, incluindo o `MCP_SISCOMEX_INTEGRATION.md` que já especificamos) e, via node comunitário, como servidor (expõe um workflow n8n como ferramenta MCP para outros sistemas consumirem). Isso significa que **o MCP server que já desenhamos não é retrabalho** — ele serve tanto o n8n quanto o código Python do LangGraph, qualquer que seja o orquestrador escolhido.
-- Ganho real de n8n aqui: prototipagem visual rápida, menor fricção para conectar APIs externas (PUCOMEX, DOU) sem escrever cliente HTTP do zero, e reaproveitamento direto do que já existe do protótipo FAPESP.
+- **n8n já suporta MCP nativamente** — como cliente (chama servidores MCP externos, incluindo o `MCP_SISCOMEX_INTEGRATION.md` que já especificamos) e, via node comunitário, como servidor (expõe um workflow n8n como ferramenta MCP para outros sistemas consumirem). Isso significa que **o MCP server que vamos construir não é retrabalho** — ele serve tanto o n8n quanto o código Python do LangGraph, qualquer que seja o orquestrador escolhido.
+- Ganho real de n8n aqui: prototipagem visual rápida e menor fricção para conectar APIs externas (PUCOMEX, DOU) sem escrever cliente HTTP do zero.
 - **Risco a controlar**: os guardrails mais importantes que definimos (`INFRA_COST_GUARDRAILS.md`) — grounding obrigatório, validação de schema antes de mostrar ao usuário, isolamento de `cliente_id` — são mais frágeis de garantir dentro de nós visuais do n8n do que em código testável. **Mitigação**: qualquer nó do n8n que faça verificação de grounding ou validação de saída deve ser um nó de código (Function/Code node), nunca depender só de instrução de prompt dentro de um nó de IA.
 
 ### Fase 2 (MAPA/Bioinsumos): migrar para código (LangGraph), como já decidido em ARCHITECTURE.md
@@ -32,7 +32,7 @@ Tratem o n8n da Fase 1 como **protótipo descartável de front-door**, não como
 
 ---
 
-## FASE 1 — Comex-demo (semanas 1-4, comprimido por reaproveitar o protótipo FAPESP)
+## FASE 1 — Comex-demo (semanas 1-4, escopo estreito construído do zero)
 
 ### Semana 1 — Construção do zero (não há protótipo a reaproveitar)
 

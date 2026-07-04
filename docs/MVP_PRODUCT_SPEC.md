@@ -7,7 +7,7 @@
 
 ## 1. O que dá para construir agora, com honestidade
 
-Com o motor já validado (extração, RAG, explicabilidade, trilha auditável) e reaproveitando o n8n + MCP server já desenhados, é realista entregar:
+Construindo do zero (não há motor nem workflow n8n pré-existentes a reaproveitar — ver correção em `CLAUDE.md` §2), guiados pelo levantamento de requisitos em `docs/ComexPilot.md`, é realista entregar no ciclo de 4 semanas:
 
 - Upload de documentos de um processo de importação (Invoice, Packing List, B/L).
 - Conciliação automática entre esses documentos.
