@@ -27,11 +27,20 @@ VOYAGE_DIM = 1024
 TPM_LIMITE = int(os.environ.get("VOYAGE_TPM", "9000"))          # teto de tokens/60s (margem sob 10K)
 TOKEN_BUDGET_LOTE = int(os.environ.get("VOYAGE_TOKEN_BUDGET_LOTE", "2800"))  # tokens/requisição
 MAX_ITENS_LOTE = int(os.environ.get("VOYAGE_MAX_ITENS_LOTE", "96"))
+# Nunca deixar o orçamento de lote encostar no teto duro de 120K, mesmo se mal configurado.
+TOKEN_BUDGET_LOTE = min(TOKEN_BUDGET_LOTE, 110000)
+
+
+# Teto DURO da Voyage por requisição (não é rate limit — é validação): voyage-law-2
+# recusa lote com >120K tokens (400 TOO_MANY_TOKENS_IN_BATCH). O orçamento de lote fica
+# com folga sob isso, e o estimador é conservador (superestima), porque a tokenização real
+# do texto jurídico PT (números, pontuação) ficou ~13% acima de chars/3 na medição.
+MAX_TOKENS_REQUISICAO = 120000
 
 
 def _tokens_estimados(texto: str) -> int:
-    # Heurística p/ português: ~3 chars/token, com margem.
-    return max(1, len(texto) // 3)
+    # ~2.6 chars/token: levemente conservador (superestima) para não estourar o teto de lote.
+    return max(1, round(len(texto) / 2.6))
 
 
 def _montar_lotes(textos: list[str]) -> list[list[str]]:
