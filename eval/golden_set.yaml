@@ -1,0 +1,56 @@
+# Golden eval set — recuperação da base normativa de comex (Fase 1).
+#
+# Objetivo: calibrar DISTANCIA_MAXIMA (limiar semântico do rag_search) com número real —
+# separar queries NO domínio (devem recuperar a norma certa) de queries FORA (devem
+# retornar "sem base normativa localizada"). As expectativas dos positivos foram ancoradas
+# em conteúdo verificado como presente na base (RGI, Tratamento Administrativo, SCs, NCM).
+#
+# Cada item positivo: espera.tipo_documento + espera.contem (substring que DEVE aparecer no
+# texto/identificador do resultado relevante). Negativos não têm expectativa: o esperado é
+# que NADA seja recuperado dentro do limiar.
+
+positivos:
+  # --- RGI (regras de interpretação) ---
+  - query: "mercadoria importada que chega incompleta ou desmontada, como classificar"
+    espera: { tipo_documento: RGI, contem: "Regra 2" }
+  - query: "o título da seção ou o texto da posição, o que determina a classificação fiscal"
+    espera: { tipo_documento: RGI, contem: "Regra 1" }
+  - query: "classificação de mercadoria nas subposições de uma mesma posição"
+    espera: { tipo_documento: RGI, contem: "Regra 6" }
+  - query: "quando duas posições servem, a posição mais específica prevalece sobre a genérica"
+    espera: { tipo_documento: RGI, contem: "Regra 3" }
+
+  # --- Tratamento Administrativo (anuência na importação) ---
+  - query: "importar medicamentos exige anuência da Anvisa e qual o LPCO"
+    espera: { tipo_documento: tratamento_administrativo, contem: "ANVISA" }
+  - query: "dispositivos médicos importados precisam de controle da Anvisa"
+    espera: { tipo_documento: tratamento_administrativo, contem: "Dispositivos médicos" }
+  - query: "importação de azeite de origem vegetal precisa de controle do MAPA"
+    espera: { tipo_documento: tratamento_administrativo, contem: "MAPA" }
+  - query: "importar agrotóxicos e afins exige autorização do MAPA"
+    espera: { tipo_documento: tratamento_administrativo, contem: "agrotóxicos" }
+  - query: "pneus importados precisam de certificação do Inmetro"
+    espera: { tipo_documento: tratamento_administrativo, contem: "Inmetro" }
+  - query: "peixes ornamentais marinhos importados exigem controle do Ibama"
+    espera: { tipo_documento: tratamento_administrativo, contem: "IBAMA" }
+
+  # --- Soluções de Consulta (precedente de classificação) ---
+  - query: "classificação fiscal de módulo de diodos emissores de luz LED para sinalização"
+    espera: { tipo_documento: solucao_consulta, contem: "8539.51.00" }
+  - query: "classificação de agente orgânico de superfície com ação tensoativa"
+    espera: { tipo_documento: solucao_consulta, contem: "3402.49.00" }
+
+  # --- NCM (consulta por código exato — deve casar por via lexical) ---
+  - query: "2204.10.10"
+    espera: { tipo_documento: NCM, contem: "2204.10.10" }
+  - query: "0101.21.00"
+    espera: { tipo_documento: NCM, contem: "0101.21.00" }
+
+negativos:
+  # Temas genuinamente FORA da base (comex/classificação/anuência): não devem recuperar nada.
+  - query: "como declarar imposto de renda de pessoa física"
+  - query: "alíquota da contribuição previdenciária patronal sobre a folha"
+  - query: "regras de licença maternidade na CLT"
+  - query: "qual a receita de bolo de cenoura com cobertura de chocolate"
+  - query: "horário de funcionamento da prefeitura municipal"
+  - query: "quais estudos preciso para me registrar como microempreendedor individual"

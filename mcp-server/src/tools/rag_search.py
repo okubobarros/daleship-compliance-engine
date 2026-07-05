@@ -19,9 +19,14 @@ K = 5
 # Limiar de distância de cosseno (pgvector `<=>`) acima do qual um vizinho semântico é
 # considerado IRRELEVANTE e descartado — sem isso, a busca vetorial sempre devolve os K
 # mais próximos e uma query fora do domínio "citaria" a norma menos distante (fura o
-# grounding). Calibrado numa amostra pequena (só RGI): no-domínio ≤ ~0.60, fora ≥ ~0.75.
-# PROVISÓRIO — recalibrar com o golden eval set quando a base tiver mais fontes.
-DISTANCIA_MAXIMA = 0.65
+# grounding).
+# CALIBRADO com o golden eval set (eval/run_eval.py) sobre a base real de comex (2026-07-05):
+# positivos no-domínio até dist 0.494, negativos fora do domínio a partir de 0.518 — folga
+# fina (+0.024). 0.51 = ponto médio da folga: 100% no golden set (11/11 positivos recuperados,
+# 6/6 negativos rejeitados) vs 88% no antigo 0.65 (que deixava passar 'bolo de cenoura' 0.518).
+# Como a folga é estreita, favorecemos rejeitar (citação errada > miss). Reavaliar ao crescer
+# o golden set / adicionar fontes.
+DISTANCIA_MAXIMA = 0.51
 
 _COLUNAS = (
     "id, orgao, tipo_documento, identificador, texto, fonte_url, "
