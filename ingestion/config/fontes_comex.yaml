@@ -49,13 +49,17 @@ fontes:
       delay_s: 1.0
     bloqueado: false
 
+  # Tratamento Administrativo de Importação: compilado oficial de anuentes (99 linhas, 1 por
+  # órgão/escopo, incl. ANVISA e MAPA). fonte_url é a PASTA /informacoes/ (fetchável por
+  # httpx; a página /servicos/ dá 404 no client). O loader resolve 'compilado_ta_anuente*.xlsx'
+  # (não assume o ano no nome) e sintetiza cada linha em prosa citável (embedding agrega).
+  # NÃO usar a versão JSF por-NCM em siscomex.desenvolvimento.gov.br (robots.txt).
+  # A tabela grande por-NCM (ta_lpco_att_imp.xlsx, abas por capítulo) fica p/ depois — é lookup.
   - orgao: SISCOMEX
     tipo_documento: tratamento_administrativo
-    descricao: "Tratamento Administrativo na Importação (gov.br/siscomex, Plone — sem bloqueio)"
-    # Fonte primária acessível (NÃO usar a versão JSF em siscomex.desenvolvimento.gov.br):
-    fonte_url: "https://www.gov.br/siscomex/pt-br/servicos/tratamento-administrativo-1/tratamento-administrativo-na-importacao/tratamento-administrativo-na-importacao"
-    # Exportação (complementar): https://www.gov.br/siscomex/pt-br/servicos/tratamento-administrativo-1/tratamento-administrativo-de-exportacao-1/tratamento-administrativo-de-exportacao
-    loader: http
+    descricao: "Tratamento Administrativo de Importação — compilado de anuentes (gov.br/siscomex)"
+    fonte_url: "https://www.gov.br/siscomex/pt-br/informacoes/tratamento-administrativos/tratamento-administrativo-na-importacao/"
+    loader: tratamento_adm_ta
     bloqueado: false
 
 # FORA DO ESCOPO DA FASE 1 (decidido): Acordos Comerciais não acionam LPCO/anuência,

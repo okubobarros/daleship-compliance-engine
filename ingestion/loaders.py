@@ -124,6 +124,98 @@ def ncm_json_loader(fonte: FonteConfig) -> list[UnidadeNormativa]:
     return parse_ncm_payload(payload)
 
 
+# --- Tratamento Administrativo na Importação (compilado de anuentes, gov.br/siscomex) ---
+
+# Rótulo por coluna do compilado_ta_anuente (validado contra o cabeçalho no parse).
+_TA_COLUNAS = {
+    1: "Escopo (produto/condições/modelo LPCO)",
+    2: "Fundamentação legal para atuação na importação",
+    3: "Tipo de controle administrativo",
+    4: "Tipo de LPCO",
+    5: "LPCO demanda catálogo",
+    6: "Validade do LPCO",
+    7: "Tipo de CNPJ no LPCO",
+    8: "LPCO retificável",
+    9: "LPCO com taxa em outro sistema",
+    10: "LPCO com taxa integrada ao PCCE",
+    11: "LPCO prévio ao embarque",
+    12: "Conferência/inspeção do anuente na DUIMP",
+}
+
+
+def resolver_xlsx_por_marcador(html: str, base_url: str, marcador: str) -> str:
+    """Acha, na página/pasta oficial, o link .xlsx cujo href contém `marcador`
+    (ex.: 'compilado_ta_anuente') — não assume o nome exato (o arquivo tem o ano)."""
+    hrefs = re.findall(r'href="([^"]+\.xlsx)"', html, re.I)
+    for href in hrefs:
+        if marcador.lower() in href.lower():
+            return str(httpx.URL(base_url).join(href))
+    raise RuntimeError(f"Nenhum .xlsx contendo '{marcador}' encontrado na página oficial.")
+
+
+def parse_ta_rows(rows: list, filtro_orgaos: list[str] | None = None) -> list[UnidadeNormativa]:
+    """Converte as linhas do compilado de Tratamento Administrativo em unidades citáveis
+    (uma por linha = um tratamento por órgão/escopo). Valida o cabeçalho antes: se a
+    estrutura da planilha mudar, aborta em vez de mis-parsear (grounding)."""
+    if len(rows) < 4:
+        raise RuntimeError("Compilado TA com poucas linhas — estrutura inesperada.")
+    cab = [(str(c).strip().upper() if c else "") for c in rows[1]]
+    if cab[0] != "ÓRGÃO" or "FUNDAMENTAÇÃO LEGAL" not in cab[2]:
+        raise RuntimeError("Cabeçalho do compilado TA mudou — abortar para não mis-parsear.")
+
+    filtro = {o.upper() for o in filtro_orgaos} if filtro_orgaos else None
+    vistos: dict[str, int] = {}
+    unidades: list[UnidadeNormativa] = []
+    for r in rows[3:]:
+        orgao = (str(r[0]).strip() if r[0] is not None else "")
+        escopo = (str(r[1]).strip() if len(r) > 1 and r[1] is not None else "")
+        if not orgao or not escopo:
+            continue
+        if filtro and orgao.upper() not in filtro:
+            continue
+
+        partes = [f"Órgão anuente: {orgao}."]
+        for idx, rotulo in _TA_COLUNAS.items():
+            val = str(r[idx]).strip() if idx < len(r) and r[idx] is not None else ""
+            if val:
+                partes.append(f"{rotulo}: {re.sub(r'\\s+', ' ', val)}.")
+        texto = " ".join(partes)
+
+        base_id = f"Tratamento Administrativo Importação — {orgao}: {re.sub(r'\\s+', ' ', escopo)[:80]}"
+        n = vistos.get(base_id, 0) + 1
+        vistos[base_id] = n
+        ident = base_id if n == 1 else f"{base_id} ({n})"
+        unidades.append(UnidadeNormativa(identificador=ident, texto=texto))
+    return unidades
+
+
+@register("tratamento_adm_ta")
+def tratamento_adm_ta_loader(fonte: FonteConfig) -> list[UnidadeNormativa]:
+    """Coleta o compilado oficial de Tratamento Administrativo de Importação (anuentes).
+
+    fonte_url = a PASTA /informacoes/ que lista o xlsx (fetchável por httpx; a página
+    /servicos/ não é). Resolve o link 'compilado_ta_anuente*.xlsx', baixa e parseia.
+
+    params.filtro_orgaos: lista opcional para restringir órgãos (ex.: ['ANVISA','MAPA'])."""
+    params = fonte.params or {}
+    filtro = params.get("filtro_orgaos")
+    with httpx.Client(timeout=180, follow_redirects=True, headers=_UA) as client:
+        pagina = client.get(fonte.fonte_url)
+        pagina.raise_for_status()
+        xlsx_url = resolver_xlsx_por_marcador(pagina.text, str(pagina.url), "compilado_ta_anuente")
+        resp = client.get(xlsx_url)
+        resp.raise_for_status()
+        conteudo = resp.content
+
+    import openpyxl
+
+    wb = openpyxl.load_workbook(io.BytesIO(conteudo), read_only=True, data_only=True)
+    aba = "Planilha1" if "Planilha1" in wb.sheetnames else wb.sheetnames[0]
+    rows = list(wb[aba].iter_rows(values_only=True))
+    wb.close()
+    return parse_ta_rows(rows, filtro)
+
+
 # --- RGI via NESH (Notas Explicativas do Sistema Harmonizado, Receita Federal) ---
 
 def resolver_pdf_nesh(html: str, base_url: str) -> str:

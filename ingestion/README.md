@@ -34,14 +34,24 @@ mcp-server/.venv/Scripts/python.exe ingestion/pipeline.py ingestion/config/fonte
 - A busca é **híbrida** (lexical + semântica combinadas em `rag_search`), nunca uma substituindo a outra. O caminho semântico tem **limiar de distância** (`DISTANCIA_MAXIMA` em `rag_search.py`, provisório 0.65) para não "citar" o vizinho mais próximo quando a query está fora do domínio — recalibrar com o golden eval set.
 - **Rate limit**: o que morde no free tier da Voyage é o **TPM (~10K tokens/min)**, não o RPM. O cliente faz throttle por **janela deslizante de TPM** (`_LimitadorTPM`), então qualquer carga completa sem 429 — só mais devagar. No free tier, ~2,4M tokens (todas as Soluções de Consulta) levam ~4h; com billing (env `VOYAGE_TPM`/`VOYAGE_TOKEN_BUDGET_LOTE` altos) cai para minutos. Fontes de consulta por código exato (NCM) usam `sem_embedding: true` (lexical, sem gastar Voyage); embedding fica reservado a normas em prosa, onde a semântica agrega.
 
-## Estado da base (Frente 2)
+## Estado da base (Frente 2) — 2026-07-05
 
-- **NCM** (`loader: ncm_json`, `sem_embedding: true`): 15.156 códigos indexados, lexical (consulta por código). Health-check da parada programada 01:00–03:00 embutido.
-- **RGI** (`loader: rgi_nesh`): 6 regras extraídas da NESH (IN RFB 2.169/2023), com embedding — busca híbrida verificada. O loader resolve o PDF vigente na página (não assume o nome) e detecta a seção RGI dinamicamente.
-- **Soluções de Consulta** (`loader: sijut2_sc`): coleta as ementas direto da listagem do SIJUT2 (~100 atos/página, paginação GET `p=N`, total lido da página). Filtro client-side pelo campo oficial `Assunto:` (config `params.filtro_assunto`, hoje "Classificação de Mercadorias" — o que o ComexPilot pede). Cada ato entra com **permalink próprio** (`link.action?idAto=N`) como `fonte_url`. Particularidades do HTML tratadas: `idAto` só existe dentro de comentários HTML; comentários duplicam `<td>`s (remover antes de parsear, senão desloca colunas); republicações do mesmo ato (mesmo identificador, `idAto` novo) — mantém-se a publicação mais recente para nunca gerar dois vigentes no mesmo lote.
+| Fonte | Loader | Vigentes | Embedding |
+|---|---|---|---|
+| NCM | `ncm_json` (`sem_embedding`) | 15.156 | lexical |
+| Soluções de Consulta | `sijut2_sc` | 5.735 | híbrido |
+| Tratamento Administrativo (anuentes) | `tratamento_adm_ta` | 99 | híbrido |
+| RGI | `rgi_nesh` | 6 | híbrido |
+
+- **NCM** (`ncm_json`): consulta por código. Health-check da parada programada 01:00–03:00 embutido.
+- **RGI** (`rgi_nesh`): 6 regras da NESH (IN RFB 2.169/2023). Resolve o PDF vigente na página (não assume o nome) e detecta a seção RGI dinamicamente.
+- **Soluções de Consulta** (`sijut2_sc`): ementas da listagem do SIJUT2 (~100 atos/pág, paginação GET `p=N`, total lido da página). Filtro pelo campo oficial `Assunto:` (`params.filtro_assunto`). Permalink por ato (`link.action?idAto=N`). Quirks do HTML: `idAto` só em comentários; comentários duplicam `<td>` (remover antes de parsear); republicações mantêm a publicação mais recente (sem dois vigentes por identificador).
+- **Tratamento Administrativo** (`tratamento_adm_ta`): baixa o **compilado oficial de anuentes** (XLSX) da pasta `/informacoes/` (a `/servicos/` dá 404 no httpx). Resolve `compilado_ta_anuente*.xlsx` (não assume o ano), valida o cabeçalho (aborta se a planilha mudar) e sintetiza cada linha em prosa citável (inclui ANVISA e MAPA). `params.filtro_orgaos` restringe. A tabela grande por-NCM (`ta_lpco_att_imp.xlsx`) fica p/ depois — é lookup.
 
 ## Pendências / próxima fila
 
-- **Tratamento Administrativo** (gov.br/siscomex Plone) — próximo loader da fila. (Acordos saiu do escopo Fase 1 — não aciona anuência.)
+- **Anvisa/MAPA — legislação de LPCO** (`fontes_anuencia.yaml`, desbloqueadas, ainda `loader: http` stub).
+- **Tabela por-NCM** de tratamento administrativo (`ta_lpco_att_imp.xlsx`), se necessário — lookup lexical.
+- (Acordos saiu do escopo Fase 1 — não aciona anuência.)
 - **Anuência Anvisa/MAPA**: desbloqueadas, mas ainda com loader `http` — falta o coletor da legislação de LPCO por NCM/procedimento.
 - **Fontes bloqueadas (robots.txt)**: NÃO fazer scraping em `siscomex.desenvolvimento.gov.br`. Usar as alternativas em `gov.br/siscomex` (ver comentários em `config/fontes_comex.yaml`).
