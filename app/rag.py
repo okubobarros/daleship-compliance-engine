@@ -135,6 +135,24 @@ def anuencia_por_ncm(codigo: str) -> dict | None:
     return None
 
 
+def icms_por_uf(uf: str) -> dict | None:
+    """ICMS/AFRMM/taxa MM por UF (snapshot de referência mais recente)."""
+    with psycopg2.connect(DATABASE_URL) as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        cur.execute(
+            "SELECT uf, estado, icms, afrmm, taxa_utilizacao_mm FROM icms_uf WHERE uf = %s "
+            "AND data_referencia = (SELECT max(data_referencia) FROM icms_uf) LIMIT 1", (uf.upper(),))
+        row = cur.fetchone()
+        return dict(row) if row else None
+
+
+def ufs_disponiveis() -> list[dict]:
+    with psycopg2.connect(DATABASE_URL) as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        cur.execute(
+            "SELECT uf, estado FROM icms_uf WHERE data_referencia = "
+            "(SELECT max(data_referencia) FROM icms_uf) ORDER BY estado")
+        return [dict(r) for r in cur.fetchall()]
+
+
 def tributos_por_ncm(codigo: str) -> dict | None:
     """Alíquotas de importação por NCM (camada Tributos, snapshot de referência mais recente).
     Retorna II/IPI/PIS/COFINS + flags (CIDE, antidumping) + provenance para citação. None = NCM

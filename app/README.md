@@ -4,7 +4,14 @@ UI mínima (Streamlit) ligada ao RAG calibrado (20.996 unidades, limiar 0.51) e 
 conciliação que espelha o `n8n/workflows/comex_conciliacao.json`. Sem polimento visual — só
 a paleta e a fonte Poppins como CSS leve.
 
-## Telas (MVP_PRODUCT_SPEC.md)
+## Estrutura SaaS (dashboard de features)
+
+O menu lateral lista **features** (módulos do produto). Adicionar um produto = novo item em
+`FEATURES` (ui.py), sem reescrever a navegação. Features hoje:
+- **Conferência de processo** — o fluxo de dossiê (upload → extração → conciliação → apontamentos → revisão → trilha).
+- **Custo de importação (CTI)** — `cti.py` (cálculo puro, testável): descrição/NCM → classificação (`rag.sugerir_ncm`) → alíquotas (`rag.tributos_por_ncm`, auto-preenchidas e editáveis) → ICMS por UF (`rag.icms_por_uf`) → câmbio/frete/seguro → detalhamento CIF/impostos/ICMS(por dentro)/despesas + custo unitário. Estimativa, sempre "verifique". Reaproveita a lógica do fluxo n8n `custos CTI` sobre a base LOCAL (sem Perplexity/Google).
+
+## Telas da feature "Conferência" (MVP_PRODUCT_SPEC.md)
 
 1. **Login simples** (usuário/senha do time da trading; sem registro público).
 2. **Lista de processos**.
