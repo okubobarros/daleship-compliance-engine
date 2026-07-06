@@ -33,6 +33,7 @@ Credenciais: `APP_USERS="usuario:senha,..."` no `.env`; sem isso, usuário de de
 - `rag.py` — busca híbrida **síncrona** (reusa o embedder e o limiar `grounding.DISTANCIA_MAXIMA`). Anuência é
   **lexical pelo código NCM** no compilado de TA (cita o órgão anuente exato ou abstém — nunca aponta órgão errado).
 - `db.py` — persistência (dossiê, documentos, apontamentos, correções) + log **append-only**.
+- `regras_regulatorias.py` + `.yaml` — **flags regulatórios por palavra-chave** (call Bonano): "wi-fi → verificar ANATEL", "carregador → Inmetro", "termômetro → ANVISA". Config-driven (adicionar regra = novo bloco no YAML). Casa por fronteira de palavra + sem acento (evita 'raçao' dentro de 'coraçao'), agrega por regra, e cita o Tratamento Administrativo do órgão. Sempre "verificar", nunca afirma.
 
 ## Limitações conhecidas (honestas para a demo)
 

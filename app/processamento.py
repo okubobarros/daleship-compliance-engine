@@ -18,6 +18,7 @@ import db
 import extracao
 import llm_extracao
 import rag
+import regras_regulatorias
 
 
 def _valor(campos: dict, chave: str) -> str | None:
@@ -49,6 +50,26 @@ def _orgao_anuente(identificador: str) -> str:
     if "—" in identificador and ":" in identificador:
         return identificador.split("—", 1)[1].split(":", 1)[0].strip()
     return "órgão anuente"
+
+
+def _flags_regulatorios(dossie_id: str, itens: list[dict]) -> None:
+    """Dor nº 4 (Bonano): flag regulatório por palavra-chave, AGREGADO por regra (não um por
+    item — invoice tem milhares). Cita o Tratamento Administrativo do órgão como referência."""
+    por_regra: dict[str, dict] = {}
+    for item in itens:
+        rotulo = item.get("codigo") or (item.get("descricao", "")[:30])
+        for regra in regras_regulatorias.avaliar(item.get("descricao", "")):
+            acc = por_regra.setdefault(regra["nome"], {"regra": regra, "itens": []})
+            if rotulo and rotulo not in acc["itens"]:
+                acc["itens"].append(rotulo)
+    for nome, acc in por_regra.items():
+        regra = acc["regra"]
+        norma = rag.tratamento_por_orgao(regra["orgao"])
+        itens_txt = ", ".join(acc["itens"][:20])
+        db.inserir_apontamento(
+            dossie_id, "regulatorio", regra.get("severidade", "atencao"), regra["orgao"],
+            f"{regra['exigencia']}. Itens: {itens_txt}.",
+            norma["id"] if norma else None)
 
 
 def _extrair_documento(papel: str, arq: dict) -> dict:
@@ -168,6 +189,10 @@ def processar_dossie(cliente_id: str, referencia: str, arquivos: dict) -> str:
             dossie_id, "classificacao", "atencao", "-",
             "Nenhum NCM detectado nos documentos — revisar extração antes de submeter.", None)
 
+    # --- Flags regulatórios por palavra-chave (wi-fi → ANATEL etc.) ---
+    itens_todos = [it for d in docs_meta for it in (d["dados_extraidos"].get("itens") or [])]
+    _flags_regulatorios(dossie_id, itens_todos)
+
     # --- INTERRUPT: revisão humana obrigatória ---
     db.atualizar_status(dossie_id, "revisao_humana")
     _log(dossie_id, "processamento_concluido", {"status": "revisao_humana"})
@@ -264,6 +289,9 @@ def processar_ivpl(cliente_id: str, referencia: str, arq: dict) -> str:
         db.inserir_apontamento(dossie_id, "classificacao", "info", "-",
             f"{len(sem_precedente)} item(ns) sem precedente automático — classificar manualmente: "
             f"{', '.join(sem_precedente[:20])}.", None)
+
+    # --- Flags regulatórios por palavra-chave (wi-fi → ANATEL etc.) ---
+    _flags_regulatorios(dossie_id, itens)
 
     db.atualizar_status(dossie_id, "revisao_humana")
     _log(dossie_id, "processamento_concluido", {"status": "revisao_humana", "modo": "ivpl_combinado"})

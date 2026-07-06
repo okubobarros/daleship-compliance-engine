@@ -1,0 +1,49 @@
+# Regras de flag regulatório por palavra-chave na descrição do produto.
+# Ideia (call Bonano): sinalizar exigência POSSÍVEL que talvez não esteja no radar do analista
+# (ex.: "tem wi-fi → verificar homologação ANATEL"). Nunca afirma — é "verificar".
+# Adicionar regra = acrescentar um bloco aqui, sem tocar em código.
+#
+# palavras: casadas sem acento e minúsculas (substring). orgao: casa com o Tratamento
+# Administrativo (ANATEL, ANVISA, MAPA, IBAMA, Inmetro, ANP, ...) para citar a norma do órgão.
+
+regras:
+  - nome: "Radiofrequência / Telecom (ANATEL)"
+    orgao: ANATEL
+    exigencia: "produto com radiofrequência/telecom — verificar necessidade de homologação ANATEL"
+    severidade: atencao
+    palavras: ["wi-fi", "wifi", "wi fi", "wireless", "bluetooth", "radiofrequencia", "transceptor",
+               "roteador", "modem", "smartphone", "celular", "walkie", "radio comunicador", "antena"]
+
+  - nome: "Segurança elétrica (Inmetro)"
+    orgao: Inmetro
+    exigencia: "produto elétrico — verificar certificação compulsória Inmetro"
+    severidade: atencao
+    palavras: ["carregador", "fonte de alimentacao", "adaptador de energia", "bateria", "pilha",
+               "tomada", "plugue", "extensao eletrica", "power bank", "powerbank", "nobreak"]
+
+  - nome: "Brinquedos (Inmetro)"
+    orgao: Inmetro
+    exigencia: "brinquedo — exige certificação compulsória Inmetro"
+    severidade: atencao
+    palavras: ["brinquedo", "boneca", "boneco", "pelucia", "carrinho de brinquedo", "quebra-cabeca"]
+
+  - nome: "Pneus (Inmetro)"
+    orgao: Inmetro
+    exigencia: "pneu — verificar certificação Inmetro"
+    severidade: atencao
+    palavras: ["pneu", "pneumatico"]
+
+  - nome: "Saúde / Higiene / Alimentos (ANVISA)"
+    orgao: ANVISA
+    exigencia: "produto de saúde/higiene/alimento — verificar anuência ANVISA"
+    severidade: atencao
+    palavras: ["medicamento", "cosmetico", "perfume", "protetor solar", "alimento", "suplemento",
+               "termometro", "mascara cirurgica", "seringa", "saneante", "produto de limpeza",
+               "escova de dente", "fralda"]
+
+  - nome: "Agropecuário (MAPA)"
+    orgao: MAPA
+    exigencia: "produto de origem animal/vegetal ou insumo agropecuário — verificar anuência MAPA"
+    severidade: atencao
+    palavras: ["semente", "muda", "racao", "produto veterinario", "agrotoxico", "defensivo",
+               "fertilizante", "produto de origem animal", "produto de origem vegetal", "couro", "madeira"]

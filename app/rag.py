@@ -108,6 +108,20 @@ def anuencia_por_ncm(codigo: str) -> dict | None:
     return None
 
 
+def tratamento_por_orgao(orgao: str) -> dict | None:
+    """Uma norma de Tratamento Administrativo do órgão (para citar como referência no flag
+    regulatório). O anuente está no identificador ('... — ANATEL: ...')."""
+    with psycopg2.connect(DATABASE_URL) as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        cur.execute(
+            "SELECT id, identificador, texto, fonte_url, tipo_documento, orgao "
+            "FROM normas WHERE tipo_documento = 'tratamento_administrativo' "
+            "  AND data_vigencia_fim IS NULL AND identificador ILIKE '%%'||%s||'%%' LIMIT 1",
+            (orgao,),
+        )
+        row = cur.fetchone()
+        return dict(row) if row else None
+
+
 def descricao_ncm(codigo: str) -> str | None:
     with psycopg2.connect(DATABASE_URL) as conn, conn.cursor() as cur:
         cur.execute(
