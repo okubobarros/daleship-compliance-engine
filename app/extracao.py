@@ -89,7 +89,7 @@ def extrair_campos(texto: str) -> dict:
     campos: dict[str, str] = {}
     m_inv = re.search(r"(?:invoice|fatura)\s*(?:n[oº.:]*|number|no\.?)\s*[:#]?\s*([A-Z0-9\-/]{3,})", texto or "", re.I)
     if m_inv:
-        campos["numero_invoice"] = m_inv.group(1).strip()
+        campos["numero"] = m_inv.group(1).strip()
     m_peso = re.search(r"(?:gross\s*weight|peso\s*bruto)\s*[:.]?\s*([\d.,]+)\s*(kg|kgs|k)", texto or "", re.I)
     if m_peso:
         campos["peso_bruto"] = m_peso.group(1).strip()
