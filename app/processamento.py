@@ -217,6 +217,24 @@ def processar_dossie(cliente_id: str, referencia: str, arquivos: dict) -> str:
                 dossie_id, "classificacao", "info", "RFB",
                 f"NCM {ncm}: precedente de classificação da RFB relacionado.", precedente["id"])
 
+        # Atributos DUIMP vinculados ao NCM (dor 'atributos' — call Bonano). Todas as leituras
+        # válidas (múltiplos órgãos/níveis hierárquicos) são apresentadas; nunca colapsa em um
+        # definitivo. Citação grounded na linha de provenance do snapshot oficial.
+        attrs = rag.atributos_por_ncm(ncm)
+        vinculos = attrs["vinculos"]
+        if vinculos:
+            obrig = [v for v in vinculos if v["obrigatorio"]]
+            orgaos = sorted({p.strip() for v in vinculos
+                             for p in (v["orgaos"] or "").split(",") if p.strip()})
+            nomes = ", ".join((v["nome_apresentacao"] or v["nome"])[:38] for v in obrig[:4])
+            db.inserir_apontamento(
+                dossie_id, "atributos", "atencao" if obrig else "info",
+                ", ".join(orgaos[:3]) or "-",
+                f"NCM {ncm}: {len(vinculos)} atributo(s) DUIMP vinculados, {len(obrig)} obrigatório(s)"
+                + (f" (ex.: {nomes})" if nomes else "")
+                + " — verifique o preenchimento no catálogo/DUIMP.",
+                attrs["norma_provenance_id"])
+
     if not ncms:
         db.inserir_apontamento(
             dossie_id, "classificacao", "atencao", "-",

@@ -135,6 +135,44 @@ def anuencia_por_ncm(codigo: str) -> dict | None:
     return None
 
 
+def _prefixos_ncm(codigo: str) -> list[str]:
+    """Prefixos hierárquicos de um NCM para casar vínculos de atributo (capítulo 2 díg →
+    item 8 díg; a fonte também tem níveis 5/6/7)."""
+    digitos = "".join(ch for ch in codigo if ch.isdigit())
+    return [digitos[:n] for n in (2, 4, 5, 6, 7, 8) if len(digitos) >= n]
+
+
+def atributos_por_ncm(codigo: str, modalidade: str = "Importação") -> dict:
+    """Atributos DUIMP exigidos/vinculados a um NCM (dor 'atributos' da call Bonano).
+
+    Casa TODOS os prefixos hierárquicos do código no snapshot de produção mais recente,
+    só vínculos vigentes. Retorna TODAS as leituras válidas (múltiplos órgãos/níveis —
+    nunca colapsa num único definitivo; o analista decide) + a norma de provenance
+    (linha 'atributos_npi' em `normas`) para citação grounded."""
+    prefixos = _prefixos_ncm(codigo)
+    if not prefixos:
+        return {"vinculos": [], "norma_provenance_id": None}
+    with psycopg2.connect(DATABASE_URL) as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        cur.execute(
+            "SELECT v.codigo_atributo, v.ncm_prefixo, v.obrigatorio, v.multivalorado, "
+            "       d.nome, d.nome_apresentacao, d.orgaos, d.forma_preenchimento "
+            "FROM atributos_vinculos v "
+            "LEFT JOIN atributos_definicoes d "
+            "  ON d.codigo = v.codigo_atributo AND d.data_referencia = v.data_referencia "
+            "WHERE v.ncm_prefixo = ANY(%s) AND v.modalidade = %s "
+            "  AND v.data_referencia = (SELECT max(data_referencia) FROM atributos_vinculos) "
+            "  AND (v.vigencia_fim IS NULL OR v.vigencia_fim >= CURRENT_DATE) "
+            "ORDER BY v.obrigatorio DESC, length(v.ncm_prefixo) DESC, v.codigo_atributo",
+            (prefixos, modalidade),
+        )
+        vinculos = [dict(r) for r in cur.fetchall()]
+        cur.execute(
+            "SELECT id FROM normas WHERE tipo_documento = 'atributos_npi' "
+            "AND data_vigencia_fim IS NULL LIMIT 1")
+        row = cur.fetchone()
+    return {"vinculos": vinculos, "norma_provenance_id": row["id"] if row else None}
+
+
 def tratamento_por_orgao(orgao: str) -> dict | None:
     """Uma norma de Tratamento Administrativo do órgão (para citar como referência no flag
     regulatório). O anuente está no identificador ('... — ANATEL: ...')."""
