@@ -1,12 +1,18 @@
-"""Nó 1 (extração) com LLM real — Google Gemini.
+"""Nó 1 (extração) com LLM real — Gemini (primário) + OpenRouter (fallback de redundância).
 
-Extração é o nó mais exposto à variação real de documento; nesta fase de piloto (volume
-pequeno) vale o modelo melhor. Plugável: sem GEMINI_API_KEY, `disponivel()` é False e o
-processamento cai na extração heurística (regex) — o app roda de qualquer jeito.
+Cadeia de provedores (decisão 2026-07-06):
+  1. Google Gemini (gemini-3.5-flash, free tier — SEM billing, por decisão; custo ~zero).
+  2. OpenRouter (fallback quando o Gemini bate rate limit — redundância, NÃO substituto).
+     Exige OPENROUTER_API_KEY no .env; sem a chave, o fallback é pulado.
+  3. None -> o caller cai na extração heurística (regex) e/ou sinaliza a falha.
+  (Hugging Face inference hospedada: NÃO usar em produção — tier gratuito instável demais
+   para o piloto; reservado a experimentação pontual.)
 
-Recebe o TEXTO já extraído (PDF/Excel); imagem sem OCR fica de fora por ora (decisão de
-produto). Enviar o PDF/imagem bruto ao Gemini multimodal é o próximo passo natural quando
-os formatos reais da trading forem confirmados.
+INVOICE GIGANTE (dor "santo graal" da call Bonano — 2.700+ itens): o texto NÃO é mais
+truncado silenciosamente; é dividido em BLOCOS por orçamento de caracteres, cada bloco é
+extraído separadamente e os resultados são mesclados. Falha de bloco é CONTADA e reportada
+(`blocos_falhos`) — extração parcial nunca é silenciosa (lição da Fase 1: parcial silencioso
+virava divergência falsa).
 """
 from __future__ import annotations
 
@@ -22,9 +28,17 @@ from dotenv import load_dotenv
 # Garante o .env carregado independente da ordem de import (não depende de config.py).
 load_dotenv(pathlib.Path(__file__).resolve().parent.parent / ".env")
 
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash")
 _KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 _URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
+
+OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
+_OR_KEY = os.environ.get("OPENROUTER_API_KEY", "").strip()
+_OR_URL = "https://openrouter.ai/api/v1/chat/completions"
+
+# Tamanho de bloco p/ invoice gigante. ~18k chars ≈ bem dentro do contexto dos dois provedores;
+# os testes reduzem via monkeypatch para exercitar a divisão sem texto enorme.
+BLOCO_MAX_CHARS = 18000
 
 _INSTRUCAO = (
     "Você extrai dados estruturados de documentos de comércio exterior (importação): "
@@ -62,16 +76,36 @@ _SCHEMA = {
     },
 }
 
+# Descrição textual do formato p/ provedores sem responseSchema nativo (OpenRouter).
+_FORMATO_JSON = (
+    'Responda APENAS com JSON válido neste formato (sem markdown, sem comentários): '
+    '{"tipo_detectado": str, "tipo_documento_transporte": str|null, "numero_documento": str|null, '
+    '"valor_total": str|null, "moeda": str|null, "peso_bruto_kg": str|null, "volumes": str|null, '
+    '"itens": [{"codigo": str|null, "descricao": str, "ncm": str|null, "quantidade": str|null}]}'
+)
+
 _RE_NCM = re.compile(r"(\d{4})\.?(\d{2})\.?(\d{2})")
 
 
 def disponivel() -> bool:
-    return bool(_KEY)
+    return bool(_KEY or _OR_KEY)
+
+
+# --- Provedor 1: Gemini ---
+
+def _gemini(papel: str, texto: str) -> dict | None:
+    if not _KEY:
+        return None
+    corpo = {
+        "systemInstruction": {"parts": [{"text": _INSTRUCAO}]},
+        "contents": [{"parts": [{"text": f"Documento (papel informado: {papel}):\n{texto}"}]}],
+        "generationConfig": {"responseMimeType": "application/json", "responseSchema": _SCHEMA},
+    }
+    return _post_com_retry(corpo)
 
 
 def _post_com_retry(corpo: dict, tentativas: int = 5) -> dict | None:
-    """POST com backoff em 429 (rate limit do free tier) e 5xx. Respeita retryDelay quando
-    o Gemini o informa. Retorna o JSON parseado do modelo, ou None se esgotar/erro definitivo."""
+    """POST Gemini com backoff em 429/5xx respeitando retryDelay. None = esgotou/definitivo."""
     for tentativa in range(tentativas):
         try:
             resp = httpx.post(_URL, params={"key": _KEY}, json=corpo, timeout=90)
@@ -85,7 +119,7 @@ def _post_com_retry(corpo: dict, tentativas: int = 5) -> dict | None:
             time.sleep(espera)
             continue
         if resp.status_code != 200:
-            return None  # 400/403 etc. — não adianta repetir
+            return None
         try:
             return json.loads(resp.json()["candidates"][0]["content"]["parts"][0]["text"])
         except Exception:
@@ -104,6 +138,58 @@ def _retry_delay(resp: httpx.Response) -> float | None:
     return None
 
 
+# --- Provedor 2: OpenRouter (redundância p/ rate limit do Gemini) ---
+
+def _openrouter(papel: str, texto: str, tentativas: int = 2) -> dict | None:
+    if not _OR_KEY:
+        return None
+    corpo = {
+        "model": OPENROUTER_MODEL,
+        "temperature": 0,
+        "response_format": {"type": "json_object"},
+        "messages": [
+            {"role": "system", "content": f"{_INSTRUCAO} {_FORMATO_JSON}"},
+            {"role": "user", "content": f"Documento (papel informado: {papel}):\n{texto}"},
+        ],
+    }
+    for tentativa in range(tentativas):
+        try:
+            resp = httpx.post(_OR_URL, headers={"Authorization": f"Bearer {_OR_KEY}"},
+                              json=corpo, timeout=120)
+            if resp.status_code == 429:
+                time.sleep(10 * (tentativa + 1))
+                continue
+            resp.raise_for_status()
+            conteudo = resp.json()["choices"][0]["message"]["content"]
+            # alguns modelos embrulham em cerca markdown mesmo com response_format
+            conteudo = re.sub(r"^```(?:json)?\s*|\s*```$", "", conteudo.strip())
+            return json.loads(conteudo)
+        except Exception:
+            if tentativa == tentativas - 1:
+                return None
+            time.sleep(5)
+    return None
+
+
+# --- Divisão em blocos (invoice gigante) e mesclagem ---
+
+def _dividir_em_blocos(texto: str, max_chars: int | None = None) -> list[str]:
+    """Divide por LINHAS respeitando o orçamento de chars — nunca corta item no meio."""
+    limite = max_chars or BLOCO_MAX_CHARS
+    if len(texto) <= limite:
+        return [texto]
+    blocos, atual, tamanho = [], [], 0
+    for linha in texto.splitlines():
+        if atual and tamanho + len(linha) + 1 > limite:
+            blocos.append("\n".join(atual))
+            atual, tamanho = [], 0
+        atual.append(linha)
+        tamanho += len(linha) + 1
+    if atual:
+        blocos.append("\n".join(atual))
+    return blocos
+
+
 def _norm_ncm(valor) -> str | None:
     if not valor:
         return None
@@ -111,19 +197,7 @@ def _norm_ncm(valor) -> str | None:
     return f"{m.group(1)}.{m.group(2)}.{m.group(3)}" if m else None
 
 
-def extrair(papel: str, texto: str) -> dict | None:
-    """Retorna dict normalizado {tipo_transporte, campos, itens} ou None (indisponível/erro)."""
-    if not _KEY or not (texto or "").strip():
-        return None
-    corpo = {
-        "systemInstruction": {"parts": [{"text": _INSTRUCAO}]},
-        "contents": [{"parts": [{"text": f"Documento (papel informado: {papel}):\n{texto[:20000]}"}]}],
-        "generationConfig": {"responseMimeType": "application/json", "responseSchema": _SCHEMA},
-    }
-    bruto = _post_com_retry(corpo)
-    if bruto is None:
-        return None  # falha após retries (rede/quota/JSON) -> caller decide (heurística/nota)
-
+def _normalizar_bruto(bruto: dict) -> dict:
     campos = {
         "numero": bruto.get("numero_documento"),
         "valor_total": bruto.get("valor_total"),
@@ -139,10 +213,50 @@ def extrair(papel: str, texto: str) -> dict | None:
             "codigo": (it.get("codigo") or "").strip() or None,
             "descricao": desc,
             "ncm": _norm_ncm(it.get("ncm")),
-            "quantidade": (it.get("quantidade") or "").strip() or None,
+            "quantidade": (str(it.get("quantidade")).strip() if it.get("quantidade") is not None else None),
         })
     return {
         "tipo_transporte": bruto.get("tipo_documento_transporte"),
         "campos": {k: v for k, v in campos.items() if v},
         "itens": itens,
     }
+
+
+def _mesclar(parciais: list[dict | None]) -> dict:
+    """Mescla resultados por bloco: itens concatenam; campos/tipo = primeiro não-vazio
+    (cabeçalho vive no 1º bloco, totais podem vir no último). Blocos falhos são CONTADOS."""
+    itens: list[dict] = []
+    campos: dict = {}
+    tipo = None
+    falhos = 0
+    for parcial in parciais:
+        if parcial is None:
+            falhos += 1
+            continue
+        itens.extend(parcial["itens"])
+        for k, v in parcial["campos"].items():
+            campos.setdefault(k, v)
+        tipo = tipo or parcial.get("tipo_transporte")
+    return {"tipo_transporte": tipo, "campos": campos, "itens": itens,
+            "blocos_falhos": falhos, "blocos_total": len(parciais)}
+
+
+# --- API pública ---
+
+def extrair(papel: str, texto: str) -> dict | None:
+    """Extrai o documento (em blocos, se gigante) via Gemini -> OpenRouter -> None.
+
+    Retorna {tipo_transporte, campos, itens, blocos_falhos, blocos_total} ou None quando
+    NENHUM bloco pôde ser extraído (caller cai na heurística e/ou sinaliza).
+    blocos_falhos > 0 = extração PARCIAL — o caller DEVE sinalizar (nunca silenciar)."""
+    if not disponivel() or not (texto or "").strip():
+        return None
+    parciais: list[dict | None] = []
+    for bloco in _dividir_em_blocos(texto):
+        bruto = _gemini(papel, bloco)
+        if bruto is None:
+            bruto = _openrouter(papel, bloco)  # redundância: entra quando o Gemini falha
+        parciais.append(_normalizar_bruto(bruto) if bruto is not None else None)
+    if all(p is None for p in parciais):
+        return None
+    return _mesclar(parciais)

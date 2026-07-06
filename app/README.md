@@ -26,8 +26,8 @@ Credenciais: `APP_USERS="usuario:senha,..."` no `.env`; sem isso, usuário de de
 
 ## Backend (espelha os nós do grafo)
 
-- `extracao.py` — Nó 1: texto de PDF/Excel, **detecção automática** do tipo de transporte, NCM (regex robusto),
-  campos de conciliação (heurístico). O Nó 1 "pleno" com LLM é upgrade plugável (quando houver `ANTHROPIC_API_KEY`).
+- `extracao.py` — Nó 1: texto de PDF/Excel (.xls legado incluso), **detecção automática** do tipo de transporte, NCM (regex robusto), campos de conciliação (heurístico como fallback).
+- `llm_extracao.py` — Nó 1 pleno: **Gemini (primário, free tier — decisão: sem billing) → OpenRouter (fallback de redundância p/ rate limit; exige `OPENROUTER_API_KEY`) → heurística**. **Invoice gigante**: texto dividido em blocos (nunca truncado silenciosamente), extraído por bloco e mesclado; bloco falho é CONTADO (`blocos_falhos`) e vira apontamento de "extração parcial" — testado com o doc real dividido e conciliação de 3.000 itens em ~30ms (`test_extracao_blocos.py`).
 - `processamento.py` — orquestra: extração → conciliação (Nó 3) → para cada NCM, anuência + precedente de
   classificação com citação (Nós 2/5) → INTERRUPT (revisão humana) → log.
 - `rag.py` — busca híbrida **síncrona** (reusa o embedder e o limiar `grounding.DISTANCIA_MAXIMA`). Anuência é

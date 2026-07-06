@@ -1,3 +1,11 @@
+> **REGISTRO DE AUTORIZAÇÃO DE USO DE DADO REAL (2026-07-06).** Os documentos reais de
+> operação usados no desenvolvimento/teste do piloto (arquivos IVPL — Invoice + Packing
+> List, ex.: IVPL-Luciana/Paulo/Ronilson) foram fornecidos **com autorização explícita da
+> trading para este uso**, confirmada pelo contato de domínio (Bonano) e registrada aqui a
+> pedido do time em 06/07/2026. Escopo: desenvolvimento e validação do piloto. Tratamento:
+> confidencial (Guardrail 3 — isolamento por cliente; sem uso do dado de um cliente no
+> contexto de outro). Se houver e-mail formalizando, anexar referência a esta nota.
+
 PRODUTOS E SERVIÇOS
 
 Analista IA

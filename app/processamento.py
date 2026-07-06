@@ -246,6 +246,27 @@ def _chave_item(item: dict) -> str:
     return (item.get("codigo") or item.get("descricao") or "")[:40].upper().strip()
 
 
+def conciliar_itens(itens_inv: list[dict], itens_pk: list[dict]) -> list[dict]:
+    """Concilia Invoice × Packing List item a item (por código/descrição): presença e
+    quantidade. Retorna divergências. Função pura — testável em escala (o 'santo graal'
+    do Bonano é exatamente isto em invoices de milhares de itens; dicts O(1) por item)."""
+    divergencias = []
+    pk_por_chave = {_chave_item(i): i for i in itens_pk}
+    for item in itens_inv:
+        par = pk_por_chave.get(_chave_item(item))
+        rotulo = item.get("codigo") or (item.get("descricao") or "")[:30]
+        if not par:
+            divergencias.append({"severidade": "atencao",
+                                 "descricao": f"Item {rotulo} presente na Invoice mas não localizado no Packing List."})
+            continue
+        qi, qp = _num(item.get("quantidade")), _num(par.get("quantidade"))
+        if qi is not None and qp is not None and qi != qp:
+            divergencias.append({"severidade": "critico",
+                                 "descricao": f"Quantidade divergente no item {rotulo}: "
+                                              f"Invoice={item.get('quantidade')} vs Packing List={par.get('quantidade')}."})
+    return divergencias
+
+
 def processar_ivpl(cliente_id: str, referencia: str, arq: dict) -> str:
     """Processa um arquivo COMBINADO Invoice + Packing List (abas separadas) — o formato
     real dos documentos da trading. Sem documento de transporte, sem NCM na origem: o valor
@@ -277,27 +298,24 @@ def processar_ivpl(cliente_id: str, referencia: str, arq: dict) -> str:
     # --- Falha de extração é sinalizada, NUNCA silenciada nem transformada em divergência falsa ---
     llm_on = llm_extracao.disponivel()
     inv_falhou = llm_on and not ext_inv["itens"]      # LLM disponível mas 0 itens = extração falhou
-    pk_falhou = ext_pk is not None and llm_on and not ext_pk["itens"]
     if inv_falhou:
         db.inserir_apontamento(dossie_id, "extracao", "atencao", "-",
             "Não foi possível extrair os itens da Invoice automaticamente (possível limite de "
             "requisições do extrator) — reprocessar o dossiê.", None)
+    # Extração PARCIAL (invoice gigante em blocos: alguns blocos falharam) — itens podem faltar.
+    for rotulo_doc, ext in (("Invoice", ext_inv), ("Packing List", ext_pk or {})):
+        falhos = ext.get("blocos_falhos") or 0
+        if falhos:
+            db.inserir_apontamento(dossie_id, "extracao", "critico", "-",
+                f"Extração PARCIAL do {rotulo_doc}: {falhos} de {ext.get('blocos_total')} bloco(s) "
+                f"falharam — itens podem estar faltando. Reprocessar antes de confiar na conciliação.",
+                None)
 
     # --- Conciliação Invoice × Packing List: só quando AMBAS as abas foram extraídas ---
     if ext_pk and ext_inv["itens"] and ext_pk["itens"]:
-        pk_por_chave = {_chave_item(i): i for i in ext_pk["itens"]}
-        for item in ext_inv["itens"]:
-            par = pk_por_chave.get(_chave_item(item))
-            if not par:
-                db.inserir_apontamento(dossie_id, "divergencia", "atencao", "RFB",
-                    f"Item {item.get('codigo') or item.get('descricao','')[:30]} presente na Invoice "
-                    f"mas não localizado no Packing List.", None)
-                continue
-            qi, qp = _num(item.get("quantidade")), _num(par.get("quantidade"))
-            if qi is not None and qp is not None and qi != qp:
-                db.inserir_apontamento(dossie_id, "divergencia", "critico", "RFB",
-                    f"Quantidade divergente no item {item.get('codigo') or ''}: "
-                    f"Invoice={item.get('quantidade')} vs Packing List={par.get('quantidade')}.", None)
+        for div in conciliar_itens(ext_inv["itens"], ext_pk["itens"]):
+            db.inserir_apontamento(dossie_id, "divergencia", div["severidade"], "RFB",
+                                   div["descricao"], None)
     elif ext_pk and not (ext_inv["itens"] and ext_pk["itens"]):
         db.inserir_apontamento(dossie_id, "extracao", "info", "-",
             "Conciliação Invoice × Packing List não realizada: uma das abas não pôde ser extraída "
