@@ -135,6 +135,27 @@ def anuencia_por_ncm(codigo: str) -> dict | None:
     return None
 
 
+def tributos_por_ncm(codigo: str) -> dict | None:
+    """Alíquotas de importação por NCM (camada Tributos, snapshot de referência mais recente).
+    Retorna II/IPI/PIS/COFINS + flags (CIDE, antidumping) + provenance para citação. None = NCM
+    não encontrado na referência (abstém — não inventa alíquota)."""
+    ncm = codigo.strip()
+    with psycopg2.connect(DATABASE_URL) as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        cur.execute(
+            "SELECT ii, ipi, pis, cofins, cide, antidumping, medidas_compensatorias, data_referencia "
+            "FROM tributos_ncm WHERE ncm = %s "
+            "AND data_referencia = (SELECT max(data_referencia) FROM tributos_ncm) LIMIT 1",
+            (ncm,))
+        row = cur.fetchone()
+        if not row:
+            return None
+        cur.execute("SELECT id FROM normas WHERE tipo_documento='tributos_ref' AND data_vigencia_fim IS NULL LIMIT 1")
+        prov = cur.fetchone()
+    d = dict(row)
+    d["norma_provenance_id"] = prov["id"] if prov else None
+    return d
+
+
 def _prefixos_ncm(codigo: str) -> list[str]:
     """Prefixos hierárquicos de um NCM para casar vínculos de atributo (capítulo 2 díg →
     item 8 díg; a fonte também tem níveis 5/6/7)."""

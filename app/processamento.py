@@ -74,10 +74,17 @@ def _sugerir_classificacao(dossie_id: str, itens: list[dict]) -> None:
         ncm_prov = melhor["identificador"].replace("NCM ", "")
         alt = ", ".join(c["identificador"].replace("NCM ", "") for c in validos[1:3])
         desc_prov = melhor["texto"].split(" — ", 1)[-1][:70]
+        # Alíquotas da NCM provável (camada Tributos) — carga tributária estimada, a verificar.
+        trib = rag.tributos_por_ncm(ncm_prov)
+        trib_txt = ""
+        if trib:
+            trib_txt = (f" Alíquotas (ref.): II {trib['ii']}% · IPI {trib['ipi']}% · "
+                        f"PIS {trib['pis']}% · COFINS {trib['cofins']}%.")
         db.inserir_apontamento(
             dossie_id, "classificacao", "atencao", "RFB",
             f"Item {rotulo} ({item.get('descricao','')[:45]}): NCM provável {ncm_prov} "
-            f"({desc_prov})" + (f"; alternativas {alt}" if alt else "") + " — VERIFIQUE.",
+            f"({desc_prov})" + (f"; alternativas {alt}" if alt else "") + " — VERIFIQUE."
+            + trib_txt,
             melhor["id"])
     if sem_sugestao:
         db.inserir_apontamento(dossie_id, "classificacao", "info", "-",
