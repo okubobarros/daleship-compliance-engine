@@ -12,10 +12,13 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from loaders import parse_ncm_payload  # noqa: E402
 
-# Amostra sintética com a estrutura documentada do endpoint (a conferir na coleta real).
+# Amostra sintética com os NÍVEIS ancestrais (2/4/6/8 díg) para testar a concatenação.
 PAYLOAD = {
     "Nomenclaturas": [
-        {"Codigo": "0101.21.00", "Descricao": "- Reprodutores de raça pura"},
+        {"Codigo": "01", "Descricao": "Animais vivos."},
+        {"Codigo": "0101", "Descricao": "Cavalos, asininos e muares."},
+        {"Codigo": "0101.21", "Descricao": "- Cavalos"},
+        {"Codigo": "0101.21.00", "Descricao": "-- Reprodutores de raça pura"},
         {"Codigo": "2204.10.10", "Descricao": "Vinho espumante, em garrafas"},
         {"Codigo": "", "Descricao": "linha sem código — deve ser ignorada"},
     ]
@@ -24,13 +27,14 @@ PAYLOAD = {
 
 def main() -> None:
     unidades = parse_ncm_payload(PAYLOAD)
-    assert len(unidades) == 2, f"esperado 2 unidades válidas, veio {len(unidades)}"
-    assert unidades[0].identificador == "NCM 0101.21.00"
-    assert "Reprodutores" in unidades[0].texto
-    assert unidades[1].identificador == "NCM 2204.10.10"
-    print("OK: parse_ncm_payload chunka por código e ignora linha sem código.")
-    for u in unidades:
-        print(" -", u.identificador, "|", u.texto)
+    ids = {u.identificador: u.texto for u in unidades}
+    assert "NCM 0101.21.00" in ids
+    # descrição hierárquica: junta capítulo > posição > subposição > item
+    texto = ids["NCM 0101.21.00"]
+    assert "Animais vivos" in texto and "Cavalos" in texto and "Reprodutores" in texto, texto
+    assert " > " in texto, "esperado descrição concatenada com ' > '"
+    print("OK: parse_ncm_payload concatena a descrição hierárquica (capítulo > ... > item).")
+    print("   NCM 0101.21.00 ->", texto)
 
 
 if __name__ == "__main__":

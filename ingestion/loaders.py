@@ -75,25 +75,44 @@ def http_loader(fonte: FonteConfig) -> list[UnidadeNormativa]:
 
 # --- NCM (Portal Único) ---
 
-def parse_ncm_payload(payload: dict) -> list[UnidadeNormativa]:
-    """Transforma o payload JSON da nomenclatura NCM em unidades citáveis.
+def _desc_hierarquica(digitos: str, mapa: dict[str, str]) -> str:
+    """Descrição CONCATENADA da NCM: junta as descrições dos níveis ancestrais (capítulo 2,
+    posição 4, subposição 6, item 8) — igual à versão 'concatenada' oficial. Sem isso, a folha
+    é só 'Outros' e a busca/classificação não funciona (ex.: cobertor caía em NCM de papel)."""
+    partes: list[str] = []
+    for n in (2, 4, 6, 8, 10):
+        pref = digitos[:n]
+        if len(pref) < n:
+            break
+        d = mapa.get(pref)
+        if d and (not partes or d != partes[-1]):
+            partes.append(d)
+    return " > ".join(partes)
 
-    Uma unidade por código de nomenclatura. `identificador` = 'NCM <codigo>'.
-    Estrutura esperada (a CONFERIR contra o payload real na primeira coleta com o
-    portal fora da parada programada): {"Nomenclaturas": [{"Codigo","Descricao",...}]}.
-    """
+
+def parse_ncm_payload(payload: dict) -> list[UnidadeNormativa]:
+    """Transforma o payload JSON da nomenclatura NCM em unidades citáveis, com a descrição
+    HIERÁRQUICA concatenada (não só a folha 'Outros').
+
+    Uma unidade por código. `identificador` = 'NCM <codigo>'. Estrutura:
+    {"Nomenclaturas": [{"Codigo","Descricao",...}]} (todos os níveis 2/4/6/8 díg presentes)."""
     itens = payload.get("Nomenclaturas") or payload.get("nomenclaturas") or []
+    # 1ª passada: mapa digitos->descrição (sem tags) de TODOS os níveis
+    mapa: dict[str, str] = {}
+    for item in itens:
+        cod = re.sub(r"\D", "", item.get("Codigo") or item.get("codigo") or "")
+        d = re.sub(r"<[^>]+>", "", (item.get("Descricao") or item.get("descricao") or "")).strip()
+        if cod:
+            mapa[cod] = d
+    # 2ª passada: unidades com descrição hierárquica
     unidades: list[UnidadeNormativa] = []
     for item in itens:
         codigo = (item.get("Codigo") or item.get("codigo") or "").strip()
-        descricao = (item.get("Descricao") or item.get("descricao") or "").strip()
-        # A fonte traz tags HTML (ex.: <i>champagne</i>) — remover para citação limpa.
-        descricao = re.sub(r"<[^>]+>", "", descricao)
-        if not codigo:
+        digitos = re.sub(r"\D", "", codigo)
+        if not digitos:
             continue
-        unidades.append(
-            UnidadeNormativa(identificador=f"NCM {codigo}", texto=f"{codigo} — {descricao}")
-        )
+        texto = f"{codigo} — {_desc_hierarquica(digitos, mapa)}"
+        unidades.append(UnidadeNormativa(identificador=f"NCM {codigo}", texto=texto))
     return unidades
 
 
