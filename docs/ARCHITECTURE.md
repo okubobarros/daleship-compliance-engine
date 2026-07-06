@@ -74,7 +74,7 @@ CREATE TABLE normas (
     tipo_documento TEXT NOT NULL,     -- 'IN' | 'monografia' | 'resolucao' etc.
     identificador TEXT NOT NULL,      -- ex: 'IN SDA 36/2009'
     texto TEXT NOT NULL,
-    embedding VECTOR(1536),
+    embedding VECTOR(1024),           -- voyage-law-2 (decisão real, ver infra/migrations/0001)
     data_vigencia_inicio DATE NOT NULL,
     data_vigencia_fim DATE,           -- NULL = ainda vigente
     fonte_url TEXT,
