@@ -57,6 +57,31 @@ def buscar_norma(query: str, tipo_documento: str | None = None) -> dict | None:
         return dict(row) if row else None
 
 
+def melhores_precedentes(descricoes: list[str], tipo_documento: str = "solucao_consulta") -> list[dict | None]:
+    """Melhor precedente por descrição de item. Embeda TODAS as descrições numa única chamada
+    Voyage (poupa rate limit) e roda a busca semântica com o limiar calibrado por item.
+    Retorna lista alinhada a `descricoes` (None onde nada passa do limiar)."""
+    emb = get_embedder()
+    if not descricoes or not getattr(emb, "disponivel", False):
+        return [None] * len(descricoes)
+    vetores = asyncio.run(emb.embed(descricoes, input_type="query"))
+    resultados: list[dict | None] = []
+    with psycopg2.connect(DATABASE_URL) as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        for v in vetores:
+            lit = "[" + ",".join(str(x) for x in v) + "]"
+            cur.execute(
+                "SELECT id, identificador, texto, fonte_url, tipo_documento, orgao, "
+                "       embedding <=> %s::vector AS distancia "
+                "FROM normas WHERE data_vigencia_fim IS NULL AND embedding IS NOT NULL "
+                "  AND tipo_documento = %s AND embedding <=> %s::vector < %s "
+                "ORDER BY embedding <=> %s::vector LIMIT 1",
+                (lit, tipo_documento, lit, DISTANCIA_MAXIMA, lit),
+            )
+            row = cur.fetchone()
+            resultados.append(dict(row) if row else None)
+    return resultados
+
+
 def anuencia_por_ncm(codigo: str) -> dict | None:
     """Anuência via busca LEXICAL do código NCM no compilado de Tratamento Administrativo.
 

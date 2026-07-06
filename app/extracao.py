@@ -18,6 +18,34 @@ import re
 
 import openpyxl
 import pdfplumber
+import xlrd
+
+
+def abas_texto(nome: str, mime: str, conteudo: bytes) -> dict[str, str]:
+    """Texto por aba/planilha — chave = nome da aba. Suporta .xlsx (openpyxl) e .xls (xlrd).
+    Documentos reais de comex vêm com Invoice e Packing List em ABAS separadas do mesmo arquivo.
+    Para PDF/imagem retorna {'documento': <texto extraído>} (uma "aba" única)."""
+    nome_l = (nome or "").lower()
+    try:
+        if nome_l.endswith(".xls") and not nome_l.endswith(".xlsx"):
+            wb = xlrd.open_workbook(file_contents=conteudo)
+            out = {}
+            for sh in wb.sheets():
+                linhas = [" ".join(str(sh.cell_value(r, c)) for c in range(sh.ncols))
+                          for r in range(sh.nrows)]
+                out[sh.name] = "\n".join(linhas)
+            return out
+        if nome_l.endswith(".xlsx") or "spreadsheet" in mime:
+            wb = openpyxl.load_workbook(io.BytesIO(conteudo), read_only=True, data_only=True)
+            out = {}
+            for ws in wb.worksheets:
+                out[ws.title] = "\n".join(
+                    " ".join(str(c) for c in row if c is not None) for row in ws.iter_rows(values_only=True))
+            wb.close()
+            return out
+    except Exception as e:
+        return {"documento": f"[falha ao ler planilha: {e}]"}
+    return {"documento": extrair_texto(nome, mime, conteudo)}
 
 # NCM: 8 dígitos, normalmente formatados 0000.00.00 (aceita com/sem pontos).
 _RE_NCM = re.compile(r"\b(\d{4}\.?\d{2}\.?\d{2})\b")
@@ -29,7 +57,11 @@ def extrair_texto(nome: str, mime: str, conteudo: bytes) -> str:
         if nome_l.endswith(".pdf") or "pdf" in mime:
             with pdfplumber.open(io.BytesIO(conteudo)) as pdf:
                 return "\n".join((p.extract_text() or "") for p in pdf.pages[:8])
-        if nome_l.endswith((".xlsx", ".xls")) or "spreadsheet" in mime or "excel" in mime:
+        if nome_l.endswith(".xls") and not nome_l.endswith(".xlsx"):
+            wb = xlrd.open_workbook(file_contents=conteudo)
+            return "\n".join(" ".join(str(sh.cell_value(r, c)) for c in range(sh.ncols))
+                             for sh in wb.sheets() for r in range(sh.nrows))
+        if nome_l.endswith(".xlsx") or "spreadsheet" in mime or "excel" in mime:
             wb = openpyxl.load_workbook(io.BytesIO(conteudo), read_only=True, data_only=True)
             partes = []
             for ws in wb.worksheets:

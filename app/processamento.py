@@ -174,6 +174,102 @@ def processar_dossie(cliente_id: str, referencia: str, arquivos: dict) -> str:
     return dossie_id
 
 
+def _extrair_aba(papel: str, texto: str) -> dict:
+    """Extração de uma aba (Invoice ou Packing List) — LLM se disponível, senão heurística."""
+    dados = llm_extracao.extrair(papel, texto) if llm_extracao.disponivel() else None
+    if dados:
+        return {"campos": dados["campos"], "itens": dados["itens"], "fonte": "llm"}
+    itens = [{"codigo": None, "descricao": extracao.contexto_ncm(texto, n), "ncm": n, "quantidade": None}
+             for n in extracao.extrair_ncms(texto)]
+    return {"campos": extracao.extrair_campos(texto), "itens": itens, "fonte": "heuristica"}
+
+
+def _chave_item(item: dict) -> str:
+    return (item.get("codigo") or item.get("descricao") or "")[:40].upper().strip()
+
+
+def processar_ivpl(cliente_id: str, referencia: str, arq: dict) -> str:
+    """Processa um arquivo COMBINADO Invoice + Packing List (abas separadas) — o formato
+    real dos documentos da trading. Sem documento de transporte, sem NCM na origem: o valor
+    é (1) extração estruturada, (2) conciliação Invoice×Packing List item a item, (3)
+    precedentes de classificação como REFERÊNCIA para o analista (nunca afirma o NCM)."""
+    dossie_id = db.criar_dossie(cliente_id, referencia)
+    abas = extracao.abas_texto(arq["nome"], arq["mime"], arq["bytes"])
+
+    def _achar(*chaves):
+        for nome, txt in abas.items():
+            if any(k in nome.upper() for k in chaves):
+                return txt
+        return None
+
+    txt_inv = _achar("INVOICE", "FATURA") or next(iter(abas.values()), "")
+    txt_pk = _achar("PACKING", "ROMANEIO")
+
+    ext_inv = _extrair_aba("invoice", txt_inv)
+    db.inserir_documento(dossie_id, "invoice", None, arq["nome"], arq["mime"], txt_inv,
+                         {"campos": ext_inv["campos"], "itens": ext_inv["itens"], "fonte_extracao": ext_inv["fonte"]})
+    ext_pk = None
+    if txt_pk:
+        ext_pk = _extrair_aba("packing_list", txt_pk)
+        db.inserir_documento(dossie_id, "packing_list", None, arq["nome"], arq["mime"], txt_pk,
+                             {"campos": ext_pk["campos"], "itens": ext_pk["itens"], "fonte_extracao": ext_pk["fonte"]})
+    _log(dossie_id, "extracao_concluida",
+         {"itens_invoice": len(ext_inv["itens"]), "itens_packing": len(ext_pk["itens"]) if ext_pk else 0})
+
+    # --- Falha de extração é sinalizada, NUNCA silenciada nem transformada em divergência falsa ---
+    llm_on = llm_extracao.disponivel()
+    inv_falhou = llm_on and not ext_inv["itens"]      # LLM disponível mas 0 itens = extração falhou
+    pk_falhou = ext_pk is not None and llm_on and not ext_pk["itens"]
+    if inv_falhou:
+        db.inserir_apontamento(dossie_id, "extracao", "atencao", "-",
+            "Não foi possível extrair os itens da Invoice automaticamente (possível limite de "
+            "requisições do extrator) — reprocessar o dossiê.", None)
+
+    # --- Conciliação Invoice × Packing List: só quando AMBAS as abas foram extraídas ---
+    if ext_pk and ext_inv["itens"] and ext_pk["itens"]:
+        pk_por_chave = {_chave_item(i): i for i in ext_pk["itens"]}
+        for item in ext_inv["itens"]:
+            par = pk_por_chave.get(_chave_item(item))
+            if not par:
+                db.inserir_apontamento(dossie_id, "divergencia", "atencao", "RFB",
+                    f"Item {item.get('codigo') or item.get('descricao','')[:30]} presente na Invoice "
+                    f"mas não localizado no Packing List.", None)
+                continue
+            qi, qp = _num(item.get("quantidade")), _num(par.get("quantidade"))
+            if qi is not None and qp is not None and qi != qp:
+                db.inserir_apontamento(dossie_id, "divergencia", "critico", "RFB",
+                    f"Quantidade divergente no item {item.get('codigo') or ''}: "
+                    f"Invoice={item.get('quantidade')} vs Packing List={par.get('quantidade')}.", None)
+    elif ext_pk and not (ext_inv["itens"] and ext_pk["itens"]):
+        db.inserir_apontamento(dossie_id, "extracao", "info", "-",
+            "Conciliação Invoice × Packing List não realizada: uma das abas não pôde ser extraída "
+            "automaticamente. Reprocessar para tentar novamente.", None)
+
+    # --- Precedentes de classificação como REFERÊNCIA (não afirma o NCM) ---
+    # Cria apontamento individual só quando HÁ precedente (referência a avaliar); os itens sem
+    # precedente viram um único resumo, para não inundar a revisão com "classificar manualmente".
+    itens = ext_inv["itens"]
+    descricoes = [i.get("descricao", "") for i in itens]
+    precedentes = rag.melhores_precedentes(descricoes, tipo_documento="solucao_consulta")
+    sem_precedente = []
+    for item, prec in zip(itens, precedentes):
+        rotulo = item.get("codigo") or (item.get("descricao", "")[:30])
+        if prec:
+            db.inserir_apontamento(dossie_id, "classificacao", "info", "RFB",
+                f"Item {rotulo} ({item.get('descricao','')[:50]}): precedente de classificação a AVALIAR "
+                f"(o sistema não define o NCM — o analista decide).", prec["id"])
+        else:
+            sem_precedente.append(rotulo)
+    if sem_precedente:
+        db.inserir_apontamento(dossie_id, "classificacao", "info", "-",
+            f"{len(sem_precedente)} item(ns) sem precedente automático — classificar manualmente: "
+            f"{', '.join(sem_precedente[:20])}.", None)
+
+    db.atualizar_status(dossie_id, "revisao_humana")
+    _log(dossie_id, "processamento_concluido", {"status": "revisao_humana", "modo": "ivpl_combinado"})
+    return dossie_id
+
+
 def _log(dossie_id: str, evento: str, detalhe: dict) -> None:
     with db.conectar() as conn, conn.cursor() as cur:
         cur.execute("INSERT INTO log_auditoria (dossie_id, evento, detalhe) VALUES (%s, %s, %s)",

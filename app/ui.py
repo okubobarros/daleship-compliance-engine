@@ -76,23 +76,38 @@ def _status_legivel(s: str) -> str:
 
 def tela_novo():
     st.title("Novo processo — envio de documentos")
-    st.caption("Aceitamos PDF, imagem ou Excel como estão. Não é preciso escolher o modal "
-               "de transporte: o sistema detecta pelo próprio documento.")
+    st.caption("Aceitamos PDF, imagem ou Excel (inclusive .xls) como estão. O sistema detecta "
+               "o tipo de cada documento pelo próprio conteúdo.")
     referencia = st.text_input("Referência do processo (ex.: PO-2026-0142)")
-    arquivos = {}
-    for papel, rotulo in PAPEIS.items():
-        up = st.file_uploader(rotulo, type=["pdf", "png", "jpg", "jpeg", "xlsx", "xls"], key=papel)
-        if up is not None:
-            arquivos[papel] = {"nome": up.name, "mime": up.type or "", "bytes": up.getvalue()}
+    tipos = ["pdf", "png", "jpg", "jpeg", "xlsx", "xls"]
 
-    col1, col2 = st.columns([1, 5])
-    if col1.button("Voltar"):
+    modo = st.radio("Formato dos documentos", [
+        "Arquivo combinado (Invoice + Packing List no mesmo arquivo)",
+        "Documentos separados (Invoice, Packing List, Transporte)"],
+        help="Muitas tradings enviam Invoice e Packing List juntos, em abas do mesmo Excel.")
+
+    if st.button("Voltar"):
         ir("lista"); st.rerun()
-    if col2.button("Processar", type="primary", disabled=not arquivos):
-        with st.spinner("Extraindo, conciliando e cruzando com a base normativa…"):
-            dossie_id = processamento.processar_dossie(
-                ss.cliente_id, referencia or "(sem referência)", arquivos)
-        ir("detalhe", dossie_id); st.rerun()
+
+    if modo.startswith("Arquivo combinado"):
+        up = st.file_uploader("Arquivo do processo (Invoice + Packing List)", type=tipos)
+        if st.button("Processar", type="primary", disabled=up is None):
+            arq = {"nome": up.name, "mime": up.type or "", "bytes": up.getvalue()}
+            with st.spinner("Extraindo, conciliando Invoice × Packing List e buscando precedentes…"):
+                dossie_id = processamento.processar_ivpl(
+                    ss.cliente_id, referencia or "(sem referência)", arq)
+            ir("detalhe", dossie_id); st.rerun()
+    else:
+        arquivos = {}
+        for papel, rotulo in PAPEIS.items():
+            up = st.file_uploader(rotulo, type=tipos, key=papel)
+            if up is not None:
+                arquivos[papel] = {"nome": up.name, "mime": up.type or "", "bytes": up.getvalue()}
+        if st.button("Processar", type="primary", disabled=not arquivos):
+            with st.spinner("Extraindo, conciliando e cruzando com a base normativa…"):
+                dossie_id = processamento.processar_dossie(
+                    ss.cliente_id, referencia or "(sem referência)", arquivos)
+            ir("detalhe", dossie_id); st.rerun()
 
 
 # ---------- Detalhe do dossiê ----------
@@ -111,6 +126,7 @@ def tela_detalhe():
         ir("lista"); st.rerun()
 
     _confirmacao_transporte(dossie)
+    _dados_extraidos(dossie)
 
     st.subheader("Apontamentos")
     st.caption("Cada apontamento traz a norma citada ao lado — a fonte nunca fica escondida.")
@@ -142,6 +158,27 @@ def _confirmacao_transporte(dossie):
         if col2.button("Confirmar tipo", use_container_width=True):
             db.confirmar_tipo_transporte(transp["id"], ss.dossie_atual, escolha, ss.usuario)
             st.rerun()
+
+
+def _dados_extraidos(dossie):
+    """Mostra o que o Nó 1 extraiu — o valor tangível: dados estruturados de um arquivo bruto."""
+    docs = db.listar_documentos(ss.dossie_atual)
+    invoice = next((d for d in docs if d["papel"] == "invoice"), None)
+    if not invoice:
+        return
+    dados = invoice["dados_extraidos"] or {}
+    itens = dados.get("itens") or []
+    campos = dados.get("campos") or {}
+    with st.expander(f"Dados extraídos — {len(itens)} item(ns)"
+                     + (f" · fonte: {dados.get('fonte_extracao')}" if dados.get("fonte_extracao") else ""),
+                     expanded=True):
+        if campos:
+            st.caption("  ·  ".join(f"**{k.replace('_',' ')}**: {v}" for k, v in campos.items()))
+        if itens:
+            st.dataframe(
+                [{"Código": i.get("codigo"), "Descrição": i.get("descricao"),
+                  "Qtd": i.get("quantidade"), "NCM": i.get("ncm") or "—"} for i in itens],
+                use_container_width=True, hide_index=True)
 
 
 def _cartao_apontamento(ap, com_acoes=False):

@@ -12,9 +12,15 @@ from __future__ import annotations
 
 import json
 import os
+import pathlib
 import re
+import time
 
 import httpx
+from dotenv import load_dotenv
+
+# Garante o .env carregado independente da ordem de import (não depende de config.py).
+load_dotenv(pathlib.Path(__file__).resolve().parent.parent / ".env")
 
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 _KEY = os.environ.get("GEMINI_API_KEY", "").strip()
@@ -43,8 +49,10 @@ _SCHEMA = {
             "items": {
                 "type": "object",
                 "properties": {
+                    "codigo": {"type": "string", "nullable": True},
                     "descricao": {"type": "string"},
                     "ncm": {"type": "string", "nullable": True},
+                    "quantidade": {"type": "string", "nullable": True},
                 },
             },
         },
@@ -56,6 +64,41 @@ _RE_NCM = re.compile(r"(\d{4})\.?(\d{2})\.?(\d{2})")
 
 def disponivel() -> bool:
     return bool(_KEY)
+
+
+def _post_com_retry(corpo: dict, tentativas: int = 5) -> dict | None:
+    """POST com backoff em 429 (rate limit do free tier) e 5xx. Respeita retryDelay quando
+    o Gemini o informa. Retorna o JSON parseado do modelo, ou None se esgotar/erro definitivo."""
+    for tentativa in range(tentativas):
+        try:
+            resp = httpx.post(_URL, params={"key": _KEY}, json=corpo, timeout=90)
+        except httpx.HTTPError:
+            time.sleep(2 ** tentativa)
+            continue
+        if resp.status_code in (429, 500, 503):
+            if tentativa == tentativas - 1:
+                return None
+            espera = _retry_delay(resp) or min(30.0, 3 * (tentativa + 1))
+            time.sleep(espera)
+            continue
+        if resp.status_code != 200:
+            return None  # 400/403 etc. — não adianta repetir
+        try:
+            return json.loads(resp.json()["candidates"][0]["content"]["parts"][0]["text"])
+        except Exception:
+            return None
+    return None
+
+
+def _retry_delay(resp: httpx.Response) -> float | None:
+    try:
+        for det in resp.json().get("error", {}).get("details", []):
+            rd = det.get("retryDelay")
+            if rd:
+                return float(str(rd).rstrip("s"))
+    except Exception:
+        pass
+    return None
 
 
 def _norm_ncm(valor) -> str | None:
@@ -74,12 +117,9 @@ def extrair(papel: str, texto: str) -> dict | None:
         "contents": [{"parts": [{"text": f"Documento (papel informado: {papel}):\n{texto[:20000]}"}]}],
         "generationConfig": {"responseMimeType": "application/json", "responseSchema": _SCHEMA},
     }
-    try:
-        resp = httpx.post(_URL, params={"key": _KEY}, json=corpo, timeout=90)
-        resp.raise_for_status()
-        bruto = json.loads(resp.json()["candidates"][0]["content"]["parts"][0]["text"])
-    except Exception:
-        return None  # qualquer falha (rede/quota/JSON) -> caller usa heurística
+    bruto = _post_com_retry(corpo)
+    if bruto is None:
+        return None  # falha após retries (rede/quota/JSON) -> caller decide (heurística/nota)
 
     campos = {
         "numero": bruto.get("numero_documento"),
@@ -89,10 +129,15 @@ def extrair(papel: str, texto: str) -> dict | None:
     }
     itens = []
     for it in bruto.get("itens") or []:
-        ncm = _norm_ncm(it.get("ncm"))
         desc = (it.get("descricao") or "").strip()
-        if ncm or desc:
-            itens.append({"descricao": desc, "ncm": ncm})
+        if not desc and not it.get("codigo"):
+            continue
+        itens.append({
+            "codigo": (it.get("codigo") or "").strip() or None,
+            "descricao": desc,
+            "ncm": _norm_ncm(it.get("ncm")),
+            "quantidade": (it.get("quantidade") or "").strip() or None,
+        })
     return {
         "tipo_transporte": bruto.get("tipo_documento_transporte"),
         "campos": {k: v for k, v in campos.items() if v},

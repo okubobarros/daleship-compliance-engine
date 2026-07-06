@@ -2,5 +2,6 @@ streamlit
 psycopg2-binary
 pdfplumber
 openpyxl
+xlrd
 httpx
 python-dotenv
