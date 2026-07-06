@@ -33,6 +33,7 @@ Credenciais: `APP_USERS="usuario:senha,..."` no `.env`; sem isso, usuário de de
 - `rag.py` — busca híbrida **síncrona** (reusa o embedder e o limiar `grounding.DISTANCIA_MAXIMA`). Anuência é
   **lexical pelo código NCM** no compilado de TA (cita o órgão anuente exato ou abstém — nunca aponta órgão errado).
 - `db.py` — persistência (dossiê, documentos, apontamentos, correções) + log **append-only**.
+- **Sugestão de classificação (risco de NCM)** — `rag.sugerir_ncm` faz busca semântica da descrição do produto sobre a base NCM (descrições hierárquicas, embedadas), restrita a códigos de 8 dígitos. `processamento._sugerir_classificacao` mostra "NCM provável X + alternativas — VERIFIQUE" (probabilidade, nunca afirma; o analista decide, conforme a call Bonano). v1: acerta parte (meias→6115, roteador→8517), erra outra no topo (cobertor→malha, toalha→papel) mas costuma trazer a certa nas alternativas. Extração usa `gemini-3.5-flash` (flash-lite extraía inconsistente).
 - `regras_regulatorias.py` + `.yaml` — **flags regulatórios por palavra-chave** (call Bonano): "wi-fi → verificar ANATEL", "carregador → Inmetro", "termômetro → ANVISA". Config-driven (adicionar regra = novo bloco no YAML). Casa por fronteira de palavra + sem acento (evita 'raçao' dentro de 'coraçao'), agrega por regra, e cita o Tratamento Administrativo do órgão. Sempre "verificar", nunca afirma.
 
 ## Limitações conhecidas (honestas para a demo)

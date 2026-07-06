@@ -31,7 +31,10 @@ _INSTRUCAO = (
     "invoice (fatura comercial), packing list e documento de transporte "
     "(B/L marítimo, AWB aéreo, CRT rodoviário Mercosul). Use null quando não encontrar. "
     "NCM deve ter 8 dígitos no formato 0000.00.00. Detecte o tipo do documento de transporte "
-    "pelo próprio conteúdo (ex.: 'Bill of Lading'=B/L, 'Air Waybill'=AWB, 'CRT'=CRT)."
+    "pelo próprio conteúdo (ex.: 'Bill of Lading'=B/L, 'Air Waybill'=AWB, 'CRT'=CRT). "
+    "IMPORTANTE: 'itens' são APENAS as linhas de MERCADORIA/PRODUTO da fatura (com descrição do "
+    "produto, quantidade, valor). NUNCA inclua como item: cabeçalho, endereço, CEP, CNPJ, nome do "
+    "comprador/vendedor, condições de pagamento, totais ou observações."
 )
 
 _SCHEMA = {

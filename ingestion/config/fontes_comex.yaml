@@ -11,16 +11,15 @@
 #   programada diária (01:00–03:00). Não é fonte de dado — só sinal de disponibilidade.
 
 fontes:
-  # Base de tudo: nomenclatura NCM via JSON oficial do Portal Único. Prioridade 1.
-  # sem_embedding: NCM é consulta por código exato (lexical) — ~15k códigos, embedar todos
-  # no free tier da Voyage (~3 req/min) custaria ~40 min sem ganho semântico real.
-  # Se a busca semântica por descrição de NCM se mostrar necessária, remover este flag e re-rodar.
+  # Base de tudo: nomenclatura NCM via JSON oficial do Portal Único. Descrição HIERÁRQUICA
+  # (concatenada) + EMBEDDING para sugestão de classificação (descrição do produto -> NCM
+  # provável), a dor "risco de classificação" da call Bonano. Com billing Voyage, ~2 min.
   - orgao: SISCOMEX
     tipo_documento: NCM
     descricao: "Nomenclatura Comum do Mercosul (NCM) — JSON oficial do Portal Único"
     fonte_url: "https://portalunico.siscomex.gov.br/classif/api/publico/nomenclatura/download/json"
     loader: ncm_json
-    sem_embedding: true
+    sem_embedding: false
     bloqueado: false
 
   # RGI: texto oficial vigente publicado na NESH (IN RFB nº 2.169/2023). O loader resolve

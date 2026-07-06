@@ -52,6 +52,39 @@ def _orgao_anuente(identificador: str) -> str:
     return "órgão anuente"
 
 
+# Distância de cosseno acima da qual não sugerimos NCM (evita palpite ruim). Provisório —
+# calibrar com casos reais; NCM é taxonomia, distribuição diferente das normas em prosa.
+NCM_DIST_MAX = 0.62
+
+
+def _sugerir_classificacao(dossie_id: str, itens: list[dict]) -> None:
+    """Para cada item, sugere o NCM mais provável (semântico sobre a base NCM hierárquica).
+    Nunca afirma: mostra 'provável X, alternativas Y/Z — verifique'. Item já com NCM na origem
+    é apenas conferido (coerência)."""
+    descricoes = [i.get("descricao", "") for i in itens]
+    sugestoes = rag.sugerir_ncm(descricoes, k=3)
+    sem_sugestao = []
+    for item, cands in zip(itens, sugestoes):
+        rotulo = item.get("codigo") or (item.get("descricao", "")[:30])
+        validos = [c for c in cands if c["distancia"] <= NCM_DIST_MAX]
+        if not validos:
+            sem_sugestao.append(rotulo)
+            continue
+        melhor = validos[0]
+        ncm_prov = melhor["identificador"].replace("NCM ", "")
+        alt = ", ".join(c["identificador"].replace("NCM ", "") for c in validos[1:3])
+        desc_prov = melhor["texto"].split(" — ", 1)[-1][:70]
+        db.inserir_apontamento(
+            dossie_id, "classificacao", "atencao", "RFB",
+            f"Item {rotulo} ({item.get('descricao','')[:45]}): NCM provável {ncm_prov} "
+            f"({desc_prov})" + (f"; alternativas {alt}" if alt else "") + " — VERIFIQUE.",
+            melhor["id"])
+    if sem_sugestao:
+        db.inserir_apontamento(dossie_id, "classificacao", "info", "-",
+            f"{len(sem_sugestao)} item(ns) sem sugestão de NCM com confiança — classificar manualmente: "
+            f"{', '.join(sem_sugestao[:20])}.", None)
+
+
 def _flags_regulatorios(dossie_id: str, itens: list[dict]) -> None:
     """Dor nº 4 (Bonano): flag regulatório por palavra-chave, AGREGADO por regra (não um por
     item — invoice tem milhares). Cita o Tratamento Administrativo do órgão como referência."""
@@ -270,25 +303,9 @@ def processar_ivpl(cliente_id: str, referencia: str, arq: dict) -> str:
             "Conciliação Invoice × Packing List não realizada: uma das abas não pôde ser extraída "
             "automaticamente. Reprocessar para tentar novamente.", None)
 
-    # --- Precedentes de classificação como REFERÊNCIA (não afirma o NCM) ---
-    # Cria apontamento individual só quando HÁ precedente (referência a avaliar); os itens sem
-    # precedente viram um único resumo, para não inundar a revisão com "classificar manualmente".
+    # --- Sugestão de classificação (risco de NCM): descrição -> NCM provável, VERIFIQUE ---
     itens = ext_inv["itens"]
-    descricoes = [i.get("descricao", "") for i in itens]
-    precedentes = rag.melhores_precedentes(descricoes, tipo_documento="solucao_consulta")
-    sem_precedente = []
-    for item, prec in zip(itens, precedentes):
-        rotulo = item.get("codigo") or (item.get("descricao", "")[:30])
-        if prec:
-            db.inserir_apontamento(dossie_id, "classificacao", "info", "RFB",
-                f"Item {rotulo} ({item.get('descricao','')[:50]}): precedente de classificação a AVALIAR "
-                f"(o sistema não define o NCM — o analista decide).", prec["id"])
-        else:
-            sem_precedente.append(rotulo)
-    if sem_precedente:
-        db.inserir_apontamento(dossie_id, "classificacao", "info", "-",
-            f"{len(sem_precedente)} item(ns) sem precedente automático — classificar manualmente: "
-            f"{', '.join(sem_precedente[:20])}.", None)
+    _sugerir_classificacao(dossie_id, itens)
 
     # --- Flags regulatórios por palavra-chave (wi-fi → ANATEL etc.) ---
     _flags_regulatorios(dossie_id, itens)

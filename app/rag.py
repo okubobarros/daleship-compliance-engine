@@ -82,6 +82,33 @@ def melhores_precedentes(descricoes: list[str], tipo_documento: str = "solucao_c
     return resultados
 
 
+def sugerir_ncm(descricoes: list[str], k: int = 3) -> list[list[dict]]:
+    """Sugere NCMs prováveis por descrição de produto (risco de classificação — call Bonano).
+
+    Busca semântica sobre as descrições NCM (agora hierárquicas), restrita a códigos COMPLETOS
+    de 8 dígitos (os que vão na DUIMP). Embeda todas as descrições numa chamada. Retorna, por
+    item, uma lista de candidatos [{codigo, descricao, distancia}] ordenados (vazia = sem
+    sugestão confiável). NUNCA afirma — é probabilidade a revisar."""
+    emb = get_embedder()
+    if not descricoes or not getattr(emb, "disponivel", False):
+        return [[] for _ in descricoes]
+    vetores = asyncio.run(emb.embed(descricoes, input_type="query"))
+    saida: list[list[dict]] = []
+    with psycopg2.connect(DATABASE_URL) as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        for v in vetores:
+            lit = "[" + ",".join(str(x) for x in v) + "]"
+            cur.execute(
+                "SELECT id, identificador, texto, fonte_url, embedding <=> %s::vector AS distancia "
+                "FROM normas WHERE tipo_documento = 'NCM' AND data_vigencia_fim IS NULL "
+                "  AND embedding IS NOT NULL "
+                "  AND identificador ~ 'NCM [0-9]{4}\\.[0-9]{2}\\.[0-9]{2}$' "
+                "ORDER BY embedding <=> %s::vector LIMIT %s",
+                (lit, lit, k),
+            )
+            saida.append([dict(r) for r in cur.fetchall()])
+    return saida
+
+
 def anuencia_por_ncm(codigo: str) -> dict | None:
     """Anuência via busca LEXICAL do código NCM no compilado de Tratamento Administrativo.
 
