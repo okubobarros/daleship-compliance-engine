@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  a { color: #2563EB; text-decoration: none; }
+  a:hover { color: #6D28D9; }
+  input::placeholder { color: #b3b8c0; }
+</style>
+</helmet>
+
+<div style="position:relative; min-height:100vh; overflow:hidden; background:radial-gradient(1200px 600px at 15% -10%, rgba(37,99,235,.07), transparent 60%), radial-gradient(1000px 600px at 100% 110%, rgba(249,115,22,.07), transparent 55%), #F3F4F6; font-family:'Poppins',system-ui,sans-serif; color:#111827; display:flex; align-items:center; justify-content:center; padding:40px 20px;">
+
+  <!-- watermark tucano -->
+  <i data-lucide="bird" style="position:absolute; left:-100px; top:-60px; width:520px; height:520px; color:#6D28D9; opacity:{{ watermarkOpacity }}; transform:rotate(12deg); pointer-events:none;"></i>
+
+  <!-- CARD -->
+  <div style="position:relative; z-index:1; width:100%; max-width:472px; background:#fff; border:1px solid #eceef1; border-radius:24px; padding:40px 40px 30px; box-shadow:0 24px 60px rgba(17,24,39,.1);">
+
+    <div style="display:flex; align-items:center; gap:11px;">
+      <div style="width:44px; height:44px; border-radius:13px; background:linear-gradient(135deg,#2563EB,#6D28D9); display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(109,40,217,.35);">
+        <i data-lucide="bird" style="width:24px; height:24px; color:#fff;"></i>
+      </div>
+      <span style="font-size:16px; font-weight:600;">Despachante de Bolso</span>
+    </div>
+
+    <h1 style="margin:26px 0 0; font-size:26px; font-weight:700; letter-spacing:-.02em;">Criar sua conta gratuitamente</h1>
+    <p style="margin:8px 0 0; font-size:14.5px; font-weight:400; color:#6B7280; line-height:1.5;">Simule a sua primeira importação em minutos. Sem cartão de crédito.</p>
+
+    <div style="margin-top:26px; display:flex; flex-direction:column; gap:16px;">
+
+      <div>
+        <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:7px;">Nome da empresa</label>
+        <input type="text" placeholder="Ex.: Comercial Aurora Ltda" style="width:100%; font-family:inherit; font-size:14.5px; color:#111827; padding:13px 14px; border:1px solid #e2e5e9; border-radius:12px; outline:none; background:#fff;" style-focus="border-color:#2563EB; box-shadow:0 0 0 3px rgba(37,99,235,.14);">
+      </div>
+
+      <div>
+        <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:7px;">Seu nome</label>
+        <input type="text" placeholder="Ex.: Marina Rocha" style="width:100%; font-family:inherit; font-size:14.5px; color:#111827; padding:13px 14px; border:1px solid #e2e5e9; border-radius:12px; outline:none; background:#fff;" style-focus="border-color:#2563EB; box-shadow:0 0 0 3px rgba(37,99,235,.14);">
+      </div>
+
+      <div>
+        <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:7px;">E-mail corporativo</label>
+        <input type="email" placeholder="voce@suaempresa.com.br" style="width:100%; font-family:inherit; font-size:14.5px; color:#111827; padding:13px 14px; border:1px solid #e2e5e9; border-radius:12px; outline:none; background:#fff;" style-focus="border-color:#2563EB; box-shadow:0 0 0 3px rgba(37,99,235,.14);">
+      </div>
+
+      <div>
+        <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:7px;">Senha</label>
+        <div style="position:relative;">
+          <input type="{{ passType }}" placeholder="Crie uma senha forte" onInput="{{ onPass }}" style="width:100%; font-family:inherit; font-size:14.5px; color:#111827; padding:13px 44px 13px 14px; border:1px solid #e2e5e9; border-radius:12px; outline:none; background:#fff;" style-focus="border-color:#2563EB; box-shadow:0 0 0 3px rgba(37,99,235,.14);">
+          <button onClick="{{ togglePass }}" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); border:none; background:transparent; cursor:pointer; padding:6px; display:flex; color:#9aa1ab;"><i data-lucide="{{ eyeIcon }}" style="width:18px; height:18px;"></i></button>
+        </div>
+        <!-- força da senha -->
+        <div style="margin-top:10px; display:flex; gap:6px;">
+          <div style="flex:1; height:5px; border-radius:20px; background:{{ seg0 }};"></div>
+          <div style="flex:1; height:5px; border-radius:20px; background:{{ seg1 }};"></div>
+          <div style="flex:1; height:5px; border-radius:20px; background:{{ seg2 }};"></div>
+          <div style="flex:1; height:5px; border-radius:20px; background:{{ seg3 }};"></div>
+        </div>
+        <div style="margin-top:7px; font-size:12px; font-weight:500; color:{{ strengthColor }}; min-height:16px;">{{ strengthLabel }}</div>
+      </div>
+
+      <button onClick="{{ noop }}" disabled="{{ btnDisabled }}" style="{{ btnStyle }}">
+        <i data-lucide="arrow-right" style="width:18px; height:18px;"></i> Criar conta grátis
+      </button>
+
+      <div style="text-align:center; font-size:14px; font-weight:400; color:#6B7280;">Já tem conta? <a href="#" style="font-weight:600;">Entrar</a></div>
+
+    </div>
+
+    <p style="margin:24px 0 0; padding-top:20px; border-top:1px solid #f0f1f3; font-size:12px; font-weight:400; color:#9aa1ab; line-height:1.6; text-align:center;">
+      Ao criar sua conta, você concorda com os <a href="#" style="color:#6B7280; text-decoration:underline;">Termos de Uso</a> e a <a href="#" style="color:#6B7280; text-decoration:underline;">Política de Privacidade</a> do Despachante de Bolso.
+    </p>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;requireStrong&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Validação&quot; },
+  &quot;watermarkOpacity&quot;: { &quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 0.05, &quot;min&quot;: 0, &quot;max&quot;: 0.15, &quot;step&quot;: 0.01, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Marca d'água&quot; }
+}">
+class Component extends DCLogic {
+  state = { pass: '', show: false };
+
+  score(p) {
+    if (!p) return 0;
+    let s = 0;
+    if (p.length >= 8) s++;
+    if (/[A-Z]/.test(p) && /[a-z]/.test(p)) s++;
+    if (/[0-9]/.test(p)) s++;
+    if (/[^A-Za-z0-9]/.test(p)) s++;
+    if (p.length < 6) s = Math.min(s, 1);
+    return Math.min(s, 4);
+  }
+
+  renderVals() {
+    const sc = this.score(this.state.pass);
+    const track = '#eef0f3';
+    const palette = ['#E05252', '#F97316', '#2563EB', '#16A34A'];
+    const labels = ['', 'Senha fraca', 'Senha razoável', 'Senha boa', 'Senha forte'];
+    const active = sc === 0 ? '#eef0f3' : palette[sc - 1];
+    const seg = (i) => (sc > i ? active : track);
+
+    const requireStrong = this.props.requireStrong ?? false;
+    const disabled = requireStrong && sc < 3;
+
+    const btnBase = "border:none; font-family:inherit; font-size:15.5px; font-weight:600; color:#fff; padding:15px; border-radius:13px; display:flex; align-items:center; justify-content:center; gap:9px; margin-top:4px; background:linear-gradient(90deg,#2563EB,#F97316); box-shadow:0 12px 26px rgba(37,99,235,.28);";
+    const btnStyle = disabled
+      ? btnBase + " opacity:.45; cursor:not-allowed; box-shadow:none;"
+      : btnBase + " cursor:pointer;";
+
+    return {
+      onPass: (e) => this.setState({ pass: e.target.value }),
+      togglePass: (e) => { e.preventDefault(); this.setState(s => ({ show: !s.show })); },
+      noop: (e) => e.preventDefault(),
+      passType: this.state.show ? 'text' : 'password',
+      eyeIcon: this.state.show ? 'eye-off' : 'eye',
+      seg0: seg(0), seg1: seg(1), seg2: seg(2), seg3: seg(3),
+      strengthColor: sc === 0 ? '#9aa1ab' : active,
+      strengthLabel: this.state.pass ? labels[sc] : '',
+      btnDisabled: disabled,
+      btnStyle,
+      watermarkOpacity: this.props.watermarkOpacity ?? 0.05,
+    };
+  }
+
+  drawIcons() {
+    if (window.lucide) window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
+  }
+  componentDidMount() { this.drawIcons(); setTimeout(() => this.drawIcons(), 300); }
+  componentDidUpdate() { this.drawIcons(); }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  a { color: #2563EB; text-decoration: none; }
+  a:hover { color: #6D28D9; }
+</style>
+</helmet>
+
+<div style="display:flex; min-height:100vh; background:#F3F4F6; font-family:'Poppins',system-ui,sans-serif; color:#111827;">
+
+  <!-- SIDEBAR -->
+  <aside style="width:78px; flex:0 0 78px; background:#111827; display:flex; flex-direction:column; align-items:center; padding:20px 0; position:sticky; top:0; height:100vh;">
+    <div style="width:44px; height:44px; border-radius:13px; background:linear-gradient(135deg,#2563EB,#6D28D9); display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(109,40,217,.45);">
+      <i data-lucide="bird" style="width:24px; height:24px; color:#fff;"></i>
+    </div>
+    <nav style="margin-top:34px; display:flex; flex-direction:column; gap:6px; align-items:center; width:100%;">
+      <div title="Resumo" style="width:46px; height:46px; border-radius:13px; background:rgba(37,99,235,.18); display:flex; align-items:center; justify-content:center;"><i data-lucide="layout-dashboard" style="width:22px; height:22px; color:#60a5fa;"></i></div>
+      <div title="Simulador" style="width:46px; height:46px; border-radius:13px; display:flex; align-items:center; justify-content:center;"><i data-lucide="calculator" style="width:22px; height:22px; color:#6B7280;"></i></div>
+      <div title="Cockpit de decisão" style="width:46px; height:46px; border-radius:13px; display:flex; align-items:center; justify-content:center;"><i data-lucide="gauge" style="width:22px; height:22px; color:#6B7280;"></i></div>
+      <div title="Logística" style="width:46px; height:46px; border-radius:13px; display:flex; align-items:center; justify-content:center;"><i data-lucide="truck" style="width:22px; height:22px; color:#6B7280;"></i></div>
+      <div title="Compliance" style="width:46px; height:46px; border-radius:13px; display:flex; align-items:center; justify-content:center;"><i data-lucide="shield-check" style="width:22px; height:22px; color:#6B7280;"></i></div>
+      <div title="Agente IA" style="width:46px; height:46px; border-radius:13px; display:flex; align-items:center; justify-content:center;"><i data-lucide="cpu" style="width:22px; height:22px; color:#6B7280;"></i></div>
+    </nav>
+    <div style="margin-top:auto; display:flex; flex-direction:column; gap:6px; align-items:center;">
+      <div title="Suporte" style="width:46px; height:46px; border-radius:13px; display:flex; align-items:center; justify-content:center;"><i data-lucide="headset" style="width:22px; height:22px; color:#6B7280;"></i></div>
+      <div title="Ajustes" style="width:46px; height:46px; border-radius:13px; display:flex; align-items:center; justify-content:center;"><i data-lucide="settings" style="width:22px; height:22px; color:#6B7280;"></i></div>
+      <div style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#F97316,#6D28D9); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; font-size:14px; margin-top:6px;">MR</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main style="flex:1; min-width:0; position:relative; overflow:hidden; display:flex; flex-direction:column;">
+
+    <!-- watermark tucano -->
+    <i data-lucide="bird" style="position:absolute; right:-90px; bottom:-70px; width:560px; height:560px; color:#6D28D9; opacity:{{ watermarkOpacity }}; transform:rotate(-8deg); pointer-events:none;"></i>
+    <!-- ondas sutis -->
+    <div style="position:absolute; left:0; right:0; bottom:0; height:180px; background:linear-gradient(180deg, transparent, rgba(37,99,235,.05)); pointer-events:none;"></div>
+
+    <!-- topbar minimal -->
+    <div style="position:relative; z-index:1; padding:26px 40px; display:flex; align-items:center; justify-content:space-between;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:15px; font-weight:600;">Despachante de Bolso</span>
+        <span style="font-size:12px; font-weight:500; color:#9aa1ab; background:#fff; border:1px solid #eceef1; padding:3px 10px; border-radius:20px;">Nova conta</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; color:#6B7280;">
+        <i data-lucide="circle-help" style="width:16px; height:16px;"></i> Como funciona
+      </div>
+    </div>
+
+    <!-- HERO EMPTY STATE -->
+    <div style="position:relative; z-index:1; flex:1; display:flex; align-items:center; justify-content:center; padding:20px 40px 60px;">
+      <div style="max-width:680px; text-align:center;">
+
+        <div style="width:74px; height:74px; margin:0 auto; border-radius:22px; background:linear-gradient(135deg,#2563EB,#6D28D9); display:flex; align-items:center; justify-content:center; box-shadow:0 14px 34px rgba(109,40,217,.35);">
+          <i data-lucide="bird" style="width:38px; height:38px; color:#fff;"></i>
+        </div>
+
+        <div style="margin-top:26px; font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:#6D28D9;">Sua primeira simulação</div>
+        <h1 style="margin:12px 0 0; font-size:40px; line-height:1.12; font-weight:700; letter-spacing:-.025em;">Importe com inteligência.<br>Venda com lucro.</h1>
+        <p style="margin:16px auto 0; max-width:52ch; font-size:17px; line-height:1.6; font-weight:400; color:#6B7280;">
+          Diga o que você quer importar e o agente calcula o custo real da operação — antes de você gastar um centavo.
+        </p>
+
+        <!-- 3 bullets -->
+        <div style="margin-top:34px; display:grid; grid-template-columns:repeat(3,1fr); gap:14px; text-align:left;">
+          <div style="background:#fff; border:1px solid #eceef1; border-radius:16px; padding:18px; box-shadow:0 8px 24px rgba(17,24,39,.04);">
+            <div style="width:38px; height:38px; border-radius:11px; background:rgba(37,99,235,.1); display:flex; align-items:center; justify-content:center;"><i data-lucide="wallet" style="width:19px; height:19px; color:#2563EB;"></i></div>
+            <div style="margin-top:13px; font-size:14.5px; font-weight:600;">Custo total</div>
+            <div style="margin-top:5px; font-size:13px; font-weight:400; color:#6B7280; line-height:1.5;">O landed cost real, item a item — sem surpresa no desembaraço.</div>
+          </div>
+          <div style="background:#fff; border:1px solid #eceef1; border-radius:16px; padding:18px; box-shadow:0 8px 24px rgba(17,24,39,.04);">
+            <div style="width:38px; height:38px; border-radius:11px; background:rgba(109,40,217,.1); display:flex; align-items:center; justify-content:center;"><i data-lucide="landmark" style="width:19px; height:19px; color:#6D28D9;"></i></div>
+            <div style="margin-top:13px; font-size:14.5px; font-weight:600;">Impostos</div>
+            <div style="margin-top:5px; font-size:13px; font-weight:400; color:#6B7280; line-height:1.5;">II, IPI, PIS/COFINS e ICMS pela sua NCM e estado de destino.</div>
+          </div>
+          <div style="background:#fff; border:1px solid #eceef1; border-radius:16px; padding:18px; box-shadow:0 8px 24px rgba(17,24,39,.04);">
+            <div style="width:38px; height:38px; border-radius:11px; background:rgba(249,115,22,.12); display:flex; align-items:center; justify-content:center;"><i data-lucide="trending-up" style="width:19px; height:19px; color:#F97316;"></i></div>
+            <div style="margin-top:13px; font-size:14.5px; font-weight:600;">Margem</div>
+            <div style="margin-top:5px; font-size:13px; font-weight:400; color:#6B7280; line-height:1.5;">Sua margem de venda projetada, já com todos os custos embutidos.</div>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div style="margin-top:32px; display:flex; flex-direction:column; align-items:center; gap:14px;">
+          <button style="border:none; cursor:pointer; font-family:inherit; font-size:16px; font-weight:600; color:#fff; background:#2563EB; padding:16px 30px; border-radius:14px; display:flex; align-items:center; gap:10px; box-shadow:0 12px 28px rgba(37,99,235,.32);">
+            <i data-lucide="sparkles" style="width:19px; height:19px;"></i> Simular minha primeira importação
+          </button>
+          <div style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:400; color:#9aa1ab;">
+            <i data-lucide="clock" style="width:15px; height:15px;"></i> Leva cerca de 2 minutos · sem planilha
+          </div>
+          <sc-if value="{{ showSecondary }}" hint-placeholder-val="{{ true }}">
+          <a href="#" style="font-size:13.5px; font-weight:500; color:#6D28D9;">Ver uma simulação de exemplo →</a>
+          </sc-if>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;watermarkOpacity&quot;: { &quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 0.05, &quot;min&quot;: 0, &quot;max&quot;: 0.15, &quot;step&quot;: 0.01, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Marca d'água&quot; },
+  &quot;showSecondary&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;CTA&quot; }
+}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      watermarkOpacity: (this.props.watermarkOpacity ?? 0.05),
+      showSecondary: this.props.showSecondary ?? true,
+    };
+  }
+  drawIcons() {
+    if (window.lucide) window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
+  }
+  componentDidMount() {
+    this.drawIcons();
+    setTimeout(() => this.drawIcons(), 300);
+  }
+  componentDidUpdate() { this.drawIcons(); }
+}
+</script>
+</body>
+</html>

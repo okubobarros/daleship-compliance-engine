@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  a { color: #2563EB; text-decoration: none; }
+  a:hover { color: #6D28D9; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 8px; }
+</style>
+</helmet>
+
+<div style="display:flex; min-height:100vh; background:#F3F4F6; font-family:'Poppins',system-ui,sans-serif; color:#111827;">
+
+  <!-- SIDEBAR -->
+  <aside style="width:78px; flex:0 0 78px; background:#111827; display:flex; flex-direction:column; align-items:center; padding:20px 0; position:sticky; top:0; height:100vh;">
+    <div style="width:44px; height:44px; border-radius:13px; background:linear-gradient(135deg,#2563EB,#6D28D9); display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(109,40,217,.45);">
+      <i data-lucide="bird" style="width:24px; height:24px; color:#fff;"></i>
+    </div>
+    <nav style="margin-top:34px; display:flex; flex-direction:column; gap:6px; align-items:center; width:100%;">
+      <div title="Resumo" style="width:46px; height:46px; border-radius:13px; display:flex; align-items:center; justify-content:center;"><i data-lucide="layout-dashboard" style="width:22px; height:22px; color:#6B7280;"></i></div>
+      <div title="Simulador" style="width:46px; height:46px; border-radius:13px; display:flex; align-items:center; justify-content:center;"><i data-lucide="calculator" style="width:22px; height:22px; color:#6B7280;"></i></div>
+      <div title="Cockpit de decisão" style="width:46px; height:46px; border-radius:13px; background:rgba(37,99,235,.18); display:flex; align-items:center; justify-content:center;"><i data-lucide="gauge" style="width:22px; height:22px; color:#60a5fa;"></i></div>
+      <div title="Logística" style="width:46px; height:46px; border-radius:13px; display:flex; align-items:center; justify-content:center;"><i data-lucide="truck" style="width:22px; height:22px; color:#6B7280;"></i></div>
+      <div title="Compliance" style="width:46px; height:46px; border-radius:13px; display:flex; align-items:center; justify-content:center;"><i data-lucide="shield-check" style="width:22px; height:22px; color:#6B7280;"></i></div>
+      <div title="Agente IA" style="width:46px; height:46px; border-radius:13px; display:flex; align-items:center; justify-content:center;"><i data-lucide="cpu" style="width:22px; height:22px; color:#6B7280;"></i></div>
+    </nav>
+    <div style="margin-top:auto; display:flex; flex-direction:column; gap:6px; align-items:center;">
+      <div title="Suporte" style="width:46px; height:46px; border-radius:13px; display:flex; align-items:center; justify-content:center;"><i data-lucide="headset" style="width:22px; height:22px; color:#6B7280;"></i></div>
+      <div title="Ajustes" style="width:46px; height:46px; border-radius:13px; display:flex; align-items:center; justify-content:center;"><i data-lucide="settings" style="width:22px; height:22px; color:#6B7280;"></i></div>
+      <div style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#F97316,#6D28D9); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; font-size:14px; margin-top:6px;">MR</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main style="flex:1; min-width:0; display:flex; flex-direction:column; max-width:1320px;">
+
+    <div style="padding:34px 40px 24px; display:flex; flex-direction:column; gap:24px;">
+
+      <!-- HEADER -->
+      <header>
+        <div style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:#6B7280;">
+          <i data-lucide="gauge" style="width:15px; height:15px;"></i> Resultado da simulação
+        </div>
+        <h1 style="margin:8px 0 0; font-size:30px; font-weight:700; letter-spacing:-.02em;">Cockpit de decisão</h1>
+        <div style="margin-top:6px; font-size:14px; font-weight:400; color:#6B7280;">Importação da China · Ref. IMP-2041 · 14 itens analisados pelo agente</div>
+      </header>
+
+      <!-- HERO GAUGE -->
+      <section style="background:#fff; border:1px solid #eceef1; border-radius:20px; padding:30px 34px; box-shadow:0 10px 30px rgba(17,24,39,.05); display:grid; grid-template-columns:auto 1fr; gap:44px; align-items:center;">
+
+        <!-- gauge -->
+        <div style="position:relative; width:240px; height:240px;">
+          <div style="position:absolute; inset:0; border-radius:50%; background:conic-gradient(from 225deg, {{ gaugeColor }} 0 {{ gaugeFilled }}, #eef0f3 {{ gaugeFilled }} 270deg, transparent 270deg 360deg);"></div>
+          <div style="position:absolute; inset:26px; border-radius:50%; background:#fff;"></div>
+          <!-- needle -->
+          <div style="position:absolute; left:50%; top:50%; width:5px; height:86px; background:#111827; border-radius:5px; transform-origin:50% 100%; transform:translate(-50%,-100%) rotate({{ needleDeg }}); box-shadow:0 2px 8px rgba(17,24,39,.2);"></div>
+          <div style="position:absolute; left:50%; top:50%; width:20px; height:20px; border-radius:50%; background:#111827; transform:translate(-50%,-50%); border:3px solid #fff;"></div>
+          <!-- score -->
+          <div style="position:absolute; left:0; right:0; bottom:44px; text-align:center;">
+            <div style="font-size:52px; font-weight:700; letter-spacing:-.03em; line-height:1; color:{{ gaugeColor }};">{{ scoreLabel }}</div>
+            <div style="font-size:12px; font-weight:500; color:#9aa1ab; margin-top:2px;">índice de risco / 100</div>
+          </div>
+        </div>
+
+        <!-- summary -->
+        <div>
+          <div style="display:inline-flex; align-items:center; gap:9px; padding:8px 16px; border-radius:30px; background:{{ riskTint }};">
+            <i style="width:10px; height:10px; border-radius:50%; background:{{ gaugeColor }}; display:inline-block;"></i>
+            <span style="font-size:15px; font-weight:600; color:{{ gaugeColor }};">Risco {{ riskWord }}</span>
+          </div>
+          <p style="margin:16px 0 0; font-size:19px; line-height:1.5; font-weight:400; color:#374151; max-width:52ch;">
+            A operação é viável, mas <strong style="font-weight:600; color:#111827;">3 pontos exigem sua decisão</strong> antes do registro da DI. Resolvê-los pode recuperar até <strong style="font-weight:600; color:#111827;">6 pontos de margem</strong>.
+          </p>
+          <div style="margin-top:22px; display:flex; gap:12px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:9px; padding:10px 16px; border:1px solid #f0f1f3; border-radius:12px;">
+              <span style="width:26px; height:26px; border-radius:8px; background:rgba(249,115,22,.13); color:#9a3d0a; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;">1</span>
+              <span style="font-size:13.5px; font-weight:500; color:#374151;">Crítico</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:9px; padding:10px 16px; border:1px solid #f0f1f3; border-radius:12px;">
+              <span style="width:26px; height:26px; border-radius:8px; background:rgba(37,99,235,.12); color:#1d4ed8; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;">2</span>
+              <span style="font-size:13.5px; font-weight:500; color:#374151;">Médio</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:9px; padding:10px 16px; border:1px solid #f0f1f3; border-radius:12px;">
+              <span style="width:26px; height:26px; border-radius:8px; background:rgba(22,163,74,.12); color:#15803d; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;">1</span>
+              <span style="font-size:13.5px; font-weight:500; color:#374151;">Ok</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ACHADOS -->
+      <div style="display:flex; align-items:center; gap:10px; margin-top:4px;">
+        <i data-lucide="search-check" style="width:20px; height:20px; color:#111827;"></i>
+        <span style="font-size:17px; font-weight:600;">Achados da análise</span>
+        <span style="font-size:13px; font-weight:500; color:#9aa1ab;">4 achados · ordenados por severidade</span>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:16px;">
+
+        <!-- ACHADO 1 crítico -->
+        <div style="background:#fff; border:1px solid #eceef1; border-left:5px solid #F97316; border-radius:16px; padding:22px 24px; box-shadow:0 8px 24px rgba(17,24,39,.04);">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:12px; font-weight:600; color:#9a3d0a; background:rgba(249,115,22,.13); padding:5px 12px; border-radius:20px;">Crítico</span>
+            <span style="font-size:17px; font-weight:600; letter-spacing:-.01em;">NCM sugerido tem alíquota de II variável conforme a origem</span>
+          </div>
+          <div style="margin-top:18px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px;">
+            <div>
+              <div style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#9aa1ab;">Evidência</div>
+              <div style="margin-top:8px; font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:13px; color:#374151; background:#F3F4F6; border-radius:10px; padding:10px 12px; line-height:1.55;">NCM 8471.30.19<br>II 12%–16%<br>origem: CN</div>
+            </div>
+            <div>
+              <div style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#9aa1ab;">Por que importa</div>
+              <div style="margin-top:8px; font-size:14.5px; font-weight:400; color:#374151; line-height:1.55;">A classificação atual pode elevar o Imposto de Importação em até 4 pontos, mudando o custo de cada unidade vendida.</div>
+            </div>
+            <div>
+              <div style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#9aa1ab;">Ação recomendada</div>
+              <div style="margin-top:8px; font-size:14.5px; font-weight:500; color:#111827; line-height:1.55;">Valide a NCM com o despachante antes de registrar a DI.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACHADO 2 médio -->
+        <div style="background:#fff; border:1px solid #eceef1; border-left:5px solid #2563EB; border-radius:16px; padding:22px 24px; box-shadow:0 8px 24px rgba(17,24,39,.04);">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:12px; font-weight:600; color:#1d4ed8; background:rgba(37,99,235,.12); padding:5px 12px; border-radius:20px;">Médio</span>
+            <span style="font-size:17px; font-weight:600; letter-spacing:-.01em;">ICMS do estado de destino ainda não confirmado</span>
+          </div>
+          <div style="margin-top:18px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px;">
+            <div>
+              <div style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#9aa1ab;">Evidência</div>
+              <div style="margin-top:8px; font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:13px; color:#374151; background:#F3F4F6; border-radius:10px; padding:10px 12px; line-height:1.55;">UF destino = SP<br>(assumido)<br>ICMS 18%</div>
+            </div>
+            <div>
+              <div style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#9aa1ab;">Por que importa</div>
+              <div style="margin-top:8px; font-size:14.5px; font-weight:400; color:#374151; line-height:1.55;">Cada estado aplica uma alíquota diferente; a margem final oscila conforme o destino da carga.</div>
+            </div>
+            <div>
+              <div style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#9aa1ab;">Ação recomendada</div>
+              <div style="margin-top:8px; font-size:14.5px; font-weight:500; color:#111827; line-height:1.55;">Confirme o estado de destino da mercadoria.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACHADO 3 médio -->
+        <div style="background:#fff; border:1px solid #eceef1; border-left:5px solid #2563EB; border-radius:16px; padding:22px 24px; box-shadow:0 8px 24px rgba(17,24,39,.04);">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:12px; font-weight:600; color:#1d4ed8; background:rgba(37,99,235,.12); padding:5px 12px; border-radius:20px;">Médio</span>
+            <span style="font-size:17px; font-weight:600; letter-spacing:-.01em;">Câmbio usado é a cotação spot de hoje</span>
+          </div>
+          <div style="margin-top:18px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px;">
+            <div>
+              <div style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#9aa1ab;">Evidência</div>
+              <div style="margin-top:8px; font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:13px; color:#374151; background:#F3F4F6; border-radius:10px; padding:10px 12px; line-height:1.55;">USD/BRL 5,42<br>spot · 06/07<br>sem trava</div>
+            </div>
+            <div>
+              <div style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#9aa1ab;">Por que importa</div>
+              <div style="margin-top:8px; font-size:14.5px; font-weight:400; color:#374151; line-height:1.55;">Uma variação de 3% no dólar move o custo total em cerca de R$ 4,4 mil.</div>
+            </div>
+            <div>
+              <div style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#9aa1ab;">Ação recomendada</div>
+              <div style="margin-top:8px; font-size:14.5px; font-weight:500; color:#111827; line-height:1.55;">Trave o câmbio ou simule um cenário de estresse.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACHADO 4 ok -->
+        <sc-if value="{{ showOk }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#fff; border:1px solid #eceef1; border-left:5px solid #16A34A; border-radius:16px; padding:22px 24px; box-shadow:0 8px 24px rgba(17,24,39,.04);">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:12px; font-weight:600; color:#15803d; background:rgba(22,163,74,.12); padding:5px 12px; border-radius:20px;">Ok</span>
+            <span style="font-size:17px; font-weight:600; letter-spacing:-.01em;">Frete e seguro dentro da média da rota</span>
+          </div>
+          <div style="margin-top:18px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px;">
+            <div>
+              <div style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#9aa1ab;">Evidência</div>
+              <div style="margin-top:8px; font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:13px; color:#374151; background:#F3F4F6; border-radius:10px; padding:10px 12px; line-height:1.55;">frete US$ 3.480<br>seguro US$ 210<br>Shenzhen–Santos</div>
+            </div>
+            <div>
+              <div style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#9aa1ab;">Por que importa</div>
+              <div style="margin-top:8px; font-size:14.5px; font-weight:400; color:#374151; line-height:1.55;">Custos logísticos compatíveis com o histórico da rota neste trimestre.</div>
+            </div>
+            <div>
+              <div style="font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#9aa1ab;">Ação recomendada</div>
+              <div style="margin-top:8px; font-size:14.5px; font-weight:500; color:#111827; line-height:1.55;">Nenhuma ação necessária.</div>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer style="position:sticky; bottom:0; margin-top:auto; background:rgba(255,255,255,.86); backdrop-filter:blur(10px); border-top:1px solid #e7e9ec; padding:18px 40px; display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap;">
+      <span style="font-size:13.5px; font-weight:400; color:#6B7280;">Resolva os pontos críticos e gere o relatório para o seu despachante.</span>
+      <div style="display:flex; gap:12px;">
+        <button style="border:1px solid #e5e7eb; cursor:pointer; font-family:inherit; font-size:14px; font-weight:500; color:#374151; background:#fff; padding:12px 20px; border-radius:12px; display:flex; align-items:center; gap:8px;">
+          <i data-lucide="sliders-horizontal" style="width:17px; height:17px; color:#6D28D9;"></i> Ajustar simulação
+        </button>
+        <button style="border:none; cursor:pointer; font-family:inherit; font-size:14px; font-weight:500; color:#fff; background:#2563EB; padding:12px 22px; border-radius:12px; display:flex; align-items:center; gap:8px; box-shadow:0 8px 20px rgba(37,99,235,.28);">
+          <i data-lucide="file-text" style="width:17px; height:17px;"></i> Gerar relatório
+        </button>
+      </div>
+    </footer>
+
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;riskScore&quot;: { &quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 46, &quot;min&quot;: 0, &quot;max&quot;: 100, &quot;step&quot;: 1, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Score de risco&quot; },
+  &quot;showOk&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Achados&quot; }
+}">
+class Component extends DCLogic {
+  renderVals() {
+    const score = Math.max(0, Math.min(100, Math.round(this.props.riskScore ?? 46)));
+    let color, word, tint;
+    if (score < 40) { color = '#16A34A'; word = 'Baixo'; tint = 'rgba(22,163,74,.12)'; }
+    else if (score < 70) { color = '#F97316'; word = 'Médio'; tint = 'rgba(249,115,22,.13)'; }
+    else { color = '#E05252'; word = 'Alto'; tint = 'rgba(224,82,82,.14)'; }
+    const f = score / 100;
+    return {
+      scoreLabel: String(score),
+      gaugeColor: color,
+      riskWord: word,
+      riskTint: tint,
+      gaugeFilled: (f * 270).toFixed(1) + 'deg',
+      needleDeg: (-135 + f * 270).toFixed(1) + 'deg',
+      showOk: this.props.showOk ?? true,
+    };
+  }
+  drawIcons() {
+    if (window.lucide) window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
+  }
+  componentDidMount() {
+    this.drawIcons();
+    setTimeout(() => this.drawIcons(), 300);
+  }
+  componentDidUpdate() { this.drawIcons(); }
+}
+</script>
+</body>
+</html>
