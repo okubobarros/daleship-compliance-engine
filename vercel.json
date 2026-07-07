@@ -5,8 +5,13 @@
   "installCommand": "",
   "redirects": [
     {
+      "source": "/landing.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
       "source": "/design/mockups/homepage.html",
-      "destination": "/landing.html",
+      "destination": "/",
       "permanent": false
     },
     {
@@ -31,7 +36,7 @@
     },
     {
       "source": "/design/mockups/redefinir-senha.html",
-      "destination": "/landing.html",
+      "destination": "/",
       "permanent": false
     },
     {
@@ -40,10 +45,5 @@
       "permanent": false
     }
   ],
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/landing.html"
-    }
-  ]
+  "rewrites": []
 }

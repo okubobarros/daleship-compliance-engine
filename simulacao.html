@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Simulação | Despachante de Bolso</title>
+  <title>Novo processo | Despachante de Bolso</title>
   <meta name="theme-color" content="#f3f4f6" />
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
@@ -12,110 +12,222 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: 'Poppins', system-ui, sans-serif; background: #f4f6fa; color:#111827; }
-    a { text-decoration:none; color:inherit; }
-    .shell { display:flex; min-height:100vh; }
-    .sidebar { width:80px; background:#111827; display:flex; flex-direction:column; align-items:center; padding:20px 0; }
-    .mark { width:44px; height:44px; border-radius:14px; background:#fff; border:1px solid rgba(255,255,255,.12); box-shadow:0 10px 24px rgba(109,40,217,.34); object-fit:contain; }
-    .main { flex:1; padding:34px 40px 44px; }
-    .top { display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap; }
-    .eyebrow { font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#6b7280; }
-    h1 { margin:8px 0 0; font-size:32px; letter-spacing:-.03em; }
-    .muted { color:#6b7280; margin-top:6px; }
-    .grid { margin-top:24px; display:grid; grid-template-columns:1.2fr .8fr; gap:20px; }
-    .card { background:#fff; border:1px solid #eceef1; border-radius:20px; padding:24px; box-shadow:0 10px 30px rgba(17,24,39,.05); }
-    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:20px; }
-    .stat { background:#fff; border:1px solid #eceef1; border-radius:18px; padding:20px; }
-    .label { font-size:12px; font-weight:700; letter-spacing:.12em; color:#6b7280; text-transform:uppercase; }
-    .btn { display:inline-flex; align-items:center; justify-content:center; padding:14px 18px; border-radius:14px; font-weight:700; }
-    .btn-primary { background:#2563EB; color:#fff; box-shadow:0 14px 28px rgba(37,99,235,.22); }
-    .btn-secondary { border:1px solid #e5e7eb; background:#fff; color:#374151; }
-    .actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:22px; }
-    .tag { display:inline-flex; padding:6px 10px; border-radius:999px; background:rgba(37,99,235,.08); color:#1d4ed8; font-size:12px; font-weight:600; }
-    .bullet { display:flex; gap:10px; margin-top:14px; color:#374151; }
-    @media (max-width: 960px) { .grid, .stats { grid-template-columns:1fr; } .main { padding:24px; } }
+    body {
+      margin: 0;
+      font-family: 'Poppins', system-ui, sans-serif;
+      background:
+        radial-gradient(1000px 420px at 18% 0%, rgba(37,99,235,.08), transparent 55%),
+        radial-gradient(900px 360px at 84% 8%, rgba(249,115,22,.10), transparent 48%),
+        #f3f4f6;
+      color:#111827;
+    }
+    a { color: inherit; text-decoration:none; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 28px 24px 56px; }
+    .nav { display:flex; align-items:center; justify-content:space-between; gap:18px; flex-wrap:wrap; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .brand img { width:44px; height:44px; border-radius:14px; border:1px solid #eceef1; background:#fff; box-shadow:0 10px 24px rgba(17,24,39,.06); object-fit:contain; }
+    .brand-title { font-size:16px; font-weight:700; line-height:1.1; }
+    .brand-sub { font-size:11px; color:#6b7280; margin-top:2px; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:13px 18px; border-radius:14px; font-weight:700; }
+    .btn-primary { background:linear-gradient(90deg,#2563EB,#6D28D9); color:#fff; box-shadow:0 16px 34px rgba(37,99,235,.22); }
+    .btn-secondary { background:#fff; border:1px solid #e5e7eb; color:#374151; box-shadow:0 12px 24px rgba(17,24,39,.06); }
+    .panel {
+      margin-top: 24px;
+      background:#fff;
+      border:1px solid #eceef1;
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow:0 24px 60px rgba(17,24,39,.08);
+    }
+    .eyebrow { font-size:12px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:#4f46e5; }
+    h1 { margin:10px 0 0; font-size:clamp(34px, 4vw, 52px); line-height:.98; letter-spacing:-.05em; }
+    .lead { margin-top:14px; color:#4b5563; line-height:1.7; max-width: 72ch; }
+    .grid { margin-top:26px; display:grid; grid-template-columns:1.1fr .9fr; gap:18px; }
+    .card { background:#fafbfc; border:1px solid #eceef1; border-radius:22px; padding:22px; }
+    .label { font-size:11px; font-weight:800; letter-spacing:.14em; color:#6b7280; text-transform:uppercase; }
+    .field { display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+    .field input, .field select, .field textarea {
+      width:100%;
+      border:1px solid #e5e7eb;
+      border-radius:14px;
+      padding:13px 14px;
+      font: inherit;
+      color:#111827;
+      background:#fff;
+      outline:none;
+    }
+    .field textarea { min-height: 116px; resize: vertical; }
+    .hint { font-size:12px; color:#6b7280; line-height:1.55; }
+    .upload {
+      border:1px dashed #d7dbe3;
+      border-radius:16px;
+      padding:14px;
+      background:#fff;
+      margin-top:12px;
+    }
+    .upload strong { display:block; font-size:14px; }
+    .upload small { display:block; margin-top:4px; color:#6b7280; line-height:1.5; }
+    .doc-list { margin-top:12px; display:flex; flex-direction:column; gap:10px; }
+    .doc-pill {
+      display:flex; justify-content:space-between; gap:14px; align-items:center;
+      border:1px solid #eceef1; background:#fff; padding:12px 14px; border-radius:14px;
+      color:#374151; font-size:13px;
+    }
+    .doc-pill span { color:#6b7280; }
+    .actions { margin-top:22px; display:flex; gap:12px; flex-wrap:wrap; }
+    .steps {
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:12px;
+      margin-top:18px;
+    }
+    .step {
+      border:1px solid #eceef1;
+      border-radius:18px;
+      padding:16px;
+      background:#fff;
+    }
+    .step .n { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:9px; background:rgba(37,99,235,.08); color:#2563EB; font-size:12px; font-weight:800; }
+    .step h3 { margin:10px 0 0; font-size:15px; }
+    .step p { margin:8px 0 0; color:#6b7280; font-size:13px; line-height:1.6; }
+    .footer { margin-top:18px; color:#6b7280; font-size:13px; display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+    @media (max-width: 920px) {
+      .grid, .steps { grid-template-columns:1fr; }
+    }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <aside class="sidebar">
-      <img class="mark" src="/logo.png" alt="Despachante de Bolso" />
-      <div style="margin-top:34px; display:flex; flex-direction:column; gap:10px;">
-        <img class="mark" src="/favicon.png" alt="" style="width:46px;height:46px;opacity:.22;" />
-        <img class="mark" src="/favicon.png" alt="" style="width:46px;height:46px;opacity:.12;" />
-      </div>
-    </aside>
-    <main class="main">
-      <div class="top">
+  <div class="wrap">
+    <header class="nav">
+      <a class="brand" href="/" aria-label="Despachante de Bolso">
+        <img src="/logo.png" alt="Despachante de Bolso" />
         <div>
-          <div class="eyebrow">Sua primeira simulação</div>
-          <h1>Importe com inteligência. Venda com lucro.</h1>
-          <div class="muted">Diga o que você quer importar e veja o custo real da operação antes de gastar um centavo.</div>
+          <div class="brand-title">Despachante de Bolso</div>
+          <div class="brand-sub">Inteligência aduaneira para importação</div>
         </div>
-        <div class="card" style="width:330px;">
-          <div class="label">Confiança da simulação</div>
-          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:8px;">
-            <div style="font-size:32px; font-weight:800; color:#6D28D9;">82%</div>
-            <div style="font-size:13px; color:#6b7280;">11 de 14 variáveis confirmadas</div>
-          </div>
-          <div style="height:10px; border-radius:999px; background:#eef0f3; margin-top:12px; overflow:hidden;">
-            <div style="height:100%; width:82%; background:linear-gradient(90deg,#2563EB,#6D28D9);"></div>
-          </div>
-        </div>
-      </div>
+      </a>
+      <a class="btn btn-secondary" href="/">Voltar à home</a>
+    </header>
 
-      <div class="stats">
-        <div class="stat">
-          <div class="label">Custo total</div>
-          <div style="margin-top:12px; font-size:32px; font-weight:800;">R$ 148.320</div>
-          <div class="muted">Landed cost · 14 itens</div>
-        </div>
-        <div class="stat">
-          <div class="label">Impostos</div>
-          <div style="margin-top:12px; font-size:32px; font-weight:800;">R$ 43.013</div>
-          <div class="muted">II + IPI + PIS/COFINS + ICMS</div>
-        </div>
-        <div class="stat">
-          <div class="label">Frete internacional</div>
-          <div style="margin-top:12px; font-size:32px; font-weight:800;">R$ 19.281</div>
-          <div class="muted">Shenzhen → Santos · marítimo</div>
-        </div>
-      </div>
+    <section class="panel">
+      <div class="eyebrow">Novo processo</div>
+      <h1>Inicie uma conferência real de importação</h1>
+      <p class="lead">Informe a referência, descreva a operação e anexe os documentos. Esta tela captura a entrada do processo sem inventar resultado antes da análise.</p>
 
       <div class="grid">
-        <section class="card">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <div class="mark" style="width:48px;height:48px;"></div>
-            <div>
-              <div style="font-size:16px; font-weight:700;">Parecer do agente</div>
-              <div style="font-size:13px; color:#6D28D9; font-weight:600;">ComexPilot · seu despachante de IA</div>
-            </div>
+        <form class="card" id="process-form">
+          <div class="label">Dados do processo</div>
+          <div class="field">
+            <label for="reference">Referência</label>
+            <input id="reference" name="reference" placeholder="Ex.: PO-2026-0142" required />
           </div>
-          <p style="margin:18px 0 0; color:#374151; line-height:1.72;">
-            O que mais comprime a margem não são os impostos federais, e sim o ICMS do estado de destino.
-            Assumindo São Paulo, com alíquota de 18%, a margem projetada cai de 34% para 28%.
-          </p>
-          <div class="actions">
-            <a class="btn btn-primary" href="/loading.html">Executar simulação</a>
-            <a class="btn btn-secondary" href="/resultado.html">Ver resultado pronto</a>
+          <div class="field">
+            <label for="origin">Origem</label>
+            <input id="origin" name="origin" placeholder="Ex.: Shenzhen, China" />
           </div>
-        </section>
+          <div class="field">
+            <label for="destination">Destino</label>
+            <input id="destination" name="destination" placeholder="Ex.: Santos, SP" />
+          </div>
+          <div class="field">
+            <label for="summary">Descrição da mercadoria</label>
+            <textarea id="summary" name="summary" placeholder="Descreva o produto, a família fiscal e o contexto da operação."></textarea>
+          </div>
 
-        <section class="card">
-          <div class="label">Composição de custos</div>
-          <div style="margin-top:20px; width:180px; height:180px; border-radius:50%; background:conic-gradient(#2563EB 0 198deg,#6D28D9 198deg 302deg,#F97316 302deg 350deg,#6B7280 350deg 360deg); display:grid; place-items:center; margin-inline:auto;">
-            <div style="width:118px; height:118px; border-radius:50%; background:#fff; display:grid; place-items:center; text-align:center;">
-              <div style="font-size:12px; color:#6b7280;">Total</div>
-              <div style="font-size:22px; font-weight:800;">R$ 148,3k</div>
-            </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Enviar para análise</button>
+            <a class="btn btn-secondary" href="/">Cancelar</a>
           </div>
-          <div class="bullet"><span style="width:10px;height:10px;border-radius:3px;background:#2563EB;display:inline-block;margin-top:7px;"></span>Mercadoria (FOB)</div>
-          <div class="bullet"><span style="width:10px;height:10px;border-radius:3px;background:#6D28D9;display:inline-block;margin-top:7px;"></span>Impostos</div>
-          <div class="bullet"><span style="width:10px;height:10px;border-radius:3px;background:#F97316;display:inline-block;margin-top:7px;"></span>Frete internacional</div>
-          <div class="bullet"><span style="width:10px;height:10px;border-radius:3px;background:#6B7280;display:inline-block;margin-top:7px;"></span>Despesas aduaneiras</div>
-        </section>
+        </form>
+
+        <aside class="card">
+          <div class="label">Documentos</div>
+          <div class="hint">Anexe os arquivos que você já possui. Se ainda não tiver tudo, avance com o que estiver disponível e complete depois.</div>
+
+          <div class="upload">
+            <strong>Invoice</strong>
+            <small>PDF, imagem ou planilha. O nome do arquivo fica registrado na sessão local.</small>
+            <input id="invoice" type="file" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls" style="margin-top:10px;" />
+          </div>
+          <div class="upload">
+            <strong>Packing List</strong>
+            <small>Documento separado ou integrado ao pacote da operação.</small>
+            <input id="packing" type="file" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls" style="margin-top:10px;" />
+          </div>
+          <div class="upload">
+            <strong>Documento de transporte</strong>
+            <small>BL, AWB ou CRT. A conferência segue com a etapa seguinte.</small>
+            <input id="transport" type="file" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls" style="margin-top:10px;" />
+          </div>
+
+          <div class="doc-list" id="selected-files" aria-live="polite"></div>
+        </aside>
       </div>
-    </main>
+
+      <div class="steps">
+        <div class="step">
+          <div class="n">1</div>
+          <h3>Entrada</h3>
+          <p>Captura de referência e documentos para iniciar a conferência.</p>
+        </div>
+        <div class="step">
+          <div class="n">2</div>
+          <h3>Processamento</h3>
+          <p>A próxima etapa mostra o progresso da leitura e da conciliação.</p>
+        </div>
+        <div class="step">
+          <div class="n">3</div>
+          <h3>Resultado</h3>
+          <p>O fechamento exibe o estado final e o ponto de revisão.</p>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Sem números fabricados. A tela só registra a entrada.</span>
+        <span><a href="/loading.html">Ver etapa seguinte</a></span>
+      </div>
+    </section>
   </div>
+
+  <script>
+    const invoice = document.getElementById('invoice');
+    const packing = document.getElementById('packing');
+    const transport = document.getElementById('transport');
+    const selected = document.getElementById('selected-files');
+    const form = document.getElementById('process-form');
+
+    function renderFiles() {
+      const files = [
+        ['Invoice', invoice.files[0]],
+        ['Packing List', packing.files[0]],
+        ['Transporte', transport.files[0]],
+      ].filter(([, file]) => file);
+
+      selected.innerHTML = files.length
+        ? files.map(([label, file]) => `<div class="doc-pill"><strong>${label}</strong><span>${file.name}</span></div>`).join('')
+        : '<div class="doc-pill"><strong>Nenhum arquivo selecionado</strong><span>Selecione os arquivos para continuar</span></div>';
+    }
+
+    [invoice, packing, transport].forEach((input) => input.addEventListener('change', renderFiles));
+    renderFiles();
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const state = {
+        reference: document.getElementById('reference').value.trim(),
+        origin: document.getElementById('origin').value.trim(),
+        destination: document.getElementById('destination').value.trim(),
+        summary: document.getElementById('summary').value.trim(),
+        files: {
+          invoice: invoice.files[0]?.name || null,
+          packing: packing.files[0]?.name || null,
+          transport: transport.files[0]?.name || null,
+        },
+        startedAt: new Date().toISOString(),
+      };
+      sessionStorage.setItem('daleship.process', JSON.stringify(state));
+      location.href = '/loading.html';
+    });
+  </script>
 </body>
 </html>

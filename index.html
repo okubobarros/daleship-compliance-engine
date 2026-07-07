@@ -1,10 +1,387 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta http-equiv="refresh" content="0; url=/landing.html" />
-    <title>Despachante de Bolso</title>
-  </head>
-  <body></body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Despachante de Bolso</title>
+  <meta name="description" content="Importe com inteligência. Venda com lucro. Auditoria aduaneira pré-embarque com foco em custo, risco e margem." />
+  <meta name="theme-color" content="#f3f4f6" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: 'Poppins', system-ui, sans-serif;
+      background:
+        radial-gradient(1100px 500px at 20% 0%, rgba(37,99,235,.08), transparent 55%),
+        radial-gradient(900px 480px at 85% 12%, rgba(249,115,22,.10), transparent 52%),
+        #f3f4f6;
+      color: #111827;
+    }
+    a { color: inherit; text-decoration: none; }
+    .wrap { max-width: 1220px; margin: 0 auto; padding: 28px 30px 72px; }
+    .nav { display:flex; align-items:center; justify-content:space-between; gap:18px; padding: 6px 0 28px; }
+    .brand { display:flex; align-items:center; gap:12px; min-width: 260px; }
+    .brand img { width: 44px; height: 44px; object-fit: contain; border-radius: 14px; background: #fff; border:1px solid #eceef1; box-shadow:0 12px 24px rgba(17,24,39,.06); }
+    .brand-title { font-size: 16px; font-weight: 700; line-height: 1.1; }
+    .brand-sub { font-size: 11px; color:#6b7280; margin-top: 2px; }
+    .navlinks { display:flex; gap:24px; flex-wrap:wrap; color:#374151; font-size:14px; justify-content:center; }
+    .navlinks a:hover { color:#111827; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:10px; border-radius:14px; padding:14px 22px; font-weight:700; transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: linear-gradient(90deg,#2563EB,#6D28D9); color:#fff; box-shadow:0 16px 34px rgba(37,99,235,.22); }
+    .btn-secondary { background:#fff; border:1px solid #e5e7eb; color:#374151; box-shadow:0 12px 24px rgba(17,24,39,.06); }
+    .hero { display:grid; grid-template-columns: 1.02fr .98fr; gap: 40px; align-items:center; padding: 20px 0 34px; }
+    .eyebrow {
+      display:inline-flex; align-items:center; gap:10px; padding:8px 14px; border-radius:999px;
+      background:rgba(37,99,235,.08); border:1px solid rgba(37,99,235,.12);
+      color:#4f46e5; font-size:11px; font-weight:800; letter-spacing:.16em; text-transform:uppercase;
+    }
+    h1 { margin: 18px 0 0; font-size: clamp(48px, 6.1vw, 74px); line-height: .95; letter-spacing: -.055em; color:#111827; }
+    .accent { color:#2563EB; }
+    .accent2 { color:#F97316; }
+    .lead { margin: 18px 0 0; max-width: 60ch; font-size: 18px; line-height: 1.66; color:#4b5563; }
+    .cta-row { display:flex; gap:14px; flex-wrap:wrap; margin-top: 28px; }
+    .badges { display:flex; gap:12px; flex-wrap:wrap; margin-top: 24px; }
+    .badge { display:inline-flex; align-items:center; gap:8px; padding:9px 12px; border-radius:999px; background:#fff; border:1px solid #eceef1; color:#4b5563; font-size:13px; box-shadow:0 12px 24px rgba(17,24,39,.04); }
+    .badge i { color:#2563EB; width:15px; height:15px; }
+    .hero-visual {
+      position:relative;
+      background: linear-gradient(180deg,#ffffff,#fbfbfd);
+      border:1px solid #eceef1;
+      border-radius: 30px;
+      padding: 30px;
+      box-shadow: 0 24px 60px rgba(17,24,39,.08);
+      overflow:hidden;
+    }
+    .hero-visual::before {
+      content:"";
+      position:absolute;
+      inset:-120px -100px auto auto;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(37,99,235,.14), transparent 68%);
+      pointer-events:none;
+    }
+    .hero-logo {
+      display:grid;
+      place-items:center;
+      min-height: 300px;
+      background: radial-gradient(280px 160px at 50% 18%, rgba(37,99,235,.08), transparent 60%);
+      border-radius: 22px;
+      border:1px solid #f1f3f7;
+    }
+    .hero-logo img { width:min(260px, 72%); display:block; filter: drop-shadow(0 18px 30px rgba(37,99,235,.18)); }
+    .hero-visual .caption {
+      margin-top: 16px;
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      color:#6b7280;
+      font-size:13px;
+      flex-wrap:wrap;
+    }
+    .feature-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top: 30px; }
+    .card {
+      background:#fff;
+      border:1px solid #eceef1;
+      border-radius:22px;
+      padding:22px;
+      box-shadow:0 14px 32px rgba(17,24,39,.05);
+    }
+    .card-top { display:flex; align-items:center; gap:14px; }
+    .chip {
+      display:inline-grid;
+      place-items:center;
+      width:48px;
+      height:48px;
+      border-radius:15px;
+      background:rgba(37,99,235,.08);
+      color:#2563EB;
+      flex: 0 0 auto;
+    }
+    .chip.orange { background:rgba(249,115,22,.10); color:#F97316; }
+    .chip.purple { background:rgba(109,40,217,.10); color:#6D28D9; }
+    .card h3 { margin: 0; font-size: 17px; }
+    .card p { margin: 12px 0 0; color:#6b7280; line-height:1.6; font-size:14px; }
+    .section-title {
+      margin-top: 40px;
+      display:flex;
+      justify-content:space-between;
+      align-items:end;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+    .section-title .kicker { font-size:11px; font-weight:800; letter-spacing:.16em; color:#4f46e5; text-transform:uppercase; }
+    .section-title h2 { margin:8px 0 0; font-size: 30px; letter-spacing:-.03em; }
+    .section-title p { margin:0; max-width:68ch; color:#6b7280; line-height:1.6; }
+    .journey { margin-top: 22px; display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    .step {
+      background:#fff;
+      border:1px solid #eceef1;
+      border-radius:22px;
+      padding:22px;
+      box-shadow:0 12px 28px rgba(17,24,39,.05);
+      display:flex;
+      gap:14px;
+    }
+    .step .icon {
+      width:46px;
+      height:46px;
+      border-radius:15px;
+      background:rgba(37,99,235,.08);
+      color:#2563EB;
+      display:grid;
+      place-items:center;
+      flex:0 0 auto;
+    }
+    .step.orange .icon { background:rgba(249,115,22,.10); color:#F97316; }
+    .step.purple .icon { background:rgba(109,40,217,.10); color:#6D28D9; }
+    .step .meta { font-size:11px; font-weight:800; letter-spacing:.16em; color:#4f46e5; text-transform:uppercase; }
+    .step h3 { margin:8px 0 0; font-size:18px; }
+    .step p { margin:10px 0 0; color:#6b7280; line-height:1.6; font-size:14px; }
+    .step a {
+      display:inline-flex;
+      margin-top:14px;
+      align-items:center;
+      gap:8px;
+      color:#2563EB;
+      font-weight:700;
+      font-size:14px;
+    }
+    .cta-panel {
+      margin-top: 36px;
+      background: linear-gradient(135deg, rgba(37,99,235,.10), rgba(109,40,217,.10));
+      border: 1px solid rgba(37,99,235,.10);
+      border-radius: 28px;
+      padding: 28px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 18px;
+      flex-wrap:wrap;
+      box-shadow: 0 20px 44px rgba(17,24,39,.06);
+    }
+    .cta-panel strong { display:block; font-size: 22px; letter-spacing:-.03em; color:#111827; }
+    .cta-panel span { display:block; margin-top: 6px; color:#6b7280; max-width: 60ch; line-height:1.6; }
+    .footer {
+      margin-top: 34px;
+      padding-top: 24px;
+      border-top:1px solid #e5e7eb;
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+      color:#6b7280;
+      font-size:13px;
+    }
+    .icon-row {
+      margin-top: 18px;
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .icon-pill {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background:#fff;
+      border:1px solid #eceef1;
+      color:#4b5563;
+      font-size:13px;
+      box-shadow:0 10px 22px rgba(17,24,39,.04);
+    }
+    .icon-pill i { width:16px; height:16px; color:#2563EB; flex:0 0 auto; }
+    .icon-pill.orange i { color:#F97316; }
+    .icon-pill.purple i { color:#6D28D9; }
+    @media (max-width: 1080px) {
+      .hero { grid-template-columns:1fr; }
+      .feature-grid, .journey { grid-template-columns:1fr; }
+      .icon-row { grid-template-columns:1fr; }
+      .nav { flex-direction:column; align-items:flex-start; }
+      .brand { min-width: unset; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="nav">
+      <a class="brand" href="/" aria-label="Despachante de Bolso">
+        <img src="/logo.png" alt="Despachante de Bolso" />
+        <div>
+          <div class="brand-title">Despachante de Bolso</div>
+          <div class="brand-sub">Inteligência aduaneira para importação</div>
+        </div>
+      </a>
+      <nav class="navlinks" aria-label="Navegação principal">
+        <a href="#produto">Produto</a>
+        <a href="#riscos">Riscos</a>
+        <a href="#jornada">Como funciona</a>
+        <a href="#arquitetura">Arquitetura</a>
+      </nav>
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <a class="btn btn-secondary" href="/simulacao.html">Entrar</a>
+        <a class="btn btn-primary" href="/simulacao.html">Testar auditoria gratuita</a>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div>
+        <div class="eyebrow">Auditoria pré-embarque · análise em minutos</div>
+        <h1>Importe com <span class="accent">inteligência</span>.<br />Venda com <span class="accent2">lucro</span>.</h1>
+        <p class="lead">O primeiro agente de IA especializado em comércio exterior que calcula custos, impostos e margem de lucro antes da sua compra. Um fluxo sequencial, com URLs próprias, para parecer produto de verdade e não interface improvisada.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="/simulacao.html">Simular minha importação</a>
+          <a class="btn btn-secondary" href="/resultado.html">Ver resultado da etapa</a>
+        </div>
+        <div class="badges" aria-label="Destaques">
+          <div class="badge"><i data-lucide="clock-3"></i> Resultado em minutos</div>
+          <div class="badge"><i data-lucide="brain"></i> IA treinada para comércio exterior</div>
+          <div class="badge"><i data-lucide="shield-check"></i> Mais segurança nas decisões</div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-logo">
+          <img src="/logo.png" alt="Símbolo da marca Despachante de Bolso" />
+        </div>
+        <div class="caption">
+          <span><strong style="color:#111827;">Visual da marca</strong> aplicado na interface pública</span>
+          <span>Blue + orange, sem aparência de template genérico</span>
+        </div>
+        <div class="icon-row">
+          <div class="icon-pill"><i data-lucide="file-search"></i> Audita documentos e contexto</div>
+          <div class="icon-pill purple"><i data-lucide="sparkles"></i> Texto profissional e decisões claras</div>
+          <div class="icon-pill orange"><i data-lucide="badge-dollar-sign"></i> Foco em custo, margem e risco</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="produto" class="feature-grid">
+      <div class="card">
+        <div class="card-top">
+          <div class="chip"><i data-lucide="package"></i></div>
+          <h3>Custo total</h3>
+        </div>
+        <p>Leitura do landed cost real, item a item, sem surpresa no desembaraço.</p>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <div class="chip purple"><i data-lucide="calculator"></i></div>
+          <h3>Impostos</h3>
+        </div>
+        <p>II, IPI, PIS/COFINS e ICMS contextualizados para a sua operação.</p>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <div class="chip orange"><i data-lucide="trending-up"></i></div>
+          <h3>Margem</h3>
+        </div>
+        <p>Margem projetada já com todos os custos embutidos e pronta para decisão.</p>
+      </div>
+    </section>
+
+    <div class="section-title" id="jornada">
+      <div>
+        <div class="kicker">Jornada</div>
+        <h2>Fluxo principal da operação</h2>
+      </div>
+      <p>Uma sequência clara, com URLs próprias e retorno entre etapas para uma experiência profissional em produção.</p>
+    </div>
+
+    <section class="journey">
+      <div class="step">
+        <div class="icon"><i data-lucide="log-in"></i></div>
+        <div>
+          <div class="meta">Passo 01</div>
+          <h3>Entrada</h3>
+          <p>Cadastro simples e início da simulação com a identidade visual da marca.</p>
+          <a href="/simulacao.html">Abrir etapa de entrada <i data-lucide="arrow-right"></i></a>
+        </div>
+      </div>
+      <div class="step purple">
+        <div class="icon"><i data-lucide="loader-circle"></i></div>
+        <div>
+          <div class="meta">Passo 02</div>
+          <h3>Processamento</h3>
+          <p>Estado de carregamento com indicação clara do que está acontecendo.</p>
+          <a href="/loading.html">Ver etapa de processamento <i data-lucide="arrow-right"></i></a>
+        </div>
+      </div>
+      <div class="step orange">
+        <div class="icon"><i data-lucide="badge-check"></i></div>
+        <div>
+          <div class="meta">Passo 03</div>
+          <h3>Resultado</h3>
+          <p>Resumo financeiro e decisório, pronto para avançar ou voltar ao ponto anterior.</p>
+          <a href="/resultado.html">Ver resultado final <i data-lucide="arrow-right"></i></a>
+        </div>
+      </div>
+    </section>
+
+    <section id="riscos" class="section-title">
+      <div>
+        <div class="kicker">Riscos</div>
+        <h2>O que a auditoria evita</h2>
+      </div>
+      <p>Conferência manual, erro documental, margem corroída e decisão tomada tarde demais. A home precisa vender a redução desse risco com clareza.</p>
+    </section>
+
+    <section class="feature-grid" style="margin-top:18px;">
+      <div class="card">
+        <div class="card-top">
+          <div class="chip"><i data-lucide="shield-alert"></i></div>
+          <h3>Risco fiscal</h3>
+        </div>
+        <p>Classificação inconsistente e custo tributário que só aparece quando já é tarde.</p>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <div class="chip purple"><i data-lucide="triangle-alert"></i></div>
+          <h3>Risco documental</h3>
+        </div>
+        <p>Invoice, packing list e transporte lidos em conjunto para evitar divergência.</p>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <div class="chip orange"><i data-lucide="wallet"></i></div>
+          <h3>Risco de margem</h3>
+        </div>
+        <p>Venda com lucro real, não com um preço que some no momento da operação.</p>
+      </div>
+    </section>
+
+    <section id="arquitetura" class="cta-panel">
+      <div>
+        <strong>Um fluxo profissional, com visual de produto e navegação sequencial.</strong>
+        <span>Se o usuário entrar pela home, ele entende o valor, testa a simulação, acompanha o carregamento e chega ao resultado sem ficar preso na mesma página.</span>
+      </div>
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <a class="btn btn-secondary" href="/resultado.html">Ver resultado</a>
+        <a class="btn btn-primary" href="/simulacao.html">Testar auditoria gratuita</a>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div>© 2026 · Importe com inteligência. Venda com lucro.</div>
+      <div><a href="/simulacao.html">Abrir operação</a> · <a href="/resultado.html">Ver resultado</a></div>
+    </footer>
+  </div>
+
+  <script>
+    if (window.lucide) {
+      window.lucide.createIcons({ attrs: { 'stroke-width': 1.75 } });
+      setTimeout(() => window.lucide.createIcons({ attrs: { 'stroke-width': 1.75 } }), 250);
+    }
+  </script>
+</body>
 </html>
