@@ -1,0 +1,25 @@
+-- Migration 0006 — índice ANN (pgvector HNSW) na coluna normas.embedding.
+--
+-- Antes: toda busca semântica (sugestão de NCM, precedentes, buscar_norma) fazia Seq Scan da
+-- tabela inteira calculando distância linha a linha (~2,8 s por item; inviável para invoice grande).
+-- HNSW escolhido sobre IVFFlat: melhor recall, sem parâmetro de treino (lists/probes), e o
+-- pgvector 0.8 suporta iterative scan (importante porque as queries filtram por tipo_documento e
+-- por regex de identificador — evita devolver menos que k após o filtro).
+--
+-- vector_cosine_ops porque as queries usam o operador <=> (distância de cosseno). Defaults de
+-- HNSW (m=16, ef_construction=64) são adequados para ~21k linhas. Índice sobre TODA a coluna
+-- (não parcial) para servir NCM, Soluções de Consulta, Tratamento Administrativo e RGI.
+--
+-- NÃO muda nenhum resultado de sugestão — só o plano de execução (Seq Scan -> Index Scan).
+--
+-- REQUISITO app-side (companheiro obrigatório deste índice): as queries de busca vetorial filtram
+-- por tipo_documento/regex APÓS o ANN; com iterative_scan desligado (default), o Index Scan pode
+-- devolver menos/zero linhas (os vizinhos mais próximos podem ser de outro tipo e caírem no filtro).
+-- Por isso app/rag.py abre a conexão de busca com:
+--     SET hnsw.iterative_scan = 'strict_order';  SET hnsw.ef_search = 100;
+-- que dão PARIDADE com a busca exata (mesmos top-k, verificado nos 3 itens reais). O Supabase não
+-- permite fixar isso via ALTER DATABASE (parâmetro de extensão, role sem privilégio), então é SET
+-- por sessão. Qualquer outro caminho de busca vetorial (ex.: mcp-server/src/tools/rag_search.py)
+-- deve fazer o mesmo SET.
+CREATE INDEX IF NOT EXISTS normas_embedding_hnsw
+    ON normas USING hnsw (embedding vector_cosine_ops);

@@ -27,10 +27,23 @@ def _emb_query(query: str):
     return asyncio.run(emb.embed([query], input_type="query"))[0]
 
 
+def _conectar_ann():
+    """Conexão para busca vetorial (HNSW). Liga o iterative scan do pgvector 0.8 para o índice
+    ANN devolver k resultados mesmo APÓS os filtros (tipo_documento/regex) — sem isso o Index Scan
+    pode retornar menos/zero linhas (os vizinhos mais próximos podem ser de outro tipo_documento e
+    caírem no filtro). strict_order + ef_search=100 dão PARIDADE com a busca exata (mesmos top-k),
+    só mais rápido. Ver migration 0006_normas_embedding_hnsw.sql."""
+    conn = psycopg2.connect(DATABASE_URL)
+    with conn.cursor() as cur:
+        cur.execute("SET hnsw.iterative_scan = 'strict_order'")
+        cur.execute("SET hnsw.ef_search = 100")
+    return conn
+
+
 def buscar_norma(query: str, tipo_documento: str | None = None) -> dict | None:
     """Melhor norma para a query (lexical + semântica com limiar). None = sem base localizada."""
     vetor = _emb_query(query)
-    with psycopg2.connect(DATABASE_URL) as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+    with _conectar_ann() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         if vetor is not None:
             lit = "[" + ",".join(str(x) for x in vetor) + "]"
             cur.execute(
@@ -66,7 +79,7 @@ def melhores_precedentes(descricoes: list[str], tipo_documento: str = "solucao_c
         return [None] * len(descricoes)
     vetores = asyncio.run(emb.embed(descricoes, input_type="query"))
     resultados: list[dict | None] = []
-    with psycopg2.connect(DATABASE_URL) as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+    with _conectar_ann() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         for v in vetores:
             lit = "[" + ",".join(str(x) for x in v) + "]"
             cur.execute(
@@ -94,7 +107,7 @@ def sugerir_ncm(descricoes: list[str], k: int = 3) -> list[list[dict]]:
         return [[] for _ in descricoes]
     vetores = asyncio.run(emb.embed(descricoes, input_type="query"))
     saida: list[list[dict]] = []
-    with psycopg2.connect(DATABASE_URL) as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+    with _conectar_ann() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         for v in vetores:
             lit = "[" + ",".join(str(x) for x in v) + "]"
             cur.execute(
