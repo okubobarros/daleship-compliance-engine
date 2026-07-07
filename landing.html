@@ -4,40 +4,77 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Despachante de Bolso</title>
+  <meta name="theme-color" content="#f3f4f6" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body { margin: 0; font-family: 'Poppins', system-ui, sans-serif; background: #0a0f1e; color: #e7eaf2; }
+    body {
+      margin: 0;
+      font-family: 'Poppins', system-ui, sans-serif;
+      background:
+        radial-gradient(1200px 500px at 18% -10%, rgba(37,99,235,.10), transparent 55%),
+        radial-gradient(900px 420px at 82% 8%, rgba(249,115,22,.12), transparent 50%),
+        #f3f4f6;
+      color: #111827;
+    }
     a { color: inherit; text-decoration: none; }
-    .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 28px 72px; }
-    .nav { display:flex; align-items:center; justify-content:space-between; gap:16px; padding: 8px 0 24px; }
+    .wrap { max-width: 1220px; margin: 0 auto; padding: 26px 30px 72px; }
+    .nav { display:flex; align-items:center; justify-content:space-between; gap:18px; padding: 10px 0 26px; }
     .brand { display:flex; align-items:center; gap:12px; }
-    .mark { width:42px; height:42px; border-radius:14px; background:linear-gradient(135deg,#2563EB,#6D28D9); box-shadow:0 12px 28px rgba(109,40,217,.32); }
-    .navlinks { display:flex; gap:22px; flex-wrap:wrap; color:#c7cfde; font-size:14px; }
-    .btn { display:inline-flex; align-items:center; justify-content:center; gap:10px; border-radius:14px; padding:14px 22px; font-weight:700; }
-    .btn-primary { background:linear-gradient(90deg,#2563EB,#6D28D9); box-shadow:0 16px 34px rgba(37,99,235,.34); color:#fff; }
-    .btn-ghost { background:rgba(255,255,255,.03); border:1px solid #2b3550; color:#dbe1ee; }
-    .hero { padding: 38px 0 24px; display:grid; grid-template-columns: 1.1fr .9fr; gap: 28px; align-items:center; }
-    .eyebrow { display:inline-flex; align-items:center; gap:8px; padding:8px 14px; border:1px solid rgba(109,40,217,.28); background:rgba(109,40,217,.12); border-radius:999px; color:#9cc0ff; font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
-    h1 { margin: 18px 0 0; font-size: clamp(40px, 6vw, 68px); line-height: 1.02; letter-spacing: -0.04em; color:#fff; }
-    .lead { margin: 20px 0 0; max-width: 56ch; font-size: 18px; line-height: 1.65; color:#9aa4ba; }
+    .brand img { width: 42px; height: 42px; object-fit: contain; border-radius: 13px; background: #fff; border:1px solid #eceef1; box-shadow:0 10px 24px rgba(17,24,39,.06); }
+    .brand-title { font-size: 16px; font-weight: 700; }
+    .brand-sub { font-size: 11px; color:#6b7280; margin-top: 2px; }
+    .navlinks { display:flex; gap:22px; flex-wrap:wrap; color:#374151; font-size:14px; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:10px; border-radius:14px; padding:14px 22px; font-weight:700; transition: transform .18s ease, box-shadow .18s ease; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: linear-gradient(90deg,#2563EB,#6D28D9); color:#fff; box-shadow:0 16px 34px rgba(37,99,235,.22); }
+    .btn-secondary { background:#fff; border:1px solid #e5e7eb; color:#374151; box-shadow:0 12px 24px rgba(17,24,39,.06); }
+    .hero { display:grid; grid-template-columns: 1.05fr .95fr; gap: 38px; align-items:center; padding: 18px 0 28px; }
+    .eyebrow {
+      display:inline-flex; align-items:center; gap:10px; padding:8px 14px; border-radius:999px;
+      background:rgba(37,99,235,.08); border:1px solid rgba(37,99,235,.12);
+      color:#4f46e5; font-size:11px; font-weight:800; letter-spacing:.16em; text-transform:uppercase;
+    }
+    h1 { margin: 18px 0 0; font-size: clamp(44px, 6vw, 72px); line-height: .98; letter-spacing: -.05em; color:#111827; }
+    .accent { color:#2563EB; }
+    .accent2 { color:#F97316; }
+    .lead { margin: 18px 0 0; max-width: 58ch; font-size: 18px; line-height: 1.66; color:#4b5563; }
     .cta-row { display:flex; gap:14px; flex-wrap:wrap; margin-top: 28px; }
-    .feature-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top: 34px; }
-    .card { background:#fff; color:#111827; border-radius:20px; padding:22px; box-shadow:0 18px 40px rgba(0,0,0,.18); }
-    .card h3 { margin: 14px 0 8px; font-size: 16px; }
-    .card p { margin: 0; color:#6b7280; line-height:1.55; font-size:14px; }
-    .chip { display:inline-flex; width:44px; height:44px; border-radius:14px; background:rgba(37,99,235,.10); }
-    .sections { margin-top: 28px; display:grid; grid-template-columns: repeat(3,1fr); gap:16px; }
-    .panel { background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border:1px solid #232c44; border-radius:20px; padding:22px; }
-    .panel .kicker { font-size:11px; font-weight:700; letter-spacing:.16em; color:#9cc0ff; text-transform:uppercase; }
-    .panel h2 { margin:10px 0 0; font-size:20px; color:#fff; }
-    .panel p { margin:10px 0 0; color:#9aa4ba; line-height:1.6; font-size:14px; }
-    .footer { margin-top: 36px; padding-top: 24px; border-top:1px solid #171f33; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; color:#7f899e; font-size:13px; }
-    @media (max-width: 900px) {
-      .hero, .feature-grid, .sections { grid-template-columns:1fr; }
+    .badges { display:flex; gap:14px; flex-wrap:wrap; margin-top: 24px; }
+    .badge { display:inline-flex; align-items:center; gap:8px; padding:9px 12px; border-radius:999px; background:#fff; border:1px solid #eceef1; color:#4b5563; font-size:13px; box-shadow:0 12px 24px rgba(17,24,39,.04); }
+    .hero-visual {
+      background: linear-gradient(180deg,#ffffff,#fbfbfd);
+      border:1px solid #eceef1;
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: 0 24px 60px rgba(17,24,39,.08);
+    }
+    .hero-visual img { width:100%; display:block; border-radius: 18px; }
+    .hero-visual .caption { margin-top: 14px; display:flex; justify-content:space-between; gap:16px; color:#6b7280; font-size:13px; flex-wrap:wrap; }
+    .feature-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top: 28px; }
+    .card {
+      background:#fff; border:1px solid #eceef1; border-radius:20px; padding:22px;
+      box-shadow:0 14px 32px rgba(17,24,39,.05);
+    }
+    .card h3 { margin: 14px 0 8px; font-size: 17px; }
+    .card p { margin: 0; color:#6b7280; line-height:1.6; font-size:14px; }
+    .chip { display:inline-grid; place-items:center; width:46px; height:46px; border-radius:14px; background:rgba(37,99,235,.08); }
+    .section-title { margin-top: 34px; display:flex; justify-content:space-between; align-items:end; gap:16px; flex-wrap:wrap; }
+    .section-title h2 { margin:0; font-size: 30px; letter-spacing:-.03em; }
+    .section-title p { margin:0; max-width:66ch; color:#6b7280; line-height:1.6; }
+    .steps { margin-top: 20px; display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    .step { background:#fff; border:1px solid #eceef1; border-radius:18px; padding:22px; box-shadow:0 12px 28px rgba(17,24,39,.05); }
+    .step .kicker { font-size:11px; font-weight:800; letter-spacing:.16em; color:#4f46e5; text-transform:uppercase; }
+    .step h3 { margin:10px 0 0; font-size:18px; }
+    .step p { margin:10px 0 0; color:#6b7280; line-height:1.6; font-size:14px; }
+    .footer { margin-top: 34px; padding-top: 24px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; color:#6b7280; font-size:13px; }
+    @media (max-width: 960px) {
+      .hero, .feature-grid, .steps { grid-template-columns:1fr; }
       .nav { flex-direction:column; align-items:flex-start; }
     }
   </style>
@@ -45,21 +82,21 @@
 <body>
   <div class="wrap">
     <header class="nav">
-      <div class="brand">
-        <div class="mark"></div>
+      <a class="brand" href="/landing.html" aria-label="Despachante de Bolso">
+        <img src="/logo.png" alt="Despachante de Bolso" />
         <div>
-          <div style="font-size:16px;font-weight:700;color:#fff;">Despachante de Bolso</div>
-          <div style="font-size:11px;color:#7f899e;">Inteligência aduaneira para importação</div>
+          <div class="brand-title">Despachante de Bolso</div>
+          <div class="brand-sub">Inteligência aduaneira para importação</div>
         </div>
-      </div>
-      <div class="navlinks">
+      </a>
+      <nav class="navlinks" aria-label="Navegação principal">
         <a href="/simulacao.html">Produto</a>
         <a href="/resultado.html">Riscos</a>
         <a href="/loading.html">Como funciona</a>
-        <a href="/simulacao.html">Arquitetura</a>
-      </div>
-      <div style="display:flex; gap:12px; align-items:center;">
-        <a class="btn btn-ghost" href="/simulacao.html">Entrar</a>
+        <a href="/resultado.html">Arquitetura</a>
+      </nav>
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <a class="btn btn-secondary" href="/simulacao.html">Entrar</a>
         <a class="btn btn-primary" href="/simulacao.html">Testar auditoria gratuita</a>
       </div>
     </header>
@@ -67,64 +104,69 @@
     <section class="hero">
       <div>
         <div class="eyebrow">Auditoria pré-embarque · análise em minutos</div>
-        <h1>Pare o erro antes que ele vire custo, atraso e retrabalho.</h1>
-        <p class="lead">Suba Invoice, Packing List e documento de transporte. Em minutos, o sistema cruza os documentos, destaca as divergências e entrega um checklist com a próxima ação.</p>
+        <h1>Importe com <span class="accent">inteligência</span>.<br />Venda com <span class="accent2">lucro</span>.</h1>
+        <p class="lead">O primeiro agente de IA especializado em comércio exterior que calcula custos, impostos e margem de lucro antes da sua compra. Suba Invoice, Packing List e documento de transporte em um fluxo que parece produto de verdade, não demo improvisada.</p>
         <div class="cta-row">
-          <a class="btn btn-primary" href="/simulacao.html">Ver auditoria</a>
-          <a class="btn btn-ghost" href="/loading.html">Ver demo</a>
+          <a class="btn btn-primary" href="/simulacao.html">Simular minha importação</a>
+          <a class="btn btn-secondary" href="/loading.html">Como funciona</a>
+        </div>
+        <div class="badges">
+          <div class="badge">Resultado em minutos</div>
+          <div class="badge">IA treinada para comércio exterior</div>
+          <div class="badge">Mais segurança nas decisões</div>
         </div>
       </div>
 
-      <div class="card" style="background:linear-gradient(180deg,#0f1526,#0c111f); color:#e7eaf2; border:1px solid #232c44;">
-        <div style="font-size:11px; font-weight:700; letter-spacing:.16em; color:#9cc0ff; text-transform:uppercase;">Checklist de risco operacional</div>
-        <h3 style="color:#fff; font-size:22px; margin-top:10px;">Divergências críticas em destaque</h3>
-        <p style="color:#9aa4ba; margin-top:10px;">Invoice, Packing List e transporte não batem entre si. A operação deve ser segurada até revisão.</p>
-        <div style="margin-top:18px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-          <div style="background:rgba(255,255,255,.03); border:1px solid #1f2840; border-radius:14px; padding:14px;">
-            <div style="font-size:11px;color:#6b7590;font-weight:700;letter-spacing:.08em;">NCM</div>
-            <div style="margin-top:6px;font-size:18px;font-weight:700;">8504.40.90</div>
-          </div>
-          <div style="background:rgba(255,255,255,.03); border:1px solid #1f2840; border-radius:14px; padding:14px;">
-            <div style="font-size:11px;color:#6b7590;font-weight:700;letter-spacing:.08em;">Risco</div>
-            <div style="margin-top:6px;font-size:18px;font-weight:700;color:#fcd34d;">82/100</div>
-          </div>
+      <div class="hero-visual">
+        <img src="/logo.png" alt="Logo Despachante de Bolso" />
+        <div class="caption">
+          <span><strong style="color:#111827;">Visual da marca</strong> aplicado na interface pública</span>
+          <span>Blue + orange, sem aparência de template genérico</span>
         </div>
       </div>
     </section>
 
     <section class="feature-grid">
       <div class="card">
-        <span class="chip"></span>
+        <div class="chip"></div>
         <h3>Custo total</h3>
-        <p>Leitura rápida do custo real da operação, antes de fechar o embarque.</p>
+        <p>Leitura do landed cost real, item a item, sem surpresa no desembaraço.</p>
       </div>
       <div class="card">
-        <span class="chip" style="background:rgba(109,40,217,.10)"></span>
+        <div class="chip" style="background:rgba(109,40,217,.08);"></div>
         <h3>Impostos</h3>
-        <p>II, IPI, PIS/COFINS e ICMS contextualizados para o destino da carga.</p>
+        <p>II, IPI, PIS/COFINS e ICMS contextualizados para a sua operação.</p>
       </div>
       <div class="card">
-        <span class="chip" style="background:rgba(249,115,22,.12)"></span>
+        <div class="chip" style="background:rgba(249,115,22,.12);"></div>
         <h3>Margem</h3>
-        <p>Margem projetada com os custos embutidos, sem surpresa no backoffice.</p>
+        <p>Margem projetada já com todos os custos embutidos e pronta para decisão.</p>
       </div>
     </section>
 
-    <section class="sections">
-      <div class="panel">
+    <div class="section-title">
+      <div>
+        <div style="font-size:11px;font-weight:800;letter-spacing:.16em;color:#4f46e5;text-transform:uppercase;">Jornada</div>
+        <h2>Fluxo principal da demo</h2>
+      </div>
+      <p>Uma sequência clara, com URLs próprias e retorno entre etapas para demo profissional em produção.</p>
+    </div>
+
+    <section class="steps">
+      <div class="step">
         <div class="kicker">Passo 01</div>
-        <h2>Upload dos documentos</h2>
-        <p>Invoice, Packing List e documento de transporte entram sem exigir padronização prévia.</p>
+        <h3>Entrada</h3>
+        <p>Cadastro simples e início da simulação com a identidade visual da marca.</p>
       </div>
-      <div class="panel">
+      <div class="step">
         <div class="kicker">Passo 02</div>
-        <h2>Cruzamento e análise</h2>
-        <p>O sistema compara campos, sinaliza divergências e calcula o impacto financeiro.</p>
+        <h3>Processamento</h3>
+        <p>Estado de carregamento com indicação clara do que está acontecendo.</p>
       </div>
-      <div class="panel">
+      <div class="step">
         <div class="kicker">Passo 03</div>
-        <h2>Decisão operacional</h2>
-        <p>O analista recebe o resumo pronto para decidir, revisar ou seguir com a operação.</p>
+        <h3>Resultado</h3>
+        <p>Resumo financeiro e decisório, pronto para avançar ou voltar ao ponto anterior.</p>
       </div>
     </section>
 

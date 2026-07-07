@@ -4,6 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Simulação | Despachante de Bolso</title>
+  <meta name="theme-color" content="#f3f4f6" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,7 +16,7 @@
     a { text-decoration:none; color:inherit; }
     .shell { display:flex; min-height:100vh; }
     .sidebar { width:80px; background:#111827; display:flex; flex-direction:column; align-items:center; padding:20px 0; }
-    .mark { width:44px; height:44px; border-radius:14px; background:linear-gradient(135deg,#2563EB,#6D28D9); box-shadow:0 10px 24px rgba(109,40,217,.34); }
+    .mark { width:44px; height:44px; border-radius:14px; background:#fff; border:1px solid rgba(255,255,255,.12); box-shadow:0 10px 24px rgba(109,40,217,.34); object-fit:contain; }
     .main { flex:1; padding:34px 40px 44px; }
     .top { display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap; }
     .eyebrow { font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#6b7280; }
@@ -36,10 +39,10 @@
 <body>
   <div class="shell">
     <aside class="sidebar">
-      <div class="mark"></div>
+      <img class="mark" src="/logo.png" alt="Despachante de Bolso" />
       <div style="margin-top:34px; display:flex; flex-direction:column; gap:10px;">
-        <div class="mark" style="width:46px;height:46px;opacity:.22;"></div>
-        <div class="mark" style="width:46px;height:46px;opacity:.12;"></div>
+        <img class="mark" src="/favicon.png" alt="" style="width:46px;height:46px;opacity:.22;" />
+        <img class="mark" src="/favicon.png" alt="" style="width:46px;height:46px;opacity:.12;" />
       </div>
     </aside>
     <main class="main">
