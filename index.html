@@ -1036,11 +1036,18 @@
       setTimeout(() => window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } }), 300);
     }
 
+    const wizardStorageKey = 'daleship.intake';
     const files = {
       invoice: false,
       bl: false,
       packing: false,
       erp: false,
+    };
+    const fileNames = {
+      invoice: null,
+      bl: null,
+      packing: null,
+      erp: null,
     };
 
     const els = {
@@ -1078,6 +1085,7 @@
       const input = document.getElementById(id);
       input.addEventListener('change', () => {
         files[key] = Boolean(input.files && input.files[0]);
+        fileNames[key] = files[key] ? input.files[0].name : null;
         chip.textContent = files[key] ? input.files[0].name : labelOff;
         chip.className = `file-chip ${files[key] ? 'ok' : optional ? '' : 'wait'}`;
         box.classList.toggle('focused', files[key]);
@@ -1143,8 +1151,40 @@
         : 'Adicione Invoice e Draft BL para liberar o motor de cruzamento.';
       els.ctaButton.textContent = ready ? 'Abrir diagnóstico' : 'Adicionar arquivos';
       els.ctaButton.onclick = () => {
+        if (ready) {
+          sessionStorage.setItem(wizardStorageKey, JSON.stringify({
+            reference: 'Operação inicial',
+            origin: 'Conferência pública',
+            destination: 'Motor de análise',
+            summary: 'Fluxo capturado na homepage',
+            files: {
+              invoice: fileNames.invoice,
+              bl: fileNames.bl,
+              packing: fileNames.packing,
+              erp: fileNames.erp,
+            },
+            coverage: confidence,
+            stage: confidence >= 100 ? 'cockpit' : confidence >= 85 ? 'diagnostico' : 'documentos',
+            startedAt: new Date().toISOString(),
+          }));
+        }
         location.href = ready ? '/loading.html' : '/simulacao.html';
       };
+      sessionStorage.setItem(wizardStorageKey, JSON.stringify({
+        reference: 'Operação inicial',
+        origin: 'Conferência pública',
+        destination: ready ? 'Loading' : 'Coleta documental',
+        summary: 'Fluxo capturado na homepage',
+        files: {
+          invoice: fileNames.invoice,
+          bl: fileNames.bl,
+          packing: fileNames.packing,
+          erp: fileNames.erp,
+        },
+        coverage: confidence,
+        stage: confidence >= 100 ? 'cockpit' : confidence >= 85 ? 'diagnostico' : confidence >= 40 ? 'documentos' : 'contexto',
+        updatedAt: new Date().toISOString(),
+      }));
     }
 
     updateWizard();

@@ -44,6 +44,29 @@
     .eyebrow { font-size:12px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:#4f46e5; }
     h1 { margin:10px 0 0; font-size:clamp(34px, 4vw, 52px); line-height:.98; letter-spacing:-.05em; }
     .lead { margin-top:14px; color:#4b5563; line-height:1.7; max-width:72ch; }
+    .journey {
+      margin-top:24px;
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:12px;
+    }
+    .journey-step {
+      border:1px solid #eceef1;
+      border-radius:18px;
+      padding:16px;
+      background:#fff;
+    }
+    .journey-step.active {
+      border-color:rgba(37,99,235,.30);
+      background:rgba(37,99,235,.05);
+    }
+    .journey-step.done {
+      border-color:rgba(22,163,74,.25);
+      background:rgba(22,163,74,.04);
+    }
+    .journey-step .k { font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:#6b7280; }
+    .journey-step .t { margin-top:8px; font-size:15px; font-weight:700; color:#111827; }
+    .journey-step p { margin:6px 0 0; color:#6b7280; font-size:13px; line-height:1.55; }
     .grid { display:grid; grid-template-columns:1.15fr .85fr; gap:18px; margin-top:24px; }
     .card { background:#fafbfc; border:1px solid #eceef1; border-radius:22px; padding:22px; }
     .label { font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:#6b7280; }
@@ -85,6 +108,7 @@
       .side { width:100%; flex-direction:row; justify-content:space-between; padding:16px 20px; }
       .main { padding:24px; }
       .grid, .summary { grid-template-columns:1fr; }
+      .journey { grid-template-columns:1fr; }
     }
   </style>
 </head>
@@ -101,10 +125,29 @@
         <h1>Fechamento da conferência</h1>
         <p class="lead">Esta tela não inventa números. Ela mostra o estado consolidado da operação e os próximos passos para a revisão ou para o motor real de processamento.</p>
 
+        <div class="journey" aria-label="Jornada do usuário">
+          <div class="journey-step done">
+            <div class="k">Etapa 01</div>
+            <div class="t">Entrada</div>
+            <p>Documento e contexto capturados.</p>
+          </div>
+          <div class="journey-step done">
+            <div class="k">Etapa 02</div>
+            <div class="t">Processamento</div>
+            <p>Leitura e conciliação concluídas.</p>
+          </div>
+          <div class="journey-step active">
+            <div class="k">Etapa 03</div>
+            <div class="t">Resultado</div>
+            <p>Resumo pronto para decisão e revisão.</p>
+          </div>
+        </div>
+
         <div class="grid">
           <section class="card">
             <div class="label">Resumo da entrada</div>
             <div id="meta" class="summary"></div>
+            <div id="coverage" style="margin-top:12px; padding:12px 14px; border:1px solid #eceef1; border-radius:14px; background:#fff; color:#4b5563; line-height:1.6; font-size:13px;">Cobertura documental e status aparecem aqui quando a sessão anterior estiver presente.</div>
             <div class="empty">
               <strong style="display:block; color:#111827; margin-bottom:6px;">Resultado operacional ainda não calculado neste shell público.</strong>
               A análise real acontece no motor da aplicação. Quando o backend estiver conectado, esta área passa a exibir custo, apontamentos e o parecer do agente.
@@ -142,23 +185,31 @@
 
   <script>
     const state = JSON.parse(sessionStorage.getItem('daleship.process') || 'null');
+    const intake = JSON.parse(sessionStorage.getItem('daleship.intake') || 'null');
+    const source = state || intake;
     const meta = document.getElementById('meta');
     const title = document.getElementById('status-title');
     const subtitle = document.getElementById('status-subtitle');
+    const coverage = document.getElementById('coverage');
 
-    if (state) {
-      title.textContent = state.reference || 'Processo recebido';
-      subtitle.textContent = [state.origin, state.destination].filter(Boolean).join(' · ') || 'Entrada registrada na sessão local.';
+    if (source) {
+      title.textContent = source.reference || 'Processo recebido';
+      subtitle.textContent = [source.origin, source.destination].filter(Boolean).join(' · ') || 'Entrada registrada na sessão local.';
+      const docCount = source.files ? Object.values(source.files).filter(Boolean).length : 0;
+      coverage.textContent = source.files
+        ? `Cobertura documental: ${docCount} documento(s) persistidos na sessão.`
+        : 'Cobertura documental: sem documentos persistidos na sessão.';
       meta.innerHTML = [
-        ['Referência', state.reference || '—'],
-        ['Origem', state.origin || '—'],
-        ['Destino', state.destination || '—'],
-        ['Invoice', state.files?.invoice || 'não anexada'],
-        ['Packing List', state.files?.packing || 'não anexada'],
-        ['Transporte', state.files?.transport || 'não anexado'],
+        ['Referência', source.reference || '—'],
+        ['Origem', source.origin || '—'],
+        ['Destino', source.destination || '—'],
+        ['Invoice', source.files?.invoice || source.files?.bl || 'não anexada'],
+        ['Packing List', source.files?.packing || 'não anexada'],
+        ['Transporte', source.files?.transport || source.files?.bl || 'não anexado'],
       ].map(([label, value]) => `<div><strong>${label}</strong>${value}</div>`).join('');
     } else {
       meta.innerHTML = '<div><strong>Entrada</strong> nenhuma operação carregada</div><div><strong>Arquivo</strong> use a etapa anterior para registrar documentos</div>';
+      coverage.textContent = 'Cobertura documental: nenhuma sessão encontrada.';
     }
   </script>
 </body>

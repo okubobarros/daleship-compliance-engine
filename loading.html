@@ -42,6 +42,29 @@
     .eyebrow { font-size:12px; font-weight:800; letter-spacing:.16em; color:#4f46e5; text-transform:uppercase; }
     h1 { margin:10px 0 0; font-size:clamp(34px, 4vw, 52px); line-height:.98; letter-spacing:-.05em; }
     .lead { margin-top:14px; color:#4b5563; line-height:1.7; max-width:72ch; }
+    .journey {
+      margin-top:24px;
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:12px;
+    }
+    .journey-step {
+      border:1px solid #eceef1;
+      border-radius:18px;
+      padding:16px;
+      background:#fff;
+    }
+    .journey-step.active {
+      border-color:rgba(37,99,235,.30);
+      background:rgba(37,99,235,.05);
+    }
+    .journey-step.done {
+      border-color:rgba(22,163,74,.25);
+      background:rgba(22,163,74,.04);
+    }
+    .journey-step .k { font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:#6b7280; }
+    .journey-step .t { margin-top:8px; font-size:15px; font-weight:700; color:#111827; }
+    .journey-step p { margin:6px 0 0; color:#6b7280; font-size:13px; line-height:1.55; }
     .track { margin-top:24px; display:grid; grid-template-columns:1.1fr .9fr; gap:18px; }
     .card { background:#fafbfc; border:1px solid #eceef1; border-radius:22px; padding:22px; }
     .progress {
@@ -73,6 +96,7 @@
     .summary div { border:1px solid #eceef1; border-radius:14px; padding:12px 14px; background:#fff; color:#374151; }
     .footer { margin-top:18px; display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; color:#6b7280; font-size:13px; }
     @media (max-width: 880px) { .track { grid-template-columns:1fr; } }
+    @media (max-width: 920px) { .journey { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
@@ -92,6 +116,24 @@
       <div class="eyebrow">Processando</div>
       <h1>Conferindo documentos e preparando o resultado</h1>
       <p class="lead">A tela abaixo representa o estado real de processamento. Ela lê a entrada salva na etapa anterior e mantém o usuário orientado enquanto a análise termina.</p>
+
+      <div class="journey" aria-label="Jornada do usuário">
+        <div class="journey-step done">
+          <div class="k">Etapa 01</div>
+          <div class="t">Entrada</div>
+          <p>Dados capturados e documentação registrada.</p>
+        </div>
+        <div class="journey-step active">
+          <div class="k">Etapa 02</div>
+          <div class="t">Processamento</div>
+          <p>Leitura, estruturação e conciliação em andamento.</p>
+        </div>
+        <div class="journey-step">
+          <div class="k">Etapa 03</div>
+          <div class="t">Resultado</div>
+          <p>Resumo final e revisão operacional.</p>
+        </div>
+      </div>
 
       <div class="track">
         <div class="card">
@@ -118,6 +160,7 @@
             <div class="pill"><strong>Estado</strong> Em andamento</div>
             <div class="pill"><strong>Saída</strong> Resultado</div>
           </div>
+          <div id="session-source" style="margin-top:14px; padding:14px; border:1px solid #eceef1; border-radius:16px; background:#fff; color:#4b5563; line-height:1.6; font-size:13px;">A etapa de processamento usará a sessão atual do usuário quando houver dados registrados.</div>
         </div>
       </div>
 
@@ -135,40 +178,52 @@
 
   <script>
     const state = JSON.parse(sessionStorage.getItem('daleship.process') || 'null');
+    const intake = JSON.parse(sessionStorage.getItem('daleship.intake') || 'null');
+    const source = state || intake;
     const title = document.getElementById('process-title');
     const subtitle = document.getElementById('process-subtitle');
     const summary = document.getElementById('summary');
     const bar = document.getElementById('bar');
     const percent = document.getElementById('percent');
+    const sessionSource = document.getElementById('session-source');
     const steps = [document.getElementById('step-1'), document.getElementById('step-2'), document.getElementById('step-3')];
     let current = 0;
 
-    if (state) {
-      title.textContent = state.reference || 'Processo sem referência';
-      subtitle.textContent = [state.origin, state.destination].filter(Boolean).join(' · ') || 'Entrada registrada na sessão local.';
+    if (source) {
+      title.textContent = source.reference || 'Processo sem referência';
+      subtitle.textContent = [source.origin, source.destination].filter(Boolean).join(' · ') || 'Entrada registrada na sessão local.';
       summary.innerHTML = [
-        ['Referência', state.reference || '—'],
-        ['Origem', state.origin || '—'],
-        ['Destino', state.destination || '—'],
-        ['Mercadoria', state.summary || '—'],
-        ['Invoice', state.files?.invoice || 'não anexada'],
-        ['Packing List', state.files?.packing || 'não anexada'],
-        ['Transporte', state.files?.transport || 'não anexado'],
+        ['Referência', source.reference || '—'],
+        ['Origem', source.origin || '—'],
+        ['Destino', source.destination || '—'],
+        ['Mercadoria', source.summary || '—'],
+        ['Invoice', source.files?.invoice || source.files?.bl || 'não anexada'],
+        ['Packing List', source.files?.packing || 'não anexada'],
+        ['Transporte', source.files?.transport || source.files?.bl || 'não anexado'],
       ].map(([label, value]) => `<div><strong>${label}</strong><br><span style="color:#6b7280;">${value}</span></div>`).join('');
+      sessionSource.textContent = source.files
+        ? `Sessão ativa carregada com ${Object.values(source.files).filter(Boolean).length} documentos persistidos.`
+        : 'Sessão ativa sem documentos persistidos.';
     } else {
       summary.innerHTML = '<div><strong>Nenhuma entrada encontrada</strong><br><span style="color:#6b7280;">Volte e preencha a etapa anterior.</span></div>';
+      sessionSource.textContent = 'Nenhuma sessão capturada. Volte para a etapa anterior para iniciar o fluxo.';
     }
 
     function tick() {
-      current = Math.min(current + 12, 100);
+      const target = source ? 100 : 42;
+      current = Math.min(current + 12, target);
       bar.style.width = `${current}%`;
       percent.textContent = `${current}%`;
       steps.forEach((el, index) => {
         el.classList.toggle('active', current >= (index + 1) * 30 && current < (index + 2) * 30);
         el.classList.toggle('done', current >= (index + 1) * 30);
       });
-      if (current < 100) {
+      if (current < target) {
         window.setTimeout(tick, 500);
+      } else if (source) {
+        window.setTimeout(() => {
+          location.href = '/resultado.html';
+        }, 700);
       }
     }
 
