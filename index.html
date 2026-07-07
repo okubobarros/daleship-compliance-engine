@@ -240,11 +240,273 @@
     .trial-text { display:flex; align-items:center; gap:11px; }
     .trial-badge { font-size:10px; font-weight:700; letter-spacing:.14em; color:#9cc0ff; background:rgba(37,99,235,.14); padding:4px 9px; border-radius:8px; text-transform:uppercase; }
     .trial-copy { font-size:13px; font-weight:500; color:#c3cad9; }
+    .wizard {
+      margin-top:10px;
+      padding:22px;
+      border:1px solid #1f2840;
+      border-radius:24px;
+      background:linear-gradient(180deg, rgba(9,14,27,.94), rgba(12,17,31,.98));
+      box-shadow:0 30px 70px rgba(0,0,0,.28);
+    }
+    .wizard-top {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:18px;
+      flex-wrap:wrap;
+      padding-bottom:18px;
+      border-bottom:1px solid #171f33;
+    }
+    .wizard-title {
+      font-size:28px;
+      line-height:1.05;
+      font-weight:700;
+      letter-spacing:-.03em;
+      color:#fff;
+      margin:8px 0 0;
+    }
+    .wizard-copy { max-width:68ch; margin:10px 0 0; color:#9aa4ba; line-height:1.65; }
+    .wizard-badge {
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid rgba(37,99,235,.34);
+      background:rgba(37,99,235,.12);
+      color:#9cc0ff;
+      border-radius:999px;
+      padding:8px 14px;
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+    }
+    .wizard-layout {
+      margin-top:18px;
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap:18px;
+      align-items:start;
+    }
+    .stage-rail {
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap:14px;
+      margin-bottom:18px;
+    }
+    .stage-pill {
+      border:1px solid #232c44;
+      border-radius:18px;
+      padding:14px;
+      background:rgba(255,255,255,.02);
+      min-height:82px;
+      transition: border-color .2s ease, background .2s ease, transform .2s ease;
+    }
+    .stage-pill.active {
+      border-color:rgba(37,99,235,.5);
+      background:rgba(37,99,235,.10);
+      transform:translateY(-2px);
+    }
+    .stage-pill.done {
+      border-color:rgba(22,163,74,.45);
+      background:rgba(22,163,74,.08);
+    }
+    .stage-k { font-size:10px; font-weight:700; letter-spacing:.12em; color:#6b7590; text-transform:uppercase; }
+    .stage-title { margin-top:6px; font-size:14px; font-weight:700; color:#e7eaf2; }
+    .stage-sub { margin-top:4px; font-size:12px; line-height:1.45; color:#93a1bd; }
+    .wizard-card {
+      border:1px solid #1e2740;
+      border-radius:20px;
+      background:rgba(255,255,255,.02);
+      padding:18px;
+    }
+    .wizard-grid {
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap:14px;
+    }
+    .upload-box {
+      border:1px solid #232c44;
+      border-radius:18px;
+      padding:16px;
+      background:rgba(255,255,255,.02);
+      min-height:156px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      justify-content:space-between;
+      transition: border-color .2s ease, background .2s ease;
+    }
+    .upload-box.focused {
+      border-color:rgba(249,115,22,.42);
+      background:rgba(249,115,22,.06);
+    }
+    .upload-head {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .upload-head .t { font-size:14px; font-weight:700; color:#fff; }
+    .upload-head .req { font-size:10px; font-weight:700; letter-spacing:.12em; color:#f97316; text-transform:uppercase; }
+    .upload-help { font-size:12px; line-height:1.55; color:#9aa4ba; }
+    .upload-row {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .upload-row input[type="file"] { max-width:100%; color:#c3cad9; font-size:12px; }
+    .file-chip {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      background:rgba(37,99,235,.10);
+      border:1px solid rgba(37,99,235,.24);
+      color:#cfe1ff;
+      font-size:12px;
+      min-height:34px;
+    }
+    .file-chip.ok {
+      background:rgba(22,163,74,.10);
+      border-color:rgba(22,163,74,.28);
+      color:#bdf7cf;
+    }
+    .file-chip.wait {
+      background:rgba(249,115,22,.10);
+      border-color:rgba(249,115,22,.28);
+      color:#ffd39f;
+    }
+    .confidence-card {
+      border:1px solid #1e2740;
+      border-radius:20px;
+      background:rgba(255,255,255,.02);
+      padding:18px;
+    }
+    .confidence-head {
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      align-items:flex-start;
+    }
+    .confidence-title { font-size:13px; font-weight:700; letter-spacing:.12em; color:#93b4fb; text-transform:uppercase; }
+    .confidence-score { font-size:14px; font-weight:700; color:#fff; }
+    .progress-track {
+      margin-top:14px;
+      height:10px;
+      border-radius:999px;
+      background:#182033;
+      overflow:hidden;
+    }
+    .progress-fill {
+      width:0%;
+      height:100%;
+      border-radius:inherit;
+      background:linear-gradient(90deg,#2563EB,#6D28D9);
+      box-shadow:0 0 18px rgba(37,99,235,.3);
+      transition:width .35s ease, background .35s ease;
+    }
+    .progress-fill.ready {
+      background:linear-gradient(90deg,#fbbf24,#f97316);
+      box-shadow:0 0 22px rgba(251,191,36,.35);
+    }
+    .confidence-msg {
+      margin-top:14px;
+      border-radius:14px;
+      padding:14px;
+      border:1px solid #232c44;
+      background:rgba(255,255,255,.02);
+      color:#c3cad9;
+      line-height:1.55;
+      font-size:13px;
+    }
+    .confidence-msg.ready {
+      border-color:rgba(249,115,22,.38);
+      background:rgba(249,115,22,.08);
+      color:#ffe7c2;
+    }
+    .diagnostic {
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+    }
+    .diagnostic div {
+      border:1px solid #232c44;
+      border-radius:14px;
+      padding:12px;
+      background:rgba(255,255,255,.02);
+      color:#c3cad9;
+      font-size:12px;
+      line-height:1.45;
+    }
+    .wizard-cta {
+      margin-top:18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      padding:16px 18px;
+      border-radius:18px;
+      border:1px solid #2b3550;
+      background:rgba(15,21,38,.94);
+    }
+    .wizard-cta .status {
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:#9aa4ba;
+    }
+    .wizard-cta .label {
+      margin-top:4px;
+      font-size:15px;
+      font-weight:700;
+      color:#fff;
+    }
+    .wizard-cta .sub {
+      margin-top:4px;
+      font-size:13px;
+      color:#9aa4ba;
+      line-height:1.45;
+    }
+    .wizard-cta button {
+      min-width:260px;
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
+    }
+    .wizard-cta.locked button {
+      background:rgba(37,99,235,.16);
+      box-shadow:0 0 0 1px rgba(37,99,235,.28) inset;
+      color:#9cc0ff;
+    }
+    .wizard-cta.ready button {
+      background:linear-gradient(90deg,#fbbf24,#f97316);
+      box-shadow:0 12px 28px rgba(249,115,22,.34);
+      color:#0F1526;
+    }
+    .wizard-cta.ready .status { color:#fbbf24; }
+    .summary-strip {
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:10px;
+    }
+    .summary-strip .box {
+      border:1px solid #232c44;
+      border-radius:14px;
+      padding:12px;
+      background:rgba(255,255,255,.02);
+      color:#c3cad9;
+      font-size:12px;
+      line-height:1.45;
+    }
     @media (max-width: 1100px) {
       .hero-grid, .visual-grid, .compare, .metrics, .steps, .validations, .stack-grid { grid-template-columns:1fr; }
       .links { gap:20px; }
       h1 { font-size:46px; }
       .hero-glow { right:-120px; }
+      .wizard-layout, .wizard-grid, .summary-strip, .diagnostic, .stage-rail { grid-template-columns:1fr; }
     }
     @media (max-width: 720px) {
       .shell { padding-inline:20px; }
@@ -252,6 +514,8 @@
       h1 { font-size:38px; }
       .sticky-trial { padding-inline:0; }
       .sticky-trial .bar { flex-direction:column; align-items:flex-start; }
+      .wizard { padding:16px; }
+      .wizard-cta button { min-width:100%; }
     }
   </style>
 </head>
@@ -414,6 +678,144 @@
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section class="wizard" id="wizard">
+      <div class="wizard-top">
+        <div>
+          <div class="wizard-badge"><i data-lucide="sparkles" style="width:14px;height:14px;"></i> Evolution Wizard</div>
+          <div class="wizard-title">A barra sobe conforme a operação ganha evidência.</div>
+          <p class="wizard-copy">Cada arquivo liberado aumenta a confiança do motor, muda a mensagem de status e acende o CTA só quando a análise já tem base suficiente para cruzar dados com segurança.</p>
+        </div>
+        <div style="min-width:180px; text-align:right;">
+          <div class="section-label" style="font-size:10px;">Etapa atual</div>
+          <div style="margin-top:8px; font-size:34px; font-weight:700; letter-spacing:-.04em; color:#fff;"><span id="wizard-percent">0</span>%</div>
+          <div style="margin-top:4px; color:#9aa4ba; font-size:13px;">de cobertura documental</div>
+        </div>
+      </div>
+
+      <div class="wizard-layout">
+        <div>
+          <div class="stage-rail">
+            <div class="stage-pill active" id="stage-context">
+              <div class="stage-k">Etapa 01</div>
+              <div class="stage-title">Contexto</div>
+              <div class="stage-sub">Operação, origem, destino e intenção.</div>
+            </div>
+            <div class="stage-pill" id="stage-docs">
+              <div class="stage-k">Etapa 02</div>
+              <div class="stage-title">Documentos</div>
+              <div class="stage-sub">Invoice, BL, Packing List e ERP.</div>
+            </div>
+            <div class="stage-pill" id="stage-llm">
+              <div class="stage-k">Etapa 03</div>
+              <div class="stage-title">Diagnóstico IA</div>
+              <div class="stage-sub">Extração, cruzamento e flags.</div>
+            </div>
+            <div class="stage-pill" id="stage-cockpit">
+              <div class="stage-k">Etapa 04</div>
+              <div class="stage-title">Cockpit</div>
+              <div class="stage-sub">Pronto para decisão e revisão.</div>
+            </div>
+          </div>
+
+          <div class="wizard-card">
+            <div class="section-label">01. Coleta documental</div>
+            <div class="section-copy" style="max-width:none;">Suba os arquivos que você já tem. O fluxo responde ao que entrou de verdade e adapta a confiança conforme a base melhora.</div>
+
+            <div class="wizard-grid" style="margin-top:16px;">
+              <div class="upload-box" data-role="invoice">
+                <div class="upload-head">
+                  <div>
+                    <div class="req">Obrigatório</div>
+                    <div class="t">Invoice Comercial</div>
+                  </div>
+                  <div class="file-chip wait" id="chip-invoice">Aguardando</div>
+                </div>
+                <div class="upload-help">Base para descrição, valores e itens. Sem ela, o diagnóstico fica parcial.</div>
+                <div class="upload-row">
+                  <input type="file" id="input-invoice" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls" />
+                </div>
+              </div>
+
+              <div class="upload-box" data-role="bl">
+                <div class="upload-head">
+                  <div>
+                    <div class="req">Obrigatório</div>
+                    <div class="t">Draft Bill of Lading</div>
+                  </div>
+                  <div class="file-chip wait" id="chip-bl">Aguardando</div>
+                </div>
+                <div class="upload-help">Permite validar rota, modal, Incoterm e divergência logística.</div>
+                <div class="upload-row">
+                  <input type="file" id="input-bl" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls" />
+                </div>
+              </div>
+
+              <div class="upload-box" data-role="packing">
+                <div class="upload-head">
+                  <div>
+                    <div class="req">Opcional</div>
+                    <div class="t">Packing List</div>
+                  </div>
+                  <div class="file-chip" id="chip-packing">Opcional</div>
+                </div>
+                <div class="upload-help">Aumenta a precisão em volumes, embalagens e pesos líquidos.</div>
+                <div class="upload-row">
+                  <input type="file" id="input-packing" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls" />
+                </div>
+              </div>
+
+              <div class="upload-box" data-role="erp">
+                <div class="upload-head">
+                  <div>
+                    <div class="req">Opcional</div>
+                    <div class="t">ERP / Cadastro de Itens</div>
+                  </div>
+                  <div class="file-chip" id="chip-erp">Opcional</div>
+                </div>
+                <div class="upload-help">Refina nomenclatura, SKU e integridade do cadastro mestre.</div>
+                <div class="upload-row">
+                  <input type="file" id="input-erp" accept=".csv,.xlsx,.xls,.xml" />
+                </div>
+              </div>
+            </div>
+
+            <div class="summary-strip">
+              <div class="box"><strong style="color:#fff;">Documentos aceitos</strong><br><span id="summary-docs">0 de 4</span></div>
+              <div class="box"><strong style="color:#fff;">Confiança calculada</strong><br><span id="summary-confidence">0%</span></div>
+              <div class="box"><strong style="color:#fff;">Próxima ação</strong><br><span id="summary-next">Enviar o primeiro documento</span></div>
+            </div>
+          </div>
+        </div>
+
+        <aside>
+          <div class="confidence-card">
+            <div class="confidence-head">
+              <div>
+                <div class="confidence-title">Confiabilidade do diagnóstico</div>
+                <div style="margin-top:10px; font-size:14px; color:#9aa4ba;">A confiança aumenta com cada arquivo relevante e com o cruzamento entre fontes.</div>
+              </div>
+              <div class="confidence-score"><span id="confidence-score">0</span>%</div>
+            </div>
+            <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+            <div class="confidence-msg" id="confidence-msg">Aguardando invoice e BL para iniciar o cruzamento preventivo.</div>
+            <div class="diagnostic">
+              <div><strong style="color:#fff;">Sinais de entrada</strong><br><span id="signal-1">Invoice ausente</span></div>
+              <div><strong style="color:#fff;">Estado de cruzamento</strong><br><span id="signal-2">Aguardando BL</span></div>
+            </div>
+          </div>
+
+          <div class="wizard-cta locked" id="wizard-cta">
+            <div>
+              <div class="status" id="cta-status">Bloqueado</div>
+              <div class="label" id="cta-label">Analisar documentos</div>
+              <div class="sub" id="cta-sub">Adicione Invoice e Draft BL para liberar o motor de cruzamento.</div>
+            </div>
+            <button class="btn btn-primary" type="button" id="wizard-button" onclick="location.href='/simulacao.html'">Adicionar arquivos</button>
+          </div>
+        </aside>
       </div>
     </section>
 
@@ -633,6 +1035,119 @@
       window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
       setTimeout(() => window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } }), 300);
     }
+
+    const files = {
+      invoice: false,
+      bl: false,
+      packing: false,
+      erp: false,
+    };
+
+    const els = {
+      percent: document.getElementById('wizard-percent'),
+      confidence: document.getElementById('confidence-score'),
+      fill: document.getElementById('progress-fill'),
+      msg: document.getElementById('confidence-msg'),
+      docs: document.getElementById('summary-docs'),
+      next: document.getElementById('summary-next'),
+      confidenceSummary: document.getElementById('summary-confidence'),
+      sig1: document.getElementById('signal-1'),
+      sig2: document.getElementById('signal-2'),
+      cta: document.getElementById('wizard-cta'),
+      ctaStatus: document.getElementById('cta-status'),
+      ctaLabel: document.getElementById('cta-label'),
+      ctaSub: document.getElementById('cta-sub'),
+      ctaButton: document.getElementById('wizard-button'),
+      stageContext: document.getElementById('stage-context'),
+      stageDocs: document.getElementById('stage-docs'),
+      stageLLM: document.getElementById('stage-llm'),
+      stageCockpit: document.getElementById('stage-cockpit'),
+      chipInvoice: document.getElementById('chip-invoice'),
+      chipBL: document.getElementById('chip-bl'),
+      chipPacking: document.getElementById('chip-packing'),
+      chipERP: document.getElementById('chip-erp'),
+      boxInvoice: document.querySelector('[data-role="invoice"]'),
+      boxBL: document.querySelector('[data-role="bl"]'),
+      boxPacking: document.querySelector('[data-role="packing"]'),
+      boxERP: document.querySelector('[data-role="erp"]'),
+    };
+
+    const required = ['invoice', 'bl'];
+
+    function bindFile(id, key, chip, box, labelOn, labelOff, optional = false) {
+      const input = document.getElementById(id);
+      input.addEventListener('change', () => {
+        files[key] = Boolean(input.files && input.files[0]);
+        chip.textContent = files[key] ? input.files[0].name : labelOff;
+        chip.className = `file-chip ${files[key] ? 'ok' : optional ? '' : 'wait'}`;
+        box.classList.toggle('focused', files[key]);
+        updateWizard();
+      });
+    }
+
+    bindFile('input-invoice', 'invoice', els.chipInvoice, els.boxInvoice, 'Invoice carregada', 'Aguardando');
+    bindFile('input-bl', 'bl', els.chipBL, els.boxBL, 'BL carregado', 'Aguardando');
+    bindFile('input-packing', 'packing', els.chipPacking, els.boxPacking, 'Packing carregado', 'Opcional', true);
+    bindFile('input-erp', 'erp', els.chipERP, els.boxERP, 'ERP carregado', 'Opcional', true);
+
+    function updateWizard() {
+      const docCount = Object.values(files).filter(Boolean).length;
+      const hasRequired = required.every((k) => files[k]);
+      const percent = hasRequired ? (docCount === 2 ? 70 : docCount === 3 ? 85 : 100) : (files.invoice ? 40 : 0);
+      const confidence = percent;
+      const ready = confidence >= 85;
+
+      els.percent.textContent = percent;
+      els.confidence.textContent = confidence;
+      els.confidenceSummary.textContent = `${confidence}%`;
+      els.fill.style.width = `${confidence}%`;
+      els.fill.classList.toggle('ready', ready);
+      els.docs.textContent = `${docCount} de 4`;
+
+      if (!files.invoice && !files.bl) {
+        els.msg.textContent = 'Aguardando invoice e BL para iniciar o cruzamento preventivo.';
+        els.sig1.textContent = 'Invoice ausente';
+        els.sig2.textContent = 'Aguardando BL';
+        els.next.textContent = 'Enviar o primeiro documento';
+      } else if (files.invoice && !files.bl) {
+        els.msg.textContent = 'Invoice recebida. Falta o BL para validar rota, modal e Incoterm.';
+        els.sig1.textContent = 'Invoice carregada';
+        els.sig2.textContent = 'BL ausente';
+        els.next.textContent = 'Suba o Draft BL';
+      } else if (files.invoice && files.bl && !files.packing && !files.erp) {
+        els.msg.textContent = 'Base suficiente para cruzar documentos essenciais. Packing List e ERP aumentam precisão.';
+        els.sig1.textContent = 'Invoice + BL presentes';
+        els.sig2.textContent = 'Cruzamento possível';
+        els.next.textContent = 'Opcional: Packing List / ERP';
+      } else if (files.invoice && files.bl && (files.packing || files.erp)) {
+        els.msg.textContent = 'Cruzamento reforçado com documentação adicional. A leitura fica mais confiável.';
+        els.sig1.textContent = 'Base ampliada';
+        els.sig2.textContent = 'Cruzamento reforçado';
+        els.next.textContent = 'Liberar diagnóstico';
+      }
+
+      els.stageContext.classList.toggle('done', confidence > 0);
+      els.stageDocs.classList.toggle('active', confidence >= 40 && confidence < 85);
+      els.stageDocs.classList.toggle('done', confidence >= 85);
+      els.stageLLM.classList.toggle('active', confidence >= 70 && confidence < 100);
+      els.stageLLM.classList.toggle('done', confidence >= 100);
+      els.stageCockpit.classList.toggle('active', confidence >= 100);
+      els.stageCockpit.classList.toggle('done', confidence >= 100);
+
+      els.cta.classList.toggle('locked', !ready);
+      els.cta.classList.toggle('ready', ready);
+      els.ctaStatus.textContent = ready ? 'Liberado' : 'Bloqueado';
+      els.ctaLabel.textContent = ready ? 'Abrir processamento' : 'Adicionar documentos';
+      els.ctaSub.textContent = ready
+        ? 'A operação já tem base para cruzar fontes e seguir para a próxima etapa.'
+        : 'Adicione Invoice e Draft BL para liberar o motor de cruzamento.';
+      els.ctaButton.textContent = ready ? 'Abrir diagnóstico' : 'Adicionar arquivos';
+      els.ctaButton.onclick = () => {
+        location.href = ready ? '/loading.html' : '/simulacao.html';
+      };
+    }
+
+    updateWizard();
   </script>
 </body>
 </html>
