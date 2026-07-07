@@ -4,383 +4,634 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Despachante de Bolso</title>
-  <meta name="description" content="Importe com inteligência. Venda com lucro. Auditoria aduaneira pré-embarque com foco em custo, risco e margem." />
-  <meta name="theme-color" content="#f3f4f6" />
+  <meta name="description" content="Importe com inteligência. Venda com lucro. Auditoria pré-embarque com foco em documentos, risco e margem." />
+  <meta name="theme-color" content="#0A0F1E" />
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      font-family: 'Poppins', system-ui, sans-serif;
-      background:
-        radial-gradient(1100px 500px at 20% 0%, rgba(37,99,235,.08), transparent 55%),
-        radial-gradient(900px 480px at 85% 12%, rgba(249,115,22,.10), transparent 52%),
-        #f3f4f6;
-      color: #111827;
+    body { margin: 0; background:#0A0F1E; color:#E7EAF2; font-family:'Poppins', system-ui, sans-serif; overflow-x:hidden; }
+    a { color:#93b4fb; text-decoration:none; }
+    a:hover { color:#fff; }
+    ::-webkit-scrollbar { width: 11px; }
+    ::-webkit-scrollbar-track { background:#0A0F1E; }
+    ::-webkit-scrollbar-thumb { background:#26304a; border-radius: 8px; }
+    .shell { max-width:1200px; margin:0 auto; padding:0 32px 90px; }
+    .nav { padding:22px 0; display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .brand img {
+      width:38px; height:38px; border-radius:11px; object-fit:contain;
+      background:linear-gradient(135deg,#2563EB,#6D28D9);
+      box-shadow:0 6px 18px rgba(109,40,217,.4);
+      border:1px solid rgba(255,255,255,.12);
     }
-    a { color: inherit; text-decoration: none; }
-    .wrap { max-width: 1220px; margin: 0 auto; padding: 28px 30px 72px; }
-    .nav { display:flex; align-items:center; justify-content:space-between; gap:18px; padding: 6px 0 28px; }
-    .brand { display:flex; align-items:center; gap:12px; min-width: 260px; }
-    .brand img { width: 44px; height: 44px; object-fit: contain; border-radius: 14px; background: #fff; border:1px solid #eceef1; box-shadow:0 12px 24px rgba(17,24,39,.06); }
-    .brand-title { font-size: 16px; font-weight: 700; line-height: 1.1; }
-    .brand-sub { font-size: 11px; color:#6b7280; margin-top: 2px; }
-    .navlinks { display:flex; gap:24px; flex-wrap:wrap; color:#374151; font-size:14px; justify-content:center; }
-    .navlinks a:hover { color:#111827; }
-    .btn { display:inline-flex; align-items:center; justify-content:center; gap:10px; border-radius:14px; padding:14px 22px; font-weight:700; transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease; }
-    .btn:hover { transform: translateY(-1px); }
-    .btn-primary { background: linear-gradient(90deg,#2563EB,#6D28D9); color:#fff; box-shadow:0 16px 34px rgba(37,99,235,.22); }
-    .btn-secondary { background:#fff; border:1px solid #e5e7eb; color:#374151; box-shadow:0 12px 24px rgba(17,24,39,.06); }
-    .hero { display:grid; grid-template-columns: 1.02fr .98fr; gap: 40px; align-items:center; padding: 20px 0 34px; }
-    .eyebrow {
-      display:inline-flex; align-items:center; gap:10px; padding:8px 14px; border-radius:999px;
-      background:rgba(37,99,235,.08); border:1px solid rgba(37,99,235,.12);
-      color:#4f46e5; font-size:11px; font-weight:800; letter-spacing:.16em; text-transform:uppercase;
+    .brand .title { font-size:15px; font-weight:600; line-height:1.1; color:#E7EAF2; }
+    .brand .sub { font-size:10.5px; font-weight:400; color:#7f899e; letter-spacing:.02em; }
+    .links { display:flex; align-items:center; gap:30px; flex-wrap:wrap; }
+    .links a { font-size:14px; font-weight:500; color:#c3cad9; }
+    .actions { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+    .btn {
+      border:none; cursor:pointer; font-family:inherit; display:inline-flex; align-items:center; justify-content:center; gap:9px;
+      font-size:15px; font-weight:600; border-radius:13px; padding:14px 24px;
     }
-    h1 { margin: 18px 0 0; font-size: clamp(48px, 6.1vw, 74px); line-height: .95; letter-spacing: -.055em; color:#111827; }
-    .accent { color:#2563EB; }
-    .accent2 { color:#F97316; }
-    .lead { margin: 18px 0 0; max-width: 60ch; font-size: 18px; line-height: 1.66; color:#4b5563; }
-    .cta-row { display:flex; gap:14px; flex-wrap:wrap; margin-top: 28px; }
-    .badges { display:flex; gap:12px; flex-wrap:wrap; margin-top: 24px; }
-    .badge { display:inline-flex; align-items:center; gap:8px; padding:9px 12px; border-radius:999px; background:#fff; border:1px solid #eceef1; color:#4b5563; font-size:13px; box-shadow:0 12px 24px rgba(17,24,39,.04); }
-    .badge i { color:#2563EB; width:15px; height:15px; }
-    .hero-visual {
-      position:relative;
-      background: linear-gradient(180deg,#ffffff,#fbfbfd);
-      border:1px solid #eceef1;
-      border-radius: 30px;
-      padding: 30px;
-      box-shadow: 0 24px 60px rgba(17,24,39,.08);
-      overflow:hidden;
+    .btn-primary { color:#fff; background:linear-gradient(90deg,#2563EB,#6D28D9); box-shadow:0 12px 28px rgba(37,99,235,.35); }
+    .btn-secondary { color:#dbe1ee; background:rgba(255,255,255,.03); border:1px solid #2b3550; font-weight:500; }
+    .hero {
+      position:relative; padding:40px 0 70px;
     }
-    .hero-visual::before {
-      content:"";
-      position:absolute;
-      inset:-120px -100px auto auto;
-      width: 280px;
-      height: 280px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(37,99,235,.14), transparent 68%);
+    .hero-glow {
+      position:absolute; top:-40px; right:80px; width:520px; height:420px;
+      background:radial-gradient(circle at 60% 40%, rgba(109,40,217,.22), transparent 65%);
       pointer-events:none;
     }
-    .hero-logo {
-      display:grid;
-      place-items:center;
-      min-height: 300px;
-      background: radial-gradient(280px 160px at 50% 18%, rgba(37,99,235,.08), transparent 60%);
-      border-radius: 22px;
-      border:1px solid #f1f3f7;
+    .hero-grid { position:relative; display:grid; grid-template-columns:1fr 1fr; gap:52px; align-items:start; }
+    .eyebrow {
+      display:inline-flex; align-items:center; gap:9px; padding:7px 15px; border-radius:30px;
+      background:rgba(37,99,235,.14); border:1px solid rgba(37,99,235,.3);
     }
-    .hero-logo img { width:min(260px, 72%); display:block; filter: drop-shadow(0 18px 30px rgba(37,99,235,.18)); }
-    .hero-visual .caption {
-      margin-top: 16px;
-      display:flex;
-      justify-content:space-between;
-      gap:16px;
-      color:#6b7280;
-      font-size:13px;
-      flex-wrap:wrap;
-    }
-    .feature-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top: 30px; }
-    .card {
-      background:#fff;
-      border:1px solid #eceef1;
-      border-radius:22px;
-      padding:22px;
-      box-shadow:0 14px 32px rgba(17,24,39,.05);
-    }
-    .card-top { display:flex; align-items:center; gap:14px; }
-    .chip {
-      display:inline-grid;
-      place-items:center;
-      width:48px;
-      height:48px;
-      border-radius:15px;
-      background:rgba(37,99,235,.08);
-      color:#2563EB;
-      flex: 0 0 auto;
-    }
-    .chip.orange { background:rgba(249,115,22,.10); color:#F97316; }
-    .chip.purple { background:rgba(109,40,217,.10); color:#6D28D9; }
-    .card h3 { margin: 0; font-size: 17px; }
-    .card p { margin: 12px 0 0; color:#6b7280; line-height:1.6; font-size:14px; }
-    .section-title {
-      margin-top: 40px;
-      display:flex;
-      justify-content:space-between;
-      align-items:end;
-      gap:16px;
-      flex-wrap:wrap;
-    }
-    .section-title .kicker { font-size:11px; font-weight:800; letter-spacing:.16em; color:#4f46e5; text-transform:uppercase; }
-    .section-title h2 { margin:8px 0 0; font-size: 30px; letter-spacing:-.03em; }
-    .section-title p { margin:0; max-width:68ch; color:#6b7280; line-height:1.6; }
-    .journey { margin-top: 22px; display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-    .step {
-      background:#fff;
-      border:1px solid #eceef1;
-      border-radius:22px;
-      padding:22px;
-      box-shadow:0 12px 28px rgba(17,24,39,.05);
-      display:flex;
-      gap:14px;
-    }
-    .step .icon {
-      width:46px;
-      height:46px;
-      border-radius:15px;
-      background:rgba(37,99,235,.08);
-      color:#2563EB;
-      display:grid;
-      place-items:center;
-      flex:0 0 auto;
-    }
-    .step.orange .icon { background:rgba(249,115,22,.10); color:#F97316; }
-    .step.purple .icon { background:rgba(109,40,217,.10); color:#6D28D9; }
-    .step .meta { font-size:11px; font-weight:800; letter-spacing:.16em; color:#4f46e5; text-transform:uppercase; }
-    .step h3 { margin:8px 0 0; font-size:18px; }
-    .step p { margin:10px 0 0; color:#6b7280; line-height:1.6; font-size:14px; }
-    .step a {
-      display:inline-flex;
-      margin-top:14px;
-      align-items:center;
-      gap:8px;
-      color:#2563EB;
+    .eyebrow-dot { width:7px; height:7px; border-radius:50%; background:#60a5fa; display:inline-block; }
+    .eyebrow span { font-size:11px; font-weight:600; letter-spacing:.14em; color:#9cc0ff; }
+    h1 {
+      margin:22px 0 0;
+      font-size:52px;
+      line-height:1.06;
       font-weight:700;
-      font-size:14px;
+      letter-spacing:-.028em;
+      color:#fff;
     }
-    .cta-panel {
-      margin-top: 36px;
-      background: linear-gradient(135deg, rgba(37,99,235,.10), rgba(109,40,217,.10));
-      border: 1px solid rgba(37,99,235,.10);
-      border-radius: 28px;
-      padding: 28px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 18px;
-      flex-wrap:wrap;
-      box-shadow: 0 20px 44px rgba(17,24,39,.06);
+    .accent {
+      background:linear-gradient(90deg,#F97316,#fb923c);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
     }
-    .cta-panel strong { display:block; font-size: 22px; letter-spacing:-.03em; color:#111827; }
-    .cta-panel span { display:block; margin-top: 6px; color:#6b7280; max-width: 60ch; line-height:1.6; }
-    .footer {
-      margin-top: 34px;
-      padding-top: 24px;
-      border-top:1px solid #e5e7eb;
-      display:flex;
-      justify-content:space-between;
-      gap:16px;
-      flex-wrap:wrap;
-      color:#6b7280;
-      font-size:13px;
+    .lead { margin:22px 0 0; max-width:46ch; font-size:16px; line-height:1.62; color:#9aa4ba; }
+    .cta-row { margin-top:28px; display:flex; gap:14px; flex-wrap:wrap; }
+    .chips { margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; }
+    .chip {
+      font-size:12px; font-weight:500; color:#7f899e; border:1px solid #232c44; border-radius:20px; padding:5px 12px;
     }
-    .icon-row {
-      margin-top: 18px;
-      display:grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
+    .two-up {
+      margin-top:26px; display:grid; grid-template-columns:1fr 1fr; gap:14px;
     }
-    .icon-pill {
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding: 12px 14px;
-      border-radius: 16px;
-      background:#fff;
-      border:1px solid #eceef1;
-      color:#4b5563;
-      font-size:13px;
-      box-shadow:0 10px 22px rgba(17,24,39,.04);
+    .info-card {
+      border:1px solid #1e2740; border-radius:14px; padding:16px 18px; background:rgba(255,255,255,.02);
     }
-    .icon-pill i { width:16px; height:16px; color:#2563EB; flex:0 0 auto; }
-    .icon-pill.orange i { color:#F97316; }
-    .icon-pill.purple i { color:#6D28D9; }
-    @media (max-width: 1080px) {
-      .hero { grid-template-columns:1fr; }
-      .feature-grid, .journey { grid-template-columns:1fr; }
-      .icon-row { grid-template-columns:1fr; }
-      .nav { flex-direction:column; align-items:flex-start; }
-      .brand { min-width: unset; }
+    .info-card .label {
+      font-size:10.5px; font-weight:600; letter-spacing:.12em; color:#6b7590;
+    }
+    .info-card .body {
+      margin-top:7px; font-size:13px; font-weight:400; color:#aeb6c8; line-height:1.5;
+    }
+    .visual {
+      border:1px solid #232c44;
+      border-radius:22px;
+      background:linear-gradient(180deg,#0F1526,#0C111F);
+      padding:22px;
+      box-shadow:0 30px 70px rgba(0,0,0,.5);
+    }
+    .visual-top { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+    .eyebrow-visual { font-size:10.5px; font-weight:600; letter-spacing:.14em; color:#6b7590; }
+    .visual-title { margin-top:4px; font-size:17px; font-weight:600; color:#fff; }
+    .status {
+      font-size:11px; font-weight:600; color:#fca5a5; background:rgba(224,82,82,.14);
+      border:1px solid rgba(224,82,82,.3); padding:5px 11px; border-radius:20px;
+    }
+    .visual-grid { margin-top:18px; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .stack { display:flex; flex-direction:column; gap:14px; }
+    .doc {
+      border:1px solid #1f2840; border-radius:14px; padding:14px; background:rgba(255,255,255,.02);
+    }
+    .doc-head { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .doc-kicker { font-size:9.5px; font-weight:600; letter-spacing:.1em; color:#6b7590; }
+    .doc-name { margin-top:3px; font-size:12.5px; font-weight:600; color:#e7eaf2; }
+    .tag {
+      font-size:9.5px; font-weight:600; padding:3px 8px; border-radius:14px;
+    }
+    .tag.ok { color:#86efac; background:rgba(22,163,74,.16); }
+    .tag.warn { color:#fcd34d; background:rgba(249,115,22,.16); }
+    .fields { margin-top:11px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .field {
+      border:1px solid #1c2438; border-radius:9px; padding:8px 9px;
+    }
+    .field.bad { border-color:rgba(224,82,82,.35); background:rgba(224,82,82,.06); }
+    .field .k { font-size:8.5px; font-weight:600; letter-spacing:.08em; color:#5f6982; }
+    .field.bad .k { color:#e08a8a; }
+    .field .v { margin-top:3px; font-size:12px; font-weight:600; color:#dbe1ee; }
+    .field.bad .v { color:#f3c0c0; }
+    .checklist {
+      border:1px solid #1f2840; border-radius:14px; padding:14px; background:rgba(255,255,255,.02);
+    }
+    .check-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+    .check-title { margin-top:3px; font-size:12.5px; font-weight:600; color:#e7eaf2; line-height:1.3; }
+    .alert-badge {
+      font-size:9.5px; font-weight:600; color:#fca5a5; background:rgba(224,82,82,.16);
+      padding:3px 8px; border-radius:14px; text-align:center; line-height:1.2;
+    }
+    .issues { margin-top:12px; display:flex; flex-direction:column; gap:9px; }
+    .issue {
+      border:1px solid rgba(224,82,82,.35); border-radius:10px; padding:9px 10px; background:rgba(224,82,82,.06);
+    }
+    .issue.orange {
+      border-color:rgba(249,115,22,.35); background:rgba(249,115,22,.06);
+    }
+    .issue .k { font-size:8.5px; font-weight:700; letter-spacing:.06em; color:#e08a8a; }
+    .issue.orange .k { color:#fbbf7a; }
+    .issue .v { margin-top:4px; font-size:11px; font-weight:500; color:#e3b7b7; line-height:1.4; }
+    .issue.orange .v { color:#e9cba6; }
+    .decision {
+      border:1px dashed #2b3550; border-radius:10px; padding:9px 10px;
+    }
+    .decision .k { font-size:8.5px; font-weight:700; letter-spacing:.06em; color:#6b7590; }
+    .decision .v { margin-top:4px; font-size:11px; font-weight:500; color:#9aa4ba; line-height:1.45; }
+    .section {
+      padding:20px 0 72px;
+    }
+    .section-label { font-size:11px; font-weight:600; letter-spacing:.16em; color:#6d8fd6; text-transform:uppercase; }
+    .section h2 {
+      margin:12px 0 0;
+      font-size:34px;
+      font-weight:700;
+      letter-spacing:-.02em;
+      color:#fff;
+      max-width:22ch;
+      line-height:1.1;
+    }
+    .section-copy { margin:12px 0 0; max-width:70ch; font-size:15px; line-height:1.6; color:#9aa4ba; }
+    .metrics { margin-top:34px; display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+    .metric {
+      border:1px solid #1e2740; border-radius:18px; padding:22px; background:rgba(255,255,255,.02);
+    }
+    .metric .k { font-size:11px; font-weight:600; letter-spacing:.08em; color:#6b7590; }
+    .metric .v { margin-top:12px; font-size:19px; font-weight:700; color:#fb923c; line-height:1.25; }
+    .metric p { margin:12px 0 0; font-size:13px; line-height:1.55; color:#9aa4ba; }
+    .steps { margin-top:34px; display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+    .step {
+      position:relative; overflow:hidden;
+      border:1px solid #1e2740; border-radius:18px; padding:26px 24px; background:rgba(255,255,255,.02);
+    }
+    .step .num {
+      position:absolute; top:6px; right:16px; font-size:66px; font-weight:700; color:rgba(255,255,255,.04);
+    }
+    .step .k { position:relative; font-size:11px; font-weight:600; letter-spacing:.1em; color:#6d8fd6; text-transform:uppercase; }
+    .step .t { position:relative; margin-top:12px; font-size:17px; font-weight:600; color:#fff; }
+    .step p { position:relative; margin:10px 0 0; font-size:13px; line-height:1.55; color:#9aa4ba; }
+    .validations { margin-top:30px; display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+    .validation {
+      border:1px solid #1e2740; border-radius:16px; padding:18px; background:rgba(255,255,255,.02);
+    }
+    .badge-inline {
+      display:inline-flex; align-items:center; gap:6px; font-size:10.5px; font-weight:600;
+      color:#86efac; background:rgba(22,163,74,.14); padding:4px 10px; border-radius:14px;
+    }
+    .validation .t { margin-top:14px; font-size:14px; font-weight:600; color:#e7eaf2; line-height:1.4; }
+    .stack-grid { margin-top:30px; display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    .stack-item {
+      border:1px solid #1e2740; border-radius:16px; padding:20px; background:rgba(255,255,255,.02);
+      display:flex; align-items:center; gap:14px;
+    }
+    .stack-item .icon {
+      width:40px; height:40px; border-radius:11px; background:rgba(37,99,235,.14); display:flex; align-items:center; justify-content:center; flex:0 0 40px;
+    }
+    .stack-item .icon.alt { background:rgba(109,40,217,.16); }
+    .stack-item .k { font-size:10px; font-weight:600; letter-spacing:.1em; color:#6b7590; text-transform:uppercase; }
+    .stack-item .t { margin-top:3px; font-size:14.5px; font-weight:600; color:#e7eaf2; }
+    .compare { margin-top:30px; display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+    .compare-card {
+      border-radius:20px; padding:26px; border:1px solid #232c44;
+    }
+    .compare-card.before { background:linear-gradient(180deg,rgba(224,82,82,.05),rgba(255,255,255,.01)); }
+    .compare-card.after { border-color:rgba(37,99,235,.35); background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(255,255,255,.01)); }
+    .compare-head { display:flex; align-items:center; gap:9px; }
+    .compare-head .t { font-size:17px; font-weight:600; color:#fff; }
+    .compare-list { margin-top:18px; display:flex; flex-direction:column; gap:11px; }
+    .compare-list .item {
+      border:1px solid #232c44; border-radius:12px; padding:13px 15px; font-size:13.5px; font-weight:500; color:#c3cad9;
+    }
+    .compare-card.after .item { border-color:rgba(37,99,235,.3); background:rgba(37,99,235,.05); color:#dbe4f7; }
+    .cta-box {
+      position:relative; overflow:hidden; border:1px solid rgba(109,40,217,.35); border-radius:24px; padding:56px 32px;
+      text-align:center; background:radial-gradient(700px 300px at 50% 0%, rgba(109,40,217,.22), transparent 70%), linear-gradient(180deg,#0F1526,#0C111F);
+    }
+    .cta-box .k { font-size:11px; font-weight:600; letter-spacing:.16em; color:#9cc0ff; text-transform:uppercase; }
+    .cta-box h2 { margin:14px auto 0; max-width:20ch; font-size:36px; font-weight:700; letter-spacing:-.02em; color:#fff; line-height:1.15; }
+    .cta-box p { margin:14px auto 0; max-width:56ch; font-size:15px; line-height:1.6; color:#9aa4ba; }
+    .cta-actions { margin-top:26px; display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+    .cta-tags { margin-top:18px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+    .cta-tag { font-size:12px; font-weight:500; color:#7f899e; border:1px solid #232c44; border-radius:20px; padding:5px 12px; }
+    .footer { border-top:1px solid #171f33; }
+    .footer-inner { max-width:1200px; margin:0 auto; padding:26px 32px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+    .footer-brand { display:flex; align-items:center; gap:10px; }
+    .footer-logo {
+      width:32px; height:32px; border-radius:9px; background:linear-gradient(135deg,#2563EB,#6D28D9);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .footer-text { font-size:13.5px; font-weight:500; color:#9aa4ba; }
+    .footer-copy { font-size:12.5px; font-weight:400; color:#6b7590; }
+    .sticky-trial {
+      position:sticky; bottom:20px; z-index:20; display:flex; justify-content:center; padding:0 32px; pointer-events:none;
+    }
+    .sticky-trial .bar {
+      pointer-events:auto; display:flex; align-items:center; gap:18px; background:rgba(15,21,38,.9); backdrop-filter:blur(12px);
+      border:1px solid #2b3550; border-radius:16px; padding:12px 14px 12px 20px; box-shadow:0 18px 50px rgba(0,0,0,.5);
+    }
+    .trial-text { display:flex; align-items:center; gap:11px; }
+    .trial-badge { font-size:10px; font-weight:700; letter-spacing:.14em; color:#9cc0ff; background:rgba(37,99,235,.14); padding:4px 9px; border-radius:8px; text-transform:uppercase; }
+    .trial-copy { font-size:13px; font-weight:500; color:#c3cad9; }
+    @media (max-width: 1100px) {
+      .hero-grid, .visual-grid, .compare, .metrics, .steps, .validations, .stack-grid { grid-template-columns:1fr; }
+      .links { gap:20px; }
+      h1 { font-size:46px; }
+      .hero-glow { right:-120px; }
+    }
+    @media (max-width: 720px) {
+      .shell { padding-inline:20px; }
+      .nav, .footer-inner { padding-inline:0; }
+      h1 { font-size:38px; }
+      .sticky-trial { padding-inline:0; }
+      .sticky-trial .bar { flex-direction:column; align-items:flex-start; }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="shell">
     <header class="nav">
       <a class="brand" href="/" aria-label="Despachante de Bolso">
         <img src="/logo.png" alt="Despachante de Bolso" />
         <div>
-          <div class="brand-title">Despachante de Bolso</div>
-          <div class="brand-sub">Inteligência aduaneira para importação</div>
+          <div class="title">Despachante de Bolso</div>
+          <div class="sub">Infraestrutura crítica de inteligência aduaneira</div>
         </div>
       </a>
-      <nav class="navlinks" aria-label="Navegação principal">
+      <nav class="links" aria-label="Navegação principal">
         <a href="#produto">Produto</a>
         <a href="#riscos">Riscos</a>
-        <a href="#jornada">Como funciona</a>
+        <a href="#como-funciona">Como funciona</a>
         <a href="#arquitetura">Arquitetura</a>
       </nav>
-      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-        <a class="btn btn-secondary" href="/simulacao.html">Entrar</a>
-        <a class="btn btn-primary" href="/simulacao.html">Testar auditoria gratuita</a>
+      <div class="actions">
+        <a href="/simulacao.html" style="font-size:14px; font-weight:500; color:#c3cad9;">Entrar</a>
+        <button class="btn btn-primary" type="button" onclick="location.href='/simulacao.html'">Testar auditoria gratuita</button>
       </div>
     </header>
 
     <section class="hero">
-      <div>
-        <div class="eyebrow">Auditoria pré-embarque · análise em minutos</div>
-        <h1>Importe com <span class="accent">inteligência</span>.<br />Venda com <span class="accent2">lucro</span>.</h1>
-        <p class="lead">O primeiro agente de IA especializado em comércio exterior que calcula custos, impostos e margem de lucro antes da sua compra. Um fluxo sequencial, com URLs próprias, para parecer produto de verdade e não interface improvisada.</p>
-        <div class="cta-row">
-          <a class="btn btn-primary" href="/simulacao.html">Simular minha importação</a>
-          <a class="btn btn-secondary" href="/resultado.html">Ver resultado da etapa</a>
-        </div>
-        <div class="badges" aria-label="Destaques">
-          <div class="badge"><i data-lucide="clock-3"></i> Resultado em minutos</div>
-          <div class="badge"><i data-lucide="brain"></i> IA treinada para comércio exterior</div>
-          <div class="badge"><i data-lucide="shield-check"></i> Mais segurança nas decisões</div>
-        </div>
-      </div>
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="hero-grid">
+        <div style="padding-top:20px;">
+          <div class="eyebrow">
+            <i class="eyebrow-dot"></i>
+            <span>DUIMP READY · ANÁLISE EM MINUTOS</span>
+          </div>
+          <h1>Detecte erros na Invoice e no BL antes que eles virem <span class="accent">multa, armazenagem e atraso.</span></h1>
+          <p class="lead">Suba Invoice, Draft BL, Incoterm e contexto da operação. O motor cruza documentos, valida frete, aponta divergências de NCM e entrega um checklist pré-embarque em menos de 5 minutos.</p>
 
-      <div class="hero-visual">
-        <div class="hero-logo">
-          <img src="/logo.png" alt="Símbolo da marca Despachante de Bolso" />
+          <div class="cta-row">
+            <button class="btn btn-primary" type="button" onclick="location.href='/simulacao.html'">
+              <i data-lucide="file-search" style="width:18px;height:18px;"></i>
+              Auditar documentos
+            </button>
+            <button class="btn btn-secondary" type="button" onclick="location.href='/resultado.html'">
+              <i data-lucide="play-circle" style="width:18px;height:18px;color:#93b4fb;"></i>
+              Ver demonstração
+            </button>
+          </div>
+
+          <div class="chips">
+            <span class="chip">Sem cartão</span>
+            <span class="chip">Primeiros processos grátis</span>
+            <span class="chip">Pronto para DUIMP</span>
+          </div>
+
+          <div class="two-up">
+            <div class="info-card">
+              <div class="label">O QUE É</div>
+              <div class="body">Motor de auditoria aduaneira para importadores e despachantes.</div>
+            </div>
+            <div class="info-card">
+              <div class="label">O QUE EVITA</div>
+              <div class="body">Erro documental que vira retrabalho, custo e risco fiscal.</div>
+            </div>
+          </div>
         </div>
-        <div class="caption">
-          <span><strong style="color:#111827;">Visual da marca</strong> aplicado na interface pública</span>
-          <span>Blue + orange, sem aparência de template genérico</span>
-        </div>
-        <div class="icon-row">
-          <div class="icon-pill"><i data-lucide="file-search"></i> Audita documentos e contexto</div>
-          <div class="icon-pill purple"><i data-lucide="sparkles"></i> Texto profissional e decisões claras</div>
-          <div class="icon-pill orange"><i data-lucide="badge-dollar-sign"></i> Foco em custo, margem e risco</div>
+
+        <div class="visual">
+          <div class="visual-top">
+            <div>
+              <div class="eyebrow-visual">AUDIT ENGINE</div>
+              <div class="visual-title">Auditoria pré-embarque</div>
+            </div>
+            <span class="status">Divergente</span>
+          </div>
+
+          <div class="visual-grid">
+            <div class="stack">
+              <div class="doc">
+                <div class="doc-head">
+                  <div>
+                    <div class="doc-kicker">INVOICE</div>
+                    <div class="doc-name">INV-2026-00418</div>
+                  </div>
+                  <span class="tag ok">Extraído</span>
+                </div>
+                <div class="fields">
+                  <div class="field">
+                    <div class="k">INCOTERM</div>
+                    <div class="v">FOB Ningbo</div>
+                  </div>
+                  <div class="field">
+                    <div class="k">NCM</div>
+                    <div class="v">8504.40.90</div>
+                  </div>
+                  <div class="field">
+                    <div class="k">FREIGHT</div>
+                    <div class="v">Collect</div>
+                  </div>
+                  <div class="field">
+                    <div class="k">VALOR</div>
+                    <div class="v">USD 48.900</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="doc">
+                <div class="doc-head">
+                  <div>
+                    <div class="doc-kicker">DRAFT BL</div>
+                    <div class="doc-name">BL DRAFT-88917</div>
+                  </div>
+                  <span class="tag warn">Em validação</span>
+                </div>
+                <div class="fields">
+                  <div class="field bad">
+                    <div class="k">INCOTERM LIDO</div>
+                    <div class="v">CIF Santos</div>
+                  </div>
+                  <div class="field bad">
+                    <div class="k">FREIGHT LIDO</div>
+                    <div class="v">Prepaid</div>
+                  </div>
+                  <div class="field">
+                    <div class="k">PORTO</div>
+                    <div class="v">Santos</div>
+                  </div>
+                  <div class="field">
+                    <div class="k">RISCO</div>
+                    <div class="v">Score 82/100</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="checklist">
+              <div class="check-head">
+                <div>
+                  <div class="doc-kicker">CHECKLIST LATERAL</div>
+                  <div class="check-title">Divergências<br />críticas</div>
+                </div>
+                <div class="alert-badge">3<br />alertas</div>
+              </div>
+              <div class="issues">
+                <div class="issue">
+                  <div class="k">INCOTERM_MISMATCH</div>
+                  <div class="v">FOB na Invoice, CIF no Draft BL.</div>
+                </div>
+                <div class="issue orange">
+                  <div class="k">FREIGHT_RULE</div>
+                  <div class="v">Freight Prepaid incompatível com FOB.</div>
+                </div>
+                <div class="issue orange">
+                  <div class="k">NCM_ALERT</div>
+                  <div class="v">NCM exige revisão documental antes do embarque.</div>
+                </div>
+                <div class="decision">
+                  <div class="k">DECISION LAYER</div>
+                  <div class="v">Resultado: segurar embarque até revisar Incoterm, frete e classificação antes de seguir para a operação.</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <section id="produto" class="feature-grid">
-      <div class="card">
-        <div class="card-top">
-          <div class="chip"><i data-lucide="package"></i></div>
-          <h3>Custo total</h3>
-        </div>
-        <p>Leitura do landed cost real, item a item, sem surpresa no desembaraço.</p>
-      </div>
-      <div class="card">
-        <div class="card-top">
-          <div class="chip purple"><i data-lucide="calculator"></i></div>
-          <h3>Impostos</h3>
-        </div>
-        <p>II, IPI, PIS/COFINS e ICMS contextualizados para a sua operação.</p>
-      </div>
-      <div class="card">
-        <div class="card-top">
-          <div class="chip orange"><i data-lucide="trending-up"></i></div>
-          <h3>Margem</h3>
-        </div>
-        <p>Margem projetada já com todos os custos embutidos e pronta para decisão.</p>
+    <section id="produto" class="section" style="border-top:1px solid #171f33;border-bottom:1px solid #171f33;background:rgba(255,255,255,.012);">
+      <div style="padding-top:22px; display:flex; gap:14px; flex-wrap:wrap; justify-content:center;">
+        <span class="cta-tag">Estruturado para DUIMP</span>
+        <span class="cta-tag">Projetado para importadores brasileiros</span>
+        <span class="cta-tag">Motor baseado em regras documentais</span>
+        <span class="cta-tag">Arquitetura multi-tenant com isolamento por empresa</span>
       </div>
     </section>
 
-    <div class="section-title" id="jornada">
-      <div>
-        <div class="kicker">Jornada</div>
-        <h2>Fluxo principal da operação</h2>
+    <section id="riscos" class="section">
+      <div class="section-label">Risco financeiro</div>
+      <h2>Quanto custa um erro documental?</h2>
+      <p class="section-copy">O problema não é apenas um dado errado. É o efeito cascata: armazenagem, retrabalho, pressão operacional, canal vermelho, reclassificação e margem indo embora antes da carga desembarcar.</p>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="k">BL incorreto</div>
+          <div class="v">Atraso operacional imediato</div>
+          <p>Divergência entre Draft BL e Invoice pode travar conferência, gerar retrabalho com agente e ampliar custo de armazenagem.</p>
+        </div>
+        <div class="metric">
+          <div class="k">NCM divergente</div>
+          <div class="v">Risco fiscal e canal vermelho</div>
+          <p>Classificação inconsistente entre documentos e operação aumenta exposição a multa, reclassificação e fiscalização mais dura.</p>
+        </div>
+        <div class="metric">
+          <div class="k">Incoterm inconsistente</div>
+          <div class="v">Frete e responsabilidade mal alocados</div>
+          <p>FOB com Freight Prepaid ou CIF com dados incompatíveis cria erro de compliance e distorce responsabilidade contratual.</p>
+        </div>
+        <div class="metric">
+          <div class="k">Erro invisível antes do embarque</div>
+          <div class="v">Prejuízo acumulado em cadeia</div>
+          <p>Quando o erro passa despercebido, ele vira e-mails, retificação, atraso de liberação e margem corroendo no backoffice.</p>
+        </div>
       </div>
-      <p>Uma sequência clara, com URLs próprias e retorno entre etapas para uma experiência profissional em produção.</p>
+    </section>
+
+    <section id="como-funciona" class="section">
+      <div class="section-label">Como a IA funciona</div>
+      <h2>Da leitura do PDF ao checklist operacional</h2>
+      <p class="section-copy">A narrativa do produto não é abstrata: documento entra, campo é lido, regra é aplicada, risco é exposto, ação vira decisão.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="num">01</div>
+          <div class="k">Passo 01</div>
+          <div class="t">Upload de Invoice + Draft BL</div>
+          <p>A operação entra com os documentos que de fato definem risco documental antes da alfândega apontar o problema.</p>
+        </div>
+        <div class="step">
+          <div class="num">02</div>
+          <div class="k">Passo 02</div>
+          <div class="t">Extração estruturada e cruzamento</div>
+          <p>O motor lê campos, estrutura dados e compara documento contra documento, regra contra regra, campo contra contexto.</p>
+        </div>
+        <div class="step">
+          <div class="num">03</div>
+          <div class="k">Passo 03</div>
+          <div class="t">Checklist operacional em minutos</div>
+          <p>A saída não é um dashboard vazio, é um checklist acionável com divergência, criticidade, contexto e próximo passo.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label">O que a IA valida</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:end;">
+        <h2 style="max-width:18ch;">Cobertura objetiva de compliance documental</h2>
+        <p class="section-copy" style="margin:0;">Cada card abaixo representa uma camada concreta de validação. Não é automação genérica: é auditoria documental voltada para operação aduaneira real.</p>
+      </div>
+
+      <div class="validations">
+        <div class="validation">
+          <span class="badge-inline"><i data-lucide="check" style="width:12px;height:12px;"></i> Validação</span>
+          <div class="t">Invoice obrigatória e consistência mínima</div>
+        </div>
+        <div class="validation">
+          <span class="badge-inline"><i data-lucide="check" style="width:12px;height:12px;"></i> Validação</span>
+          <div class="t">Invoice versus Draft BL</div>
+        </div>
+        <div class="validation">
+          <span class="badge-inline"><i data-lucide="check" style="width:12px;height:12px;"></i> Validação</span>
+          <div class="t">Freight Collect versus FOB</div>
+        </div>
+        <div class="validation">
+          <span class="badge-inline"><i data-lucide="check" style="width:12px;height:12px;"></i> Validação</span>
+          <div class="t">Freight Prepaid versus CIF/CFR</div>
+        </div>
+        <div class="validation">
+          <span class="badge-inline"><i data-lucide="check" style="width:12px;height:12px;"></i> Validação</span>
+          <div class="t">NCM divergente entre documentos e operação</div>
+        </div>
+        <div class="validation">
+          <span class="badge-inline"><i data-lucide="check" style="width:12px;height:12px;"></i> Validação</span>
+          <div class="t">Campos obrigatórios ausentes</div>
+        </div>
+        <div class="validation">
+          <span class="badge-inline"><i data-lucide="check" style="width:12px;height:12px;"></i> Validação</span>
+          <div class="t">Estrutura fiscal inconsistente</div>
+        </div>
+        <div class="validation">
+          <span class="badge-inline"><i data-lucide="check" style="width:12px;height:12px;"></i> Validação</span>
+          <div class="t">Compliance documental pré-embarque</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="arquitetura" class="section">
+      <div class="section-label">Enterprise stack</div>
+      <h2 style="max-width:18ch;">Infraestrutura técnica para inteligência aduaneira</h2>
+      <p class="section-copy">Por baixo da interface há uma camada de parsing, validação cruzada e regras para prevenir prejuízo antes do embarque.</p>
+
+      <div class="stack-grid">
+        <div class="stack-item">
+          <div class="icon"><i data-lucide="scan-text" style="width:20px;height:20px;color:#93b4fb;"></i></div>
+          <div><div class="k">Layer</div><div class="t">OCR + parsing estruturado</div></div>
+        </div>
+        <div class="stack-item">
+          <div class="icon"><i data-lucide="braces" style="width:20px;height:20px;color:#93b4fb;"></i></div>
+          <div><div class="k">Layer</div><div class="t">Structured outputs para campos críticos</div></div>
+        </div>
+        <div class="stack-item">
+          <div class="icon"><i data-lucide="git-compare" style="width:20px;height:20px;color:#93b4fb;"></i></div>
+          <div><div class="k">Layer</div><div class="t">Cross-document validation engine</div></div>
+        </div>
+        <div class="stack-item">
+          <div class="icon alt"><i data-lucide="shield-check" style="width:20px;height:20px;color:#b794f6;"></i></div>
+          <div><div class="k">Layer</div><div class="t">Rule engine de compliance aduaneira</div></div>
+        </div>
+        <div class="stack-item">
+          <div class="icon alt"><i data-lucide="gauge" style="width:20px;height:20px;color:#b794f6;"></i></div>
+          <div><div class="k">Layer</div><div class="t">Risk scoring por operação</div></div>
+        </div>
+        <div class="stack-item">
+          <div class="icon alt"><i data-lucide="database" style="width:20px;height:20px;color:#b794f6;"></i></div>
+          <div><div class="k">Layer</div><div class="t">Arquitetura pronta para memória operacional</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label">Antes vs depois</div>
+      <h2 style="max-width:22ch;">Da planilha e e-mail para decisão operacional em minutos</h2>
+
+      <div class="compare">
+        <div class="compare-card before">
+          <div class="compare-head">
+            <i data-lucide="x-circle" style="width:19px;height:19px;color:#e08a8a;"></i>
+            <div class="t">Antes</div>
+          </div>
+          <div class="compare-list">
+            <div class="item">Conferência manual em PDF, e-mail e planilha</div>
+            <div class="item">Erros descobertos tarde demais</div>
+            <div class="item">Dependência de memória operacional da equipe</div>
+            <div class="item">Checklist informal e retrabalho recorrente</div>
+          </div>
+        </div>
+        <div class="compare-card after">
+          <div class="compare-head">
+            <i data-lucide="check-circle-2" style="width:19px;height:19px;color:#86efac;"></i>
+            <div class="t">Depois</div>
+          </div>
+          <div class="compare-list">
+            <div class="item">Análise automática de Invoice e Draft BL</div>
+            <div class="item">Divergências detectadas antes do embarque</div>
+            <div class="item">Checklist pronto para ação do despachante</div>
+            <div class="item">Decisão operacional em minutos, não em horas</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="cta-box" id="cta-final">
+        <div class="k">CTA final</div>
+        <h2>Teste sua próxima importação antes que ela gere prejuízo.</h2>
+        <p>Execute a auditoria gratuita, envie os documentos e veja em minutos onde o embarque pode quebrar financeiramente.</p>
+        <div class="cta-actions">
+          <button class="btn btn-primary" type="button" onclick="location.href='/simulacao.html'">Executar auditoria gratuita</button>
+          <button class="btn btn-secondary" type="button" onclick="location.href='/simulacao.html'">Entrar na plataforma</button>
+        </div>
+        <div class="cta-tags">
+          <span class="cta-tag">Sem cartão</span>
+          <span class="cta-tag">Primeiros processos grátis</span>
+          <span class="cta-tag">Resultado em minutos</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="footer-logo" style="overflow:hidden;"><img src="/logo.png" alt="" style="width:100%;height:100%;object-fit:cover;"></div>
+        <span class="footer-text">Despachante de Bolso · Inteligência aduaneira</span>
+      </div>
+      <span class="footer-copy">© 2026 · Importe com inteligência. Venda com lucro.</span>
     </div>
+  </footer>
 
-    <section class="journey">
-      <div class="step">
-        <div class="icon"><i data-lucide="log-in"></i></div>
-        <div>
-          <div class="meta">Passo 01</div>
-          <h3>Entrada</h3>
-          <p>Cadastro simples e início da simulação com a identidade visual da marca.</p>
-          <a href="/simulacao.html">Abrir etapa de entrada <i data-lucide="arrow-right"></i></a>
-        </div>
+  <div class="sticky-trial">
+    <div class="bar">
+      <div class="trial-text">
+        <span class="trial-badge">Trial</span>
+        <span class="trial-copy">Suba seus documentos e descubra o risco antes do embarque.</span>
       </div>
-      <div class="step purple">
-        <div class="icon"><i data-lucide="loader-circle"></i></div>
-        <div>
-          <div class="meta">Passo 02</div>
-          <h3>Processamento</h3>
-          <p>Estado de carregamento com indicação clara do que está acontecendo.</p>
-          <a href="/loading.html">Ver etapa de processamento <i data-lucide="arrow-right"></i></a>
-        </div>
-      </div>
-      <div class="step orange">
-        <div class="icon"><i data-lucide="badge-check"></i></div>
-        <div>
-          <div class="meta">Passo 03</div>
-          <h3>Resultado</h3>
-          <p>Resumo financeiro e decisório, pronto para avançar ou voltar ao ponto anterior.</p>
-          <a href="/resultado.html">Ver resultado final <i data-lucide="arrow-right"></i></a>
-        </div>
-      </div>
-    </section>
-
-    <section id="riscos" class="section-title">
-      <div>
-        <div class="kicker">Riscos</div>
-        <h2>O que a auditoria evita</h2>
-      </div>
-      <p>Conferência manual, erro documental, margem corroída e decisão tomada tarde demais. A home precisa vender a redução desse risco com clareza.</p>
-    </section>
-
-    <section class="feature-grid" style="margin-top:18px;">
-      <div class="card">
-        <div class="card-top">
-          <div class="chip"><i data-lucide="shield-alert"></i></div>
-          <h3>Risco fiscal</h3>
-        </div>
-        <p>Classificação inconsistente e custo tributário que só aparece quando já é tarde.</p>
-      </div>
-      <div class="card">
-        <div class="card-top">
-          <div class="chip purple"><i data-lucide="triangle-alert"></i></div>
-          <h3>Risco documental</h3>
-        </div>
-        <p>Invoice, packing list e transporte lidos em conjunto para evitar divergência.</p>
-      </div>
-      <div class="card">
-        <div class="card-top">
-          <div class="chip orange"><i data-lucide="wallet"></i></div>
-          <h3>Risco de margem</h3>
-        </div>
-        <p>Venda com lucro real, não com um preço que some no momento da operação.</p>
-      </div>
-    </section>
-
-    <section id="arquitetura" class="cta-panel">
-      <div>
-        <strong>Um fluxo profissional, com visual de produto e navegação sequencial.</strong>
-        <span>Se o usuário entrar pela home, ele entende o valor, testa a simulação, acompanha o carregamento e chega ao resultado sem ficar preso na mesma página.</span>
-      </div>
-      <div style="display:flex; gap:12px; flex-wrap:wrap;">
-        <a class="btn btn-secondary" href="/resultado.html">Ver resultado</a>
-        <a class="btn btn-primary" href="/simulacao.html">Testar auditoria gratuita</a>
-      </div>
-    </section>
-
-    <footer class="footer">
-      <div>© 2026 · Importe com inteligência. Venda com lucro.</div>
-      <div><a href="/simulacao.html">Abrir operação</a> · <a href="/resultado.html">Ver resultado</a></div>
-    </footer>
+      <button class="btn btn-primary" type="button" onclick="location.href='/simulacao.html'">Validar embarque</button>
+    </div>
   </div>
 
   <script>
     if (window.lucide) {
-      window.lucide.createIcons({ attrs: { 'stroke-width': 1.75 } });
-      setTimeout(() => window.lucide.createIcons({ attrs: { 'stroke-width': 1.75 } }), 250);
+      window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
+      setTimeout(() => window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } }), 300);
     }
   </script>
 </body>
