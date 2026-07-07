@@ -1,21 +1,21 @@
-# Spec de Produto — Fase 1 (Comex-demo)
+# Spec de Produto — Fase 1 (Compliance Engine Embedded para Comex)
 
 **Referência:** `ROADMAP.md` (Fase 1), `CLAUDE.md` §2, `ComexPilot.md`, `CUSTOMER_JOURNEY.md`
-**Escopo:** esta spec descreve a entrega realista da Fase 1. A jornada principal é **auditoria pré-embarque de documentos**. CTI pode existir como apoio operacional, mas não é a proposta de valor central desta fase.
+**Escopo:** esta spec descreve a entrega realista da Fase 1. A proposta de valor central é um **compliance engine embedded para operações de comércio exterior**, com foco em pré-registro, conferência documental, reconciliação de dados e governança humana. CTI pode existir como apoio operacional, mas não é o núcleo desta fase.
 
 ---
 
 ## 1. Objetivo do MVP
 
-Entregar uma demonstração funcional para uma trading real, com foco em reduzir risco operacional antes do embarque.
+Entregar uma demonstração funcional para uma trading real, com foco em reduzir risco operacional antes do registro e antes do embarque.
 
 O sistema precisa:
-- Receber documentos de importação.
-- Extrair conteúdo útil.
-- Confrontar os documentos entre si.
-- Produzir apontamentos com norma citada ao lado.
-- Exigir revisão humana antes de encerrar o processo.
-- Registrar trilha auditável append-only.
+- Receber documentos de importação e anexos operacionais.
+- Extrair conteúdo útil e normalizá-lo em entidades comparáveis.
+- Confrontar os documentos entre si e com parâmetros internos.
+- Aplicar regras de compliance preventivas com justificativa e evidência.
+- Exigir revisão humana antes de avançar quando houver exceção.
+- Registrar trilha auditável append-only do que foi recebido, inferido, validado e aprovado.
 
 ## 2. O que dá para construir agora
 
@@ -23,11 +23,12 @@ Com o que já existe no repositório, é realista entregar:
 
 - Login simples do time da trading.
 - Lista de dossiês/processos.
-- Upload de Invoice, Packing List e documento de transporte.
+- Upload de Invoice, Packing List, BL/AWB e anexos operacionais.
 - Detecção automática do tipo de transporte.
-- Extração e conciliação entre documentos.
-- Apontamentos com severidade e citação normativa.
-- Tela de revisão humana com aceitar/corrigir.
+- Extração e normalização de campos críticos.
+- Reconciliação entre documentos e cadastro interno.
+- Checks preventivos com severidade, justificativa e evidência.
+- Tela de revisão humana com aceitar/corrigir/escalar.
 - Trilha de auditoria do processo.
 
 ## 3. Fora de escopo da Fase 1
@@ -60,39 +61,40 @@ CTI pode permanecer como módulo interno/extra, mas não deve disputar a home, a
 1. O analista entra no sistema com login simples.
 2. Vê a lista de processos existentes e cria um novo dossiê.
 3. Faz upload dos documentos como vierem, sem exigir padronização prévia.
-4. O sistema processa em etapas visíveis: extração, conciliação, checagem normativa e geração de apontamentos.
-5. O detalhe do dossiê mostra os achados com a norma citada ao lado, sem esconder a fonte.
-6. O analista revisa cada apontamento, aceitando ou corrigindo quando necessário.
-7. O sistema registra a decisão e mantém a trilha auditável.
+4. O sistema processa em etapas visíveis: ingestão, extração, normalização, reconciliação, checagem de compliance e geração de pendências.
+5. O detalhe do dossiê mostra os achados, a justificativa da regra e a evidência usada, sem esconder a fonte.
+6. O analista revisa cada pendência, aceitando, corrigindo ou escalando quando necessário.
+7. O sistema registra a decisão, o responsável e o histórico de mudança.
 
 ## 6. O que precisa aparecer na interface
 
 ### Núcleo
 - Status claro de processamento por etapa.
-- Lista de apontamentos ordenada por severidade.
-- Citação normativa visível ao lado do achado.
+- Lista de pendências e exceções ordenada por criticidade.
+- Evidência e justificativa visíveis ao lado do achado.
 - Revisão humana rápida, com 1 clique quando possível.
-- Histórico append-only do que foi validado e corrigido.
+- Histórico append-only do que foi validado, inferido, corrigido e aprovado.
 
 ### Valor percebido
 - Mostrar que o sistema economiza tempo e reduz risco.
-- Mostrar a fonte normativa sem exigir clique extra.
-- Deixar explícito quando não há base suficiente para citar.
+- Mostrar a fonte da decisão sem exigir clique extra.
+- Deixar explícito quando não há base suficiente para avançar.
 
 ## 7. Métricas da Fase 1
 
 - Tempo médio de processamento por dossiê.
-- Taxa de apontamentos aceitos sem correção.
-- Taxa de correção humana por tipo de erro.
-- Taxa de grounding rejeitado por falta de base.
+- Taxa de pendências resolvidas sem retrabalho.
+- Taxa de correção humana por tipo de exceção.
+- Taxa de saída bloqueada por falta de base documental.
 - Erros técnicos de extração ou integração.
 
 ## 8. Princípios de UX
 
 - Uma jornada principal, sem competir com outra proposta de valor.
-- Fonte normativa sempre visível.
+- Evidência e justificativa sempre visíveis.
 - Revisão humana nunca tratada como detalhe.
 - Progressão do fluxo com contexto, não com spinner genérico.
+- A interface deve mostrar estado, cobertura e responsabilidade, não só “resultado”.
 
 ## 9. O que fica para depois
 
@@ -102,3 +104,4 @@ CTI pode permanecer como módulo interno/extra, mas não deve disputar a home, a
 - Dashboard executivo.
 - Automação de cobrança.
 - App mobile.
+- Monitoramento regulatório contínuo com atualização automatizada de fontes.

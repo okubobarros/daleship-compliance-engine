@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Despachante de Bolso</title>
-  <meta name="description" content="Importe com inteligência. Venda com lucro. Auditoria pré-embarque com foco em documentos, risco e margem." />
+  <meta name="description" content="Compliance engine embedded para comércio exterior: ingestão documental, reconciliação de dados, governança humana e trilha auditável antes do registro." />
   <meta name="theme-color" content="#0A0F1E" />
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
@@ -526,18 +526,18 @@
         <img src="/logo.png" alt="Despachante de Bolso" />
         <div>
           <div class="title">Despachante de Bolso</div>
-          <div class="sub">Infraestrutura crítica de inteligência aduaneira</div>
+          <div class="sub">Compliance engine embedded para operações de comex</div>
         </div>
       </a>
       <nav class="links" aria-label="Navegação principal">
         <a href="#produto">Produto</a>
-        <a href="#riscos">Riscos</a>
+        <a href="#problema">Problema</a>
         <a href="#como-funciona">Como funciona</a>
         <a href="#arquitetura">Arquitetura</a>
       </nav>
       <div class="actions">
         <a href="/simulacao.html" style="font-size:14px; font-weight:500; color:#c3cad9;">Entrar</a>
-        <button class="btn btn-primary" type="button" onclick="location.href='/simulacao.html'">Testar auditoria gratuita</button>
+        <button class="btn btn-primary" type="button" onclick="location.href='/simulacao.html'">Testar pré-análise</button>
       </div>
     </header>
 
@@ -547,36 +547,37 @@
         <div style="padding-top:20px;">
           <div class="eyebrow">
             <i class="eyebrow-dot"></i>
-            <span>DUIMP READY · ANÁLISE EM MINUTOS</span>
+            <span>EMBEDDED COMPLIANCE · ANÁLISE EM MINUTOS</span>
           </div>
-          <h1>Detecte erros na Invoice e no BL antes que eles virem <span class="accent">multa, armazenagem e atraso.</span></h1>
-          <p class="lead">Suba Invoice, Draft BL, Incoterm e contexto da operação. O motor cruza documentos, valida frete, aponta divergências de NCM e entrega um checklist pré-embarque em menos de 5 minutos.</p>
+          <h1>Conferência documental e governança humana antes que o erro vire <span class="accent">custo, atraso e penalidade.</span></h1>
+          <p class="lead">Suba Invoice, Draft BL, Packing List e contexto da operação. O engine extrai campos críticos, reconcilia documentos, aplica regras de compliance e encaminha pendências para revisão humana com evidência.</p>
 
           <div class="cta-row">
             <button class="btn btn-primary" type="button" onclick="location.href='/simulacao.html'">
               <i data-lucide="file-search" style="width:18px;height:18px;"></i>
-              Auditar documentos
+              Iniciar pré-análise
             </button>
             <button class="btn btn-secondary" type="button" onclick="location.href='/resultado.html'">
               <i data-lucide="play-circle" style="width:18px;height:18px;color:#93b4fb;"></i>
-              Ver demonstração
+              Ver fluxo completo
             </button>
           </div>
 
           <div class="chips">
             <span class="chip">Sem cartão</span>
             <span class="chip">Primeiros processos grátis</span>
-            <span class="chip">Pronto para DUIMP</span>
+            <span class="chip">Human-in-the-loop</span>
+            <span class="chip">Audit trail por processo</span>
           </div>
 
           <div class="two-up">
             <div class="info-card">
               <div class="label">O QUE É</div>
-              <div class="body">Motor de auditoria aduaneira para importadores e despachantes.</div>
+              <div class="body">Engine de compliance embedded para pré-registro, reconciliação e decisão assistida.</div>
             </div>
             <div class="info-card">
               <div class="label">O QUE EVITA</div>
-              <div class="body">Erro documental que vira retrabalho, custo e risco fiscal.</div>
+              <div class="body">Erro documental, divergência material e decisão sem trilha de evidência.</div>
             </div>
           </div>
         </div>
@@ -584,10 +585,10 @@
         <div class="visual">
           <div class="visual-top">
             <div>
-              <div class="eyebrow-visual">AUDIT ENGINE</div>
-              <div class="visual-title">Auditoria pré-embarque</div>
+              <div class="eyebrow-visual">COMPLIANCE ENGINE</div>
+              <div class="visual-title">Pré-registro e reconciliação</div>
             </div>
-            <span class="status">Divergente</span>
+            <span class="status">Em revisão</span>
           </div>
 
           <div class="visual-grid">
@@ -598,7 +599,7 @@
                     <div class="doc-kicker">INVOICE</div>
                     <div class="doc-name">INV-2026-00418</div>
                   </div>
-                  <span class="tag ok">Extraído</span>
+                  <span class="tag ok">Normalizado</span>
                 </div>
                 <div class="fields">
                   <div class="field">
@@ -626,7 +627,7 @@
                     <div class="doc-kicker">DRAFT BL</div>
                     <div class="doc-name">BL DRAFT-88917</div>
                   </div>
-                  <span class="tag warn">Em validação</span>
+                  <span class="tag warn">Em reconciliação</span>
                 </div>
                 <div class="fields">
                   <div class="field bad">
@@ -650,29 +651,29 @@
             </div>
 
             <div class="checklist">
-              <div class="check-head">
-                <div>
-                  <div class="doc-kicker">CHECKLIST LATERAL</div>
-                  <div class="check-title">Divergências<br />críticas</div>
-                </div>
-                <div class="alert-badge">3<br />alertas</div>
+                <div class="check-head">
+                  <div>
+                  <div class="doc-kicker">WORKFLOW LATERAL</div>
+                  <div class="check-title">Pendências<br />e exceções</div>
+                  </div>
+                <div class="alert-badge">3<br />pendências</div>
               </div>
               <div class="issues">
                 <div class="issue">
-                  <div class="k">INCOTERM_MISMATCH</div>
-                  <div class="v">FOB na Invoice, CIF no Draft BL.</div>
+                  <div class="k">RECONCILIATION_MISMATCH</div>
+                  <div class="v">Incoterm e frete não fecham entre Invoice e BL.</div>
                 </div>
                 <div class="issue orange">
-                  <div class="k">FREIGHT_RULE</div>
-                  <div class="v">Freight Prepaid incompatível com FOB.</div>
+                  <div class="k">COMPLIANCE_CHECK</div>
+                  <div class="v">Campo obrigatório ausente para avançar o processo.</div>
                 </div>
                 <div class="issue orange">
-                  <div class="k">NCM_ALERT</div>
-                  <div class="v">NCM exige revisão documental antes do embarque.</div>
+                  <div class="k">HUMAN_REVIEW</div>
+                  <div class="v">Pendência escalada para aprovação humana com justificativa.</div>
                 </div>
                 <div class="decision">
                   <div class="k">DECISION LAYER</div>
-                  <div class="v">Resultado: segurar embarque até revisar Incoterm, frete e classificação antes de seguir para a operação.</div>
+                  <div class="v">Resultado: segurar avanço até reconciliar dados, registrar justificativa e liberar a próxima etapa.</div>
                 </div>
               </div>
             </div>
@@ -685,8 +686,8 @@
       <div class="wizard-top">
         <div>
           <div class="wizard-badge"><i data-lucide="sparkles" style="width:14px;height:14px;"></i> Evolution Wizard</div>
-          <div class="wizard-title">A barra sobe conforme a operação ganha evidência.</div>
-          <p class="wizard-copy">Cada arquivo liberado aumenta a confiança do motor, muda a mensagem de status e acende o CTA só quando a análise já tem base suficiente para cruzar dados com segurança.</p>
+          <div class="wizard-title">A cobertura sobe conforme a operação ganha evidência.</div>
+          <p class="wizard-copy">Cada arquivo libera uma camada do engine: ingestão, normalização, reconciliação, regra de compliance e revisão humana. O CTA só acende quando existe base para avançar com responsabilidade.</p>
         </div>
         <div style="min-width:180px; text-align:right;">
           <div class="section-label" style="font-size:10px;">Etapa atual</div>
@@ -701,28 +702,28 @@
             <div class="stage-pill active" id="stage-context">
               <div class="stage-k">Etapa 01</div>
               <div class="stage-title">Contexto</div>
-              <div class="stage-sub">Operação, origem, destino e intenção.</div>
+              <div class="stage-sub">Operação, origem, destino e política.</div>
             </div>
             <div class="stage-pill" id="stage-docs">
               <div class="stage-k">Etapa 02</div>
               <div class="stage-title">Documentos</div>
-              <div class="stage-sub">Invoice, BL, Packing List e ERP.</div>
+              <div class="stage-sub">Invoice, BL, Packing List e anexos.</div>
             </div>
             <div class="stage-pill" id="stage-llm">
               <div class="stage-k">Etapa 03</div>
               <div class="stage-title">Diagnóstico IA</div>
-              <div class="stage-sub">Extração, cruzamento e flags.</div>
+              <div class="stage-sub">Extração, regras e raciocínio assistido.</div>
             </div>
             <div class="stage-pill" id="stage-cockpit">
               <div class="stage-k">Etapa 04</div>
               <div class="stage-title">Cockpit</div>
-              <div class="stage-sub">Pronto para decisão e revisão.</div>
+              <div class="stage-sub">Pronto para decisão e trilha.</div>
             </div>
           </div>
 
           <div class="wizard-card">
-            <div class="section-label">01. Coleta documental</div>
-            <div class="section-copy" style="max-width:none;">Suba os arquivos que você já tem. O fluxo responde ao que entrou de verdade e adapta a confiança conforme a base melhora.</div>
+            <div class="section-label">01. Ingestão documental</div>
+            <div class="section-copy" style="max-width:none;">Suba os arquivos que você já tem. O fluxo responde ao que entrou de verdade e adapta a cobertura conforme a base melhora.</div>
 
             <div class="wizard-grid" style="margin-top:16px;">
               <div class="upload-box" data-role="invoice">
@@ -733,7 +734,7 @@
                   </div>
                   <div class="file-chip wait" id="chip-invoice">Aguardando</div>
                 </div>
-                <div class="upload-help">Base para descrição, valores e itens. Sem ela, o diagnóstico fica parcial.</div>
+                <div class="upload-help">Base para descrição, valores e itens. Sem ela, a reconciliação fica parcial.</div>
                 <div class="upload-row">
                   <input type="file" id="input-invoice" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls" />
                 </div>
@@ -784,7 +785,7 @@
 
             <div class="summary-strip">
               <div class="box"><strong style="color:#fff;">Documentos aceitos</strong><br><span id="summary-docs">0 de 4</span></div>
-              <div class="box"><strong style="color:#fff;">Confiança calculada</strong><br><span id="summary-confidence">0%</span></div>
+              <div class="box"><strong style="color:#fff;">Cobertura</strong><br><span id="summary-confidence">0%</span></div>
               <div class="box"><strong style="color:#fff;">Próxima ação</strong><br><span id="summary-next">Enviar o primeiro documento</span></div>
             </div>
           </div>
@@ -794,8 +795,8 @@
           <div class="confidence-card">
             <div class="confidence-head">
               <div>
-                <div class="confidence-title">Confiabilidade do diagnóstico</div>
-                <div style="margin-top:10px; font-size:14px; color:#9aa4ba;">A confiança aumenta com cada arquivo relevante e com o cruzamento entre fontes.</div>
+                <div class="confidence-title">Confiabilidade do engine</div>
+                <div style="margin-top:10px; font-size:14px; color:#9aa4ba;">A cobertura aumenta com cada arquivo relevante e com o cruzamento entre fontes.</div>
               </div>
               <div class="confidence-score"><span id="confidence-score">0</span>%</div>
             </div>
@@ -803,7 +804,7 @@
             <div class="confidence-msg" id="confidence-msg">Aguardando invoice e BL para iniciar o cruzamento preventivo.</div>
             <div class="diagnostic">
               <div><strong style="color:#fff;">Sinais de entrada</strong><br><span id="signal-1">Invoice ausente</span></div>
-              <div><strong style="color:#fff;">Estado de cruzamento</strong><br><span id="signal-2">Aguardando BL</span></div>
+              <div><strong style="color:#fff;">Estado de reconciliação</strong><br><span id="signal-2">Aguardando BL</span></div>
             </div>
           </div>
 
@@ -811,7 +812,7 @@
             <div>
               <div class="status" id="cta-status">Bloqueado</div>
               <div class="label" id="cta-label">Analisar documentos</div>
-              <div class="sub" id="cta-sub">Adicione Invoice e Draft BL para liberar o motor de cruzamento.</div>
+              <div class="sub" id="cta-sub">Adicione Invoice e Draft BL para liberar o motor de reconciliação.</div>
             </div>
             <button class="btn btn-primary" type="button" id="wizard-button" onclick="location.href='/simulacao.html'">Adicionar arquivos</button>
           </div>
@@ -821,148 +822,148 @@
 
     <section id="produto" class="section" style="border-top:1px solid #171f33;border-bottom:1px solid #171f33;background:rgba(255,255,255,.012);">
       <div style="padding-top:22px; display:flex; gap:14px; flex-wrap:wrap; justify-content:center;">
-        <span class="cta-tag">Estruturado para DUIMP</span>
-        <span class="cta-tag">Projetado para importadores brasileiros</span>
-        <span class="cta-tag">Motor baseado em regras documentais</span>
-        <span class="cta-tag">Arquitetura multi-tenant com isolamento por empresa</span>
+        <span class="cta-tag">Pré-registro assistido</span>
+        <span class="cta-tag">Reconciliação documental</span>
+        <span class="cta-tag">Human-in-the-loop</span>
+        <span class="cta-tag">Trilha auditável por processo</span>
       </div>
     </section>
 
-    <section id="riscos" class="section">
-      <div class="section-label">Risco financeiro</div>
-      <h2>Quanto custa um erro documental?</h2>
-      <p class="section-copy">O problema não é apenas um dado errado. É o efeito cascata: armazenagem, retrabalho, pressão operacional, canal vermelho, reclassificação e margem indo embora antes da carga desembarcar.</p>
+    <section id="problema" class="section">
+      <div class="section-label">Problema operacional</div>
+      <h2>O que o engine resolve antes do registro?</h2>
+      <p class="section-copy">O problema não é só um campo errado. É a cadeia inteira: ingestão manual, divergência entre documentos, pendência sem dono, decisão sem justificativa e custo acumulando antes da liberação.</p>
 
       <div class="metrics">
         <div class="metric">
-          <div class="k">BL incorreto</div>
+          <div class="k">Documento fora de linha</div>
           <div class="v">Atraso operacional imediato</div>
-          <p>Divergência entre Draft BL e Invoice pode travar conferência, gerar retrabalho com agente e ampliar custo de armazenagem.</p>
+          <p>Divergência entre Invoice, BL e Packing List trava conferência, gera retrabalho e abre exceção sem governança.</p>
         </div>
         <div class="metric">
-          <div class="k">NCM divergente</div>
-          <div class="v">Risco fiscal e canal vermelho</div>
-          <p>Classificação inconsistente entre documentos e operação aumenta exposição a multa, reclassificação e fiscalização mais dura.</p>
+          <div class="k">Reconciliação falha</div>
+          <div class="v">Risco fiscal e operacional</div>
+          <p>Campos inconsistentes entre documento, cadastro interno e parâmetros da operação aumentam exposição a multa e reclassificação.</p>
         </div>
         <div class="metric">
-          <div class="k">Incoterm inconsistente</div>
-          <div class="v">Frete e responsabilidade mal alocados</div>
-          <p>FOB com Freight Prepaid ou CIF com dados incompatíveis cria erro de compliance e distorce responsabilidade contratual.</p>
+          <div class="k">Regra sem evidência</div>
+          <div class="v">Decisão sem justificativa</div>
+          <p>Se o sistema não vincula a regra à evidência, a decisão vira opinião e não governança auditável.</p>
         </div>
         <div class="metric">
-          <div class="k">Erro invisível antes do embarque</div>
-          <div class="v">Prejuízo acumulado em cadeia</div>
-          <p>Quando o erro passa despercebido, ele vira e-mails, retificação, atraso de liberação e margem corroendo no backoffice.</p>
+          <div class="k">Pendente sem dono</div>
+          <div class="v">Workflow fragmentado</div>
+          <p>Quando a exceção não vai para um humano com contexto, ela vira e-mail, retrabalho e atraso de liberação.</p>
         </div>
       </div>
     </section>
 
     <section id="como-funciona" class="section">
-      <div class="section-label">Como a IA funciona</div>
-      <h2>Da leitura do PDF ao checklist operacional</h2>
-      <p class="section-copy">A narrativa do produto não é abstrata: documento entra, campo é lido, regra é aplicada, risco é exposto, ação vira decisão.</p>
+      <div class="section-label">Jornada do usuário</div>
+      <h2>Da ingestão ao parecer humano</h2>
+      <p class="section-copy">A narrativa do produto não é abstrata: documento entra, campo é extraído, dado é reconciliado, regra é aplicada e a pendência chega ao humano com justificativa.</p>
 
       <div class="steps">
         <div class="step">
           <div class="num">01</div>
           <div class="k">Passo 01</div>
-          <div class="t">Upload de Invoice + Draft BL</div>
-          <p>A operação entra com os documentos que de fato definem risco documental antes da alfândega apontar o problema.</p>
+          <div class="t">Ingestão documental</div>
+          <p>Invoice, BL, Packing List, anexos e cadastro interno entram no processo sem exigir padronização prévia.</p>
         </div>
         <div class="step">
           <div class="num">02</div>
           <div class="k">Passo 02</div>
-          <div class="t">Extração estruturada e cruzamento</div>
+          <div class="t">Reconciliação e compliance</div>
           <p>O motor lê campos, estrutura dados e compara documento contra documento, regra contra regra, campo contra contexto.</p>
         </div>
         <div class="step">
           <div class="num">03</div>
           <div class="k">Passo 03</div>
-          <div class="t">Checklist operacional em minutos</div>
-          <p>A saída não é um dashboard vazio, é um checklist acionável com divergência, criticidade, contexto e próximo passo.</p>
+          <div class="t">Governança humana e trilha</div>
+          <p>A saída não é um dashboard vazio, é uma decisão assistida com pendências, justificativa, aprovação e histórico.</p>
         </div>
       </div>
     </section>
 
     <section class="section">
-      <div class="section-label">O que a IA valida</div>
+      <div class="section-label">Blocos de controle</div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:end;">
-        <h2 style="max-width:18ch;">Cobertura objetiva de compliance documental</h2>
-        <p class="section-copy" style="margin:0;">Cada card abaixo representa uma camada concreta de validação. Não é automação genérica: é auditoria documental voltada para operação aduaneira real.</p>
+        <h2 style="max-width:18ch;">Features por controle operacional-regulatório</h2>
+        <p class="section-copy" style="margin:0;">Cada card abaixo representa um bloco do engine. Não é automação genérica: é um sistema de ingestão, reconcilição, regra, workflow e auditoria.</p>
       </div>
 
       <div class="validations">
         <div class="validation">
           <span class="badge-inline"><i data-lucide="check" style="width:12px;height:12px;"></i> Validação</span>
-          <div class="t">Invoice obrigatória e consistência mínima</div>
+          <div class="t">Invoice, packing list e BL como entrada de processo</div>
         </div>
         <div class="validation">
           <span class="badge-inline"><i data-lucide="check" style="width:12px;height:12px;"></i> Validação</span>
-          <div class="t">Invoice versus Draft BL</div>
+          <div class="t">Extração e normalização de campos críticos</div>
         </div>
         <div class="validation">
           <span class="badge-inline"><i data-lucide="check" style="width:12px;height:12px;"></i> Validação</span>
-          <div class="t">Freight Collect versus FOB</div>
+          <div class="t">Reconciliação entre documentos e cadastro interno</div>
         </div>
         <div class="validation">
           <span class="badge-inline"><i data-lucide="check" style="width:12px;height:12px;"></i> Validação</span>
-          <div class="t">Freight Prepaid versus CIF/CFR</div>
+          <div class="t">Checks preventivos antes do avanço de etapa</div>
         </div>
         <div class="validation">
           <span class="badge-inline"><i data-lucide="check" style="width:12px;height:12px;"></i> Validação</span>
-          <div class="t">NCM divergente entre documentos e operação</div>
+          <div class="t">Fila de pendências com comentário e aprovação humana</div>
         </div>
         <div class="validation">
           <span class="badge-inline"><i data-lucide="check" style="width:12px;height:12px;"></i> Validação</span>
-          <div class="t">Campos obrigatórios ausentes</div>
+          <div class="t">Audit trail por processo e evidência vinculada</div>
         </div>
         <div class="validation">
           <span class="badge-inline"><i data-lucide="check" style="width:12px;height:12px;"></i> Validação</span>
-          <div class="t">Estrutura fiscal inconsistente</div>
+          <div class="t">Monitoramento regulatório com versionamento</div>
         </div>
         <div class="validation">
           <span class="badge-inline"><i data-lucide="check" style="width:12px;height:12px;"></i> Validação</span>
-          <div class="t">Compliance documental pré-embarque</div>
+          <div class="t">Governança de decisão embutida na operação</div>
         </div>
       </div>
     </section>
 
     <section id="arquitetura" class="section">
-      <div class="section-label">Enterprise stack</div>
-      <h2 style="max-width:18ch;">Infraestrutura técnica para inteligência aduaneira</h2>
-      <p class="section-copy">Por baixo da interface há uma camada de parsing, validação cruzada e regras para prevenir prejuízo antes do embarque.</p>
+      <div class="section-label">Arquitetura</div>
+      <h2 style="max-width:18ch;">Engine + workflow + evidência</h2>
+      <p class="section-copy">Por baixo da interface há ingestão, regras, agentes, orquestração e trilha auditável para prevenir erro antes do registro.</p>
 
       <div class="stack-grid">
         <div class="stack-item">
           <div class="icon"><i data-lucide="scan-text" style="width:20px;height:20px;color:#93b4fb;"></i></div>
-          <div><div class="k">Layer</div><div class="t">OCR + parsing estruturado</div></div>
+          <div><div class="k">Layer</div><div class="t">Ingestão documental</div></div>
         </div>
         <div class="stack-item">
           <div class="icon"><i data-lucide="braces" style="width:20px;height:20px;color:#93b4fb;"></i></div>
-          <div><div class="k">Layer</div><div class="t">Structured outputs para campos críticos</div></div>
+          <div><div class="k">Layer</div><div class="t">Extração e normalização</div></div>
         </div>
         <div class="stack-item">
           <div class="icon"><i data-lucide="git-compare" style="width:20px;height:20px;color:#93b4fb;"></i></div>
-          <div><div class="k">Layer</div><div class="t">Cross-document validation engine</div></div>
+          <div><div class="k">Layer</div><div class="t">Reconciliação de dados</div></div>
         </div>
         <div class="stack-item">
           <div class="icon alt"><i data-lucide="shield-check" style="width:20px;height:20px;color:#b794f6;"></i></div>
-          <div><div class="k">Layer</div><div class="t">Rule engine de compliance aduaneira</div></div>
+          <div><div class="k">Layer</div><div class="t">Rules engine de compliance</div></div>
         </div>
         <div class="stack-item">
           <div class="icon alt"><i data-lucide="gauge" style="width:20px;height:20px;color:#b794f6;"></i></div>
-          <div><div class="k">Layer</div><div class="t">Risk scoring por operação</div></div>
+          <div><div class="k">Layer</div><div class="t">Workflow humano e pendências</div></div>
         </div>
         <div class="stack-item">
           <div class="icon alt"><i data-lucide="database" style="width:20px;height:20px;color:#b794f6;"></i></div>
-          <div><div class="k">Layer</div><div class="t">Arquitetura pronta para memória operacional</div></div>
+          <div><div class="k">Layer</div><div class="t">Audit trail e evidência</div></div>
         </div>
       </div>
     </section>
 
     <section class="section">
       <div class="section-label">Antes vs depois</div>
-      <h2 style="max-width:22ch;">Da planilha e e-mail para decisão operacional em minutos</h2>
+      <h2 style="max-width:22ch;">Da planilha e e-mail para governança embutida</h2>
 
       <div class="compare">
         <div class="compare-card before">
@@ -983,10 +984,10 @@
             <div class="t">Depois</div>
           </div>
           <div class="compare-list">
-            <div class="item">Análise automática de Invoice e Draft BL</div>
-            <div class="item">Divergências detectadas antes do embarque</div>
-            <div class="item">Checklist pronto para ação do despachante</div>
-            <div class="item">Decisão operacional em minutos, não em horas</div>
+            <div class="item">Ingestão de documentos com extração estruturada</div>
+            <div class="item">Divergências detectadas antes do registro</div>
+            <div class="item">Pendência encaminhada ao humano com justificativa</div>
+            <div class="item">Decisão operacional em minutos, com trilha auditável</div>
           </div>
         </div>
       </div>
@@ -995,15 +996,15 @@
     <section class="section">
       <div class="cta-box" id="cta-final">
         <div class="k">CTA final</div>
-        <h2>Teste sua próxima importação antes que ela gere prejuízo.</h2>
-        <p>Execute a auditoria gratuita, envie os documentos e veja em minutos onde o embarque pode quebrar financeiramente.</p>
+        <h2>Valide a operação antes que o erro vire custo.</h2>
+        <p>Execute a pré-análise, envie os documentos e veja em minutos onde a reconciliação quebra, o que precisa de humano e o que pode avançar.</p>
         <div class="cta-actions">
-          <button class="btn btn-primary" type="button" onclick="location.href='/simulacao.html'">Executar auditoria gratuita</button>
+          <button class="btn btn-primary" type="button" onclick="location.href='/simulacao.html'">Executar pré-análise</button>
           <button class="btn btn-secondary" type="button" onclick="location.href='/simulacao.html'">Entrar na plataforma</button>
         </div>
         <div class="cta-tags">
           <span class="cta-tag">Sem cartão</span>
-          <span class="cta-tag">Primeiros processos grátis</span>
+          <span class="cta-tag">Human-in-the-loop</span>
           <span class="cta-tag">Resultado em minutos</span>
         </div>
       </div>
@@ -1014,9 +1015,9 @@
     <div class="footer-inner">
       <div class="footer-brand">
         <div class="footer-logo" style="overflow:hidden;"><img src="/logo.png" alt="" style="width:100%;height:100%;object-fit:cover;"></div>
-        <span class="footer-text">Despachante de Bolso · Inteligência aduaneira</span>
+        <span class="footer-text">Despachante de Bolso · Compliance engine embedded</span>
       </div>
-      <span class="footer-copy">© 2026 · Importe com inteligência. Venda com lucro.</span>
+      <span class="footer-copy">© 2026 · Pré-análise documental, reconciliação e governança humana.</span>
     </div>
   </footer>
 
@@ -1024,9 +1025,9 @@
     <div class="bar">
       <div class="trial-text">
         <span class="trial-badge">Trial</span>
-        <span class="trial-copy">Suba seus documentos e descubra o risco antes do embarque.</span>
+      <span class="trial-copy">Suba seus documentos e descubra a cobertura antes de avançar.</span>
       </div>
-      <button class="btn btn-primary" type="button" onclick="location.href='/simulacao.html'">Validar embarque</button>
+      <button class="btn btn-primary" type="button" onclick="location.href='/simulacao.html'">Validar operação</button>
     </div>
   </div>
 
