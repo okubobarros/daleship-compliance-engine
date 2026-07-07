@@ -44,6 +44,31 @@ h1, h2, h3 {{ color: var(--escuro); font-weight: 600; }}
   background: #EEF2FF; border: 1px solid #C7D2FE; border-radius: 8px;
   padding: 10px 14px; margin-bottom: 14px; color: var(--escuro);
 }}
+/* Banner de risco (prévia do gauge do Cockpit — Frente 2 traz o medidor real) */
+.risco-banner {{
+  display: flex; align-items: center; gap: 16px;
+  border: 1px solid #eceef1; border-radius: 12px; padding: 14px 18px; margin-bottom: 16px;
+  background: #fff;
+}}
+.risco-num {{
+  width: 58px; height: 58px; border-radius: 14px; flex: 0 0 58px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 700; color: #fff;
+}}
+.risco-txt .rot {{ font-size: 15px; font-weight: 600; }}
+.risco-txt .sub {{ font-size: 12.5px; color: var(--cinza); margin-top: 2px; }}
+/* Achado no formato de decisão: Evidência · Por que importa · Ação recomendada */
+.decisao {{
+  display: grid; grid-template-columns: 1fr 1.3fr 1.3fr; gap: 18px; margin-top: 10px;
+}}
+.decisao .rot {{
+  font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #9aa1ab;
+}}
+.decisao .val {{ font-size: 13.5px; color: var(--escuro); margin-top: 4px; line-height: 1.45; }}
+.decisao .evid {{
+  font-family: ui-monospace, Menlo, monospace; background: var(--claro);
+  border-radius: 8px; padding: 8px 10px;
+}}
 </style>
 """
 

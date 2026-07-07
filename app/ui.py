@@ -11,6 +11,7 @@ import auth
 import db
 import estilo
 import processamento
+import score_risco
 from config import PAPEIS, TIPOS_TRANSPORTE, nome_tipo_transporte
 
 st.set_page_config(page_title="Daleship — Conferência Aduaneira", page_icon="🛃", layout="wide")
@@ -134,15 +135,30 @@ def tela_detalhe():
         ir("lista"); st.rerun()
 
     _confirmacao_transporte(dossie)
+
+    apontamentos = db.listar_apontamentos(ss.dossie_atual)
+    _banner_risco(apontamentos)
     _dados_extraidos(dossie)
 
     st.subheader("Apontamentos")
     st.caption("Cada apontamento traz a norma citada ao lado — a fonte nunca fica escondida.")
-    apontamentos = db.listar_apontamentos(ss.dossie_atual)
     if not apontamentos:
         st.info("Sem apontamentos.")
     for ap in apontamentos:
         _cartao_apontamento(ap)
+
+
+def _banner_risco(apontamentos):
+    """Prévia, no Streamlit, do índice de risco que alimentará o gauge do Cockpit (Frente 2)."""
+    r = score_risco.calcular(apontamentos)
+    c = r["contagem"]
+    st.markdown(
+        f'<div class="risco-banner">'
+        f'<div class="risco-num" style="background:{r["cor"]};">{r["indice"]}</div>'
+        f'<div class="risco-txt"><div class="rot">Índice de risco: {r["rotulo"]}</div>'
+        f'<div class="sub">{c["critico"]} crítico(s) · {c["atencao"]} atenção · {c["info"]} informativo '
+        f'· {r["total"]} apontamento(s)</div></div></div>',
+        unsafe_allow_html=True)
 
 
 def _confirmacao_transporte(dossie):
@@ -195,7 +211,21 @@ def _cartao_apontamento(ap, com_acoes=False):
     st.markdown(f'<div class="apontamento {sev}">'
                 f'<span class="tag {sev}">{tag}</span> '
                 f'<b>{html.escape(ap["orgao"] or "-")}</b> · {html.escape(ap["descricao"])}'
-                + _bloco_citacao(ap) + '</div>', unsafe_allow_html=True)
+                + _bloco_decisao(ap) + _bloco_citacao(ap) + '</div>', unsafe_allow_html=True)
+
+
+def _bloco_decisao(ap) -> str:
+    """Formato do Cockpit (evidência/por que importa/ação) — só quando o apontamento os traz."""
+    ev, pq, ac = ap.get("evidencia"), ap.get("por_que_importa"), ap.get("acao_recomendada")
+    if not (ev or pq or ac):
+        return ""
+    def _col(rot, val, cls=""):
+        if not val:
+            return ""
+        return f'<div><div class="rot">{rot}</div><div class="val {cls}">{html.escape(val)}</div></div>'
+    return ('<div class="decisao">'
+            + _col("Evidência", ev, "evid") + _col("Por que importa", pq)
+            + _col("Ação recomendada", ac) + '</div>')
 
 
 def _bloco_citacao(ap) -> str:

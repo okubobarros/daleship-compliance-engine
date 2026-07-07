@@ -81,8 +81,11 @@ def _sugerir_classificacao(dossie_id: str, itens: list[dict]) -> None:
         if trib:
             trib_txt = (f" Alíquotas (ref.): II {trib['ii']}% · IPI {trib['ipi']}% · "
                         f"PIS {trib['pis']}% · COFINS {trib['cofins']}%.")
+        # Sugestão de NCM é CONSELHO ("verifique"), não divergência detectada -> severidade
+        # 'info': não infla o índice de risco (senão invoice grande = muitos itens = falso "Alto").
+        # Quando houver NCM declarado na origem e ele DIVERGIR da sugestão, aí sim vira atenção/risco.
         db.inserir_apontamento(
-            dossie_id, "classificacao", "atencao", "RFB",
+            dossie_id, "classificacao", "info", "RFB",
             f"Item {rotulo} ({item.get('descricao','')[:45]}): NCM provável {ncm_prov} "
             f"({desc_prov})" + (f"; alternativas {alt}" if alt else "") + " — VERIFIQUE."
             + trib_txt,
@@ -354,6 +357,14 @@ def processar_ivpl(cliente_id: str, referencia: str, arq: dict) -> str:
         db.inserir_apontamento(dossie_id, "extracao", "info", "-",
             "Conciliação Invoice × Packing List não realizada: uma das abas não pôde ser extraída "
             "automaticamente. Reprocessar para tentar novamente.", None)
+
+    # --- Coerência documental na própria Invoice (Incoterm × condição de frete). Sem BL aqui,
+    #     INCOTERM_MISMATCH não dispara (falta o 2º documento); FREIGHT_RULE dispara se a Invoice
+    #     trouxer Incoterm e condição de frete incompatíveis entre si. ---
+    for ach in regras_documentais.avaliar({"invoice": ext_inv["campos"]}):
+        db.inserir_apontamento(dossie_id, ach["tipo"], ach["severidade"], ach["orgao"],
+                               ach["descricao"], None, ach.get("evidencia"),
+                               ach.get("por_que_importa"), ach.get("acao_recomendada"))
 
     # --- Sugestão de classificação (risco de NCM): descrição -> NCM provável, VERIFIQUE ---
     itens = ext_inv["itens"]
