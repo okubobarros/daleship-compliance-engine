@@ -1,44 +1,34 @@
 """Daleship — plataforma SaaS de conferência aduaneira (Fase 1 — Comex).
 
-Modelo dashboard: o menu lateral lista FEATURES (ferramentas), cada uma é um módulo do
-produto. Hoje: Conferência de processo (dossiê Invoice×Packing List, apontamentos com
-citação) e Custo de importação (CTI). Novas features entram como novos itens do menu —
-sem reescrever a navegação (mesmo espírito config-driven do resto do motor).
+A Fase 1 tem uma jornada principal: conferência documental pré-embarque. A navegação
+exposta ao usuário deve refletir isso sem competir com outras propostas de valor.
 """
 import html
 
 import streamlit as st
 
 import auth
-import cti
 import db
 import estilo
 import processamento
-import rag
 from config import PAPEIS, TIPOS_TRANSPORTE, nome_tipo_transporte
 
 st.set_page_config(page_title="Daleship — Conferência Aduaneira", page_icon="🛃", layout="wide")
 estilo.aplicar()
 
-# Catálogo de features do SaaS. Adicionar produto = novo item aqui (id, rótulo, ícone, resumo).
+# Navegação exposta ao usuário na Fase 1.
 FEATURES = [
-    {"id": "inicio", "rotulo": "Início", "icone": "🏠",
-     "resumo": "Visão geral das ferramentas disponíveis."},
     {"id": "conferencia", "rotulo": "Conferência de processo", "icone": "📋",
-     "resumo": "Suba Invoice e Packing List: extração, conciliação item a item, sugestão de "
-               "NCM, atributos DUIMP e flags regulatórios — cada apontamento cita a norma."},
-    {"id": "cti", "rotulo": "Custo de importação (CTI)", "icone": "🧮",
-     "resumo": "Estime o custo total de desembaraço de um produto: classificação, alíquotas, "
-               "ICMS por UF, câmbio e despesas — sem subir documento."},
+     "resumo": "Suba Invoice, Packing List e documento de transporte: extração, conciliação "
+               "item a item, flags regulatórios e apontamentos com citação."},
 ]
 
 ss = st.session_state
 ss.setdefault("cliente_id", None)
 ss.setdefault("usuario", None)
-ss.setdefault("feature", "inicio")
+ss.setdefault("feature", "conferencia")
 ss.setdefault("pagina", "lista")
 ss.setdefault("dossie_atual", None)
-ss.setdefault("cti_estado", {})
 
 
 def ir(pagina: str, dossie_id: str | None = None):
@@ -51,7 +41,7 @@ def ir(pagina: str, dossie_id: str | None = None):
 
 def tela_login():
     st.title("Daleship — Conferência de Comex")
-    st.caption("Acesso do time da trading")
+    st.caption("Acesso do time da trading para conferência documental pré-embarque")
     with st.form("login"):
         usuario = st.text_input("Usuário")
         senha = st.text_input("Senha", type="password")
@@ -268,106 +258,17 @@ def tela_trilha():
 # ---------- Início (dashboard de features) ----------
 
 def tela_inicio():
-    st.title("Suas ferramentas")
-    st.caption("Cada card é um módulo do produto. Escolha por onde começar.")
-    cols = st.columns(2)
-    for i, feat in enumerate([f for f in FEATURES if f["id"] != "inicio"]):
-        with cols[i % 2]:
-            st.markdown(
-                f'<div class="apontamento info"><span class="tag info">{feat["icone"]} '
-                f'{html.escape(feat["rotulo"])}</span><br><br>{html.escape(feat["resumo"])}</div>',
-                unsafe_allow_html=True)
-            if st.button(f"Abrir {feat['rotulo']}", key=f"open_{feat['id']}", use_container_width=True):
-                ss.feature = feat["id"]; ss.pagina = "lista"; st.rerun()
-
-
-# ---------- Custo de importação (CTI) ----------
-
-def tela_cti():
-    st.title("🧮 Custo de importação (CTI)")
-    st.caption("Estimativa de custo de desembaraço. Alíquotas da base de referência — confira "
-               "antes de usar em decisão; não substitui o cálculo oficial.")
-    est = ss.cti_estado
-
-    with st.form("cti_produto"):
-        c1, c2 = st.columns([3, 1])
-        descricao = c1.text_input("Produto (descrição) ou NCM", est.get("descricao", ""))
-        if c2.form_submit_button("Classificar", use_container_width=True) and descricao.strip():
-            est["descricao"] = descricao.strip()
-            import re as _re
-            digitos = _re.sub(r"\D", "", descricao)
-            if len(digitos) == 8:                                   # usuário digitou a NCM direto
-                est["candidatos"] = [f"{digitos[:4]}.{digitos[4:6]}.{digitos[6:]}"]
-            else:
-                sug = rag.sugerir_ncm([descricao.strip()], k=4)[0]
-                est["candidatos"] = [c["identificador"].replace("NCM ", "") for c in sug] or []
-            est.pop("resultado", None)
-
-    if est.get("candidatos"):
-        ncm = st.selectbox("NCM (provável — confirme ou troque)", est["candidatos"])
-        trib = rag.tributos_por_ncm(ncm)
-        if not trib:
-            st.warning(f"Sem alíquotas de referência para {ncm}. Informe manualmente abaixo.")
-        with st.form("cti_calc"):
-            colq = st.columns(4)
-            qtd = colq[0].number_input("Quantidade", min_value=1.0, value=float(est.get("qtd", 1)))
-            preco = colq[1].number_input("Valor unitário", min_value=0.0, value=float(est.get("preco", 0)))
-            moeda = colq[2].selectbox("Moeda", ["USD", "EUR", "CNY", "BRL"], index=0)
-            cambio = colq[3].number_input("Câmbio (R$)", min_value=0.0,
-                                          value=float(est.get("cambio", 5.40)),
-                                          help="Confirme o câmbio do dia (integração de cotação ao vivo é próximo passo).")
-            colt = st.columns(4)
-            tr = trib or {}
-            ii = colt[0].number_input("II %", value=float(tr.get("ii") or 0.0))
-            ipi = colt[1].number_input("IPI %", value=float(tr.get("ipi") or 0.0))
-            pis = colt[2].number_input("PIS %", value=float(tr.get("pis") or 0.0))
-            cofins = colt[3].number_input("COFINS %", value=float(tr.get("cofins") or 0.0))
-            colu = st.columns(4)
-            ufs = rag.ufs_disponiveis()
-            uf_sel = colu[0].selectbox("UF destino", [u["uf"] for u in ufs],
-                                       index=next((i for i, u in enumerate(ufs) if u["uf"] == "SP"), 0))
-            modal = colu[1].selectbox("Modal", ["maritimo", "aereo"])
-            frete = colu[2].number_input("Frete (R$, 0 = estimar)", min_value=0.0, value=0.0)
-            seguro = colu[3].number_input("Seguro (R$, 0 = estimar)", min_value=0.0, value=0.0)
-            if st.form_submit_button("Calcular CTI", type="primary"):
-                icms_row = rag.icms_por_uf(uf_sel) or {}
-                res = cti.calcular_cti(
-                    preco_unitario=preco, quantidade=qtd, cambio=cambio,
-                    ii=ii, ipi=ipi, pis=pis, cofins=cofins, icms=float(icms_row.get("icms") or 0),
-                    frete=frete or None, seguro=seguro or None,
-                    afrmm_pct=float(icms_row.get("afrmm") or 0), modal=modal)
-                est.update({"qtd": qtd, "preco": preco, "cambio": cambio,
-                            "resultado": res, "ncm_calc": ncm, "uf_calc": uf_sel})
-
-    if est.get("resultado"):
-        _mostrar_cti(est["resultado"], est.get("ncm_calc"), est.get("uf_calc"))
-
-
-def _brl(v):
-    return f"R$ {v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-
-
-def _mostrar_cti(r, ncm, uf):
-    st.subheader(f"Custo estimado — NCM {ncm} · destino {uf}")
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Custo total", _brl(r["custo_total"]))
-    c2.metric("Custo unitário", _brl(r["custo_unitario"]))
-    c3.metric("Impostos", _brl(r["impostos"]))
-    st.dataframe([
-        {"Componente": "Mercadoria (CIF: merc.+frete+seguro)", "Valor": _brl(r["mercadoria"])},
-        {"Componente": "Frete", "Valor": _brl(r["frete"])},
-        {"Componente": "Seguro", "Valor": _brl(r["seguro"])},
-        {"Componente": "= CIF (base de cálculo)", "Valor": _brl(r["cif"])},
-        {"Componente": "II", "Valor": _brl(r["ii"])},
-        {"Componente": "IPI", "Valor": _brl(r["ipi"])},
-        {"Componente": "PIS", "Valor": _brl(r["pis"])},
-        {"Componente": "COFINS", "Valor": _brl(r["cofins"])},
-        {"Componente": "ICMS (por dentro)", "Valor": _brl(r["icms"])},
-        {"Componente": "AFRMM + Siscomex", "Valor": _brl(r["despesas"])},
-        {"Componente": "CUSTO TOTAL", "Valor": _brl(r["custo_total"])},
-    ], use_container_width=True, hide_index=True)
-    st.caption("Estimativa: frete/seguro estimados quando não informados; ICMS calculado 'por "
-               "dentro'; alíquotas da base de referência (pode estar desatualizada). VERIFIQUE.")
+    st.title("Conferência documental")
+    st.caption("Jornada única da Fase 1: subir documentos, revisar apontamentos e fechar a trilha.")
+    st.markdown(
+        '<div class="apontamento info"><span class="tag info">📋 Conferência de processo</span>'
+        '<br><br>Suba Invoice, Packing List e documento de transporte. O sistema extrai, '
+        'concilia, cita a norma e pede revisão humana antes de concluir.</div>',
+        unsafe_allow_html=True)
+    if st.button("Abrir conferência", use_container_width=True):
+        ss.feature = "conferencia"
+        ss.pagina = "lista"
+        st.rerun()
 
 
 # ---------- Router ----------
@@ -378,26 +279,25 @@ _PAGINAS_CONFERENCIA = {"lista": tela_lista, "novo": tela_novo, "detalhe": tela_
 if not ss.cliente_id:
     tela_login()
 else:
+    if ss.feature != "conferencia":
+        ss.feature = "conferencia"
+
     with st.sidebar:
         st.markdown("### 🛃 Daleship")
-        st.caption("Conferência aduaneira")
+        st.caption("Conferência documental pré-embarque")
         st.divider()
         for feat in FEATURES:
             tipo = "primary" if ss.feature == feat["id"] else "secondary"
             if st.button(f"{feat['icone']} {feat['rotulo']}", key=f"nav_{feat['id']}",
                          use_container_width=True, type=tipo):
                 ss.feature = feat["id"]
-                if feat["id"] == "conferencia":
-                    ss.pagina = "lista"
+                ss.pagina = "lista"
                 st.rerun()
         st.divider()
         st.write(f"👤 **{ss.usuario}**")
         if st.button("Sair", use_container_width=True):
-            ss.cliente_id = ss.usuario = None; ss.feature = "inicio"; st.rerun()
+            ss.cliente_id = ss.usuario = None
+            ss.feature = "conferencia"
+            st.rerun()
 
-    if ss.feature == "inicio":
-        tela_inicio()
-    elif ss.feature == "cti":
-        tela_cti()
-    else:  # conferencia
-        _PAGINAS_CONFERENCIA.get(ss.pagina, tela_lista)()
+    _PAGINAS_CONFERENCIA.get(ss.pagina, tela_lista)()

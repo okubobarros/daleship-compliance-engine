@@ -1,15 +1,15 @@
 # App MVP — Conferência de Comex (Fase 1)
 
 UI mínima (Streamlit) ligada ao RAG calibrado (20.996 unidades, limiar 0.51) e à lógica de
-conciliação que espelha o `n8n/workflows/comex_conciliacao.json`. Sem polimento visual — só
-a paleta e a fonte Poppins como CSS leve.
+conciliação que espelha o `n8n/workflows/comex_conciliacao.json`. A prioridade do MVP é a
+conferência documental; CTI existe como módulo auxiliar, não como narrativa principal.
 
 ## Estrutura SaaS (dashboard de features)
 
 O menu lateral lista **features** (módulos do produto). Adicionar um produto = novo item em
 `FEATURES` (ui.py), sem reescrever a navegação. Features hoje:
 - **Conferência de processo** — o fluxo de dossiê (upload → extração → conciliação → apontamentos → revisão → trilha).
-- **Custo de importação (CTI)** — `cti.py` (cálculo puro, testável): descrição/NCM → classificação (`rag.sugerir_ncm`) → alíquotas (`rag.tributos_por_ncm`, auto-preenchidas e editáveis) → ICMS por UF (`rag.icms_por_uf`) → câmbio/frete/seguro → detalhamento CIF/impostos/ICMS(por dentro)/despesas + custo unitário. Estimativa, sempre "verifique". Reaproveita a lógica do fluxo n8n `custos CTI` sobre a base LOCAL (sem Perplexity/Google).
+- **Custo de importação (CTI)** — `cti.py` (cálculo puro, testável): descrição/NCM → classificação (`rag.sugerir_ncm`) → alíquotas (`rag.tributos_por_ncm`, auto-preenchidas e editáveis) → ICMS por UF (`rag.icms_por_uf`) → câmbio/frete/seguro → detalhamento CIF/impostos/ICMS(por dentro)/despesas + custo unitário. Estimativa, sempre "verifique". Este módulo fica secundário na Fase 1.
 
 ## Telas da feature "Conferência" (MVP_PRODUCT_SPEC.md)
 

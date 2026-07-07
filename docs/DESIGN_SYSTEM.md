@@ -31,18 +31,15 @@ arquivos, que são a fonte visual de verdade.
 | `resumo-importacao.html` | Dashboard-resumo de uma importação | `cti.py` (cards de custo, donut) + apontamentos |
 | `cockpit-decisao.html` | Cockpit de decisão (gauge de risco + achados) | `processamento._flags/_sugerir` (apontamentos com severidade) |
 
-## 3. Duas propostas de valor convivem nos layouts (atenção ao escopo)
-Os 7 layouts, lidos juntos, descrevem **dois produtos** com públicos distintos:
-1. **Auditoria pré-embarque de documentos** (`homepage.html`): Invoice × Draft BL, mismatch de Incoterm,
-   regra de frete (FOB×Prepaid), alerta de NCM, "segurar embarque". → é a dor do Bonano (double-check do
-   despachante). É o núcleo do CLAUDE.md Fase 1.
-2. **Simulador de custo de importação self-serve** (`estado-vazio` → `resumo` → `cockpit`): "diga o que quer
-   importar e veja o custo real / a margem antes de gastar". → é a feature **CTI**, mas empacotada como
-   produto de autoatendimento para o importador, com cadastro/trial.
+## 3. Jornada principal definida
+Os 7 layouts ainda mostram mais de uma possibilidade de produto, mas a decisão da Fase 1 foi fechada:
+1. **Jornada principal: auditoria pré-embarque de documentos** (`homepage.html`): Invoice × Draft BL,
+   mismatch de Incoterm, regra de frete (FOB×Prepaid), alerta de NCM, "segurar embarque". Esse é o
+   núcleo da demo e deve orientar navegação, CTA e narrativa.
+2. **Jornada secundária: simulador de custo de importação** (`estado-vazio` → `resumo` → `cockpit`):
+   continua útil como módulo auxiliar, mas não deve competir com a jornada principal nesta fase.
 
-Não são incompatíveis, mas têm jornadas e telas diferentes. Decidir qual é a **jornada principal** da
-primeira entrega evita construir as duas pela metade (CLAUDE.md §5/§8: escopo estreito, não expandir antes
-de validar).
+O corte é intencional: a primeira entrega precisa parecer um produto único, não um portfólio de features.
 
 ## 4. Conceitos novos que os layouts introduzem (ainda não existem no backend)
 - **"Confiança da simulação"** (ex.: 82%, "11 de 14 variáveis confirmadas") — precisaria de um score.
@@ -56,7 +53,8 @@ Todos são construíveis, mas são **novo escopo**, não reskin do que já exist
 2. **Stack de frontend:** Streamlit **não** renderiza estes layouts com fidelidade (nav-rail, gauge, donut,
    landing, auth). Ou (a) frontend web real a partir destes HTMLs + FastAPI sobre a lógica atual, ou
    (b) aproximação parcial no Streamlit. Ver §6.
-3. **Jornada principal** da 1ª entrega: auditoria de documentos (Bonano) vs. simulador de custo self-serve.
+3. **CTI como módulo secundário:** manter no app atual para apoio interno ou remover da narrativa externa
+   até a Fase 2.
 
 ## 6. Nota técnica: Streamlit × estes layouts
 O app atual é Streamlit (escolha de velocidade para o MVP/demo). Estes layouts pressupõem controle total de
