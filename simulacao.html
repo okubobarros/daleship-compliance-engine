@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Novo processo | Despachante de Bolso</title>
+  <title>Pré-registro | Despachante de Bolso</title>
   <meta name="theme-color" content="#f3f4f6" />
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
@@ -145,31 +145,31 @@
     </header>
 
     <section class="panel">
-      <div class="eyebrow">Novo processo</div>
-      <h1>Inicie uma conferência real de importação</h1>
-      <p class="lead">Informe a referência, descreva a operação e anexe os documentos. Esta tela captura a entrada do processo sem inventar resultado antes da análise.</p>
+      <div class="eyebrow">Pré-registro</div>
+      <h1>Inicie a ingestão da operação</h1>
+      <p class="lead">Informe a referência, descreva a operação e anexe os documentos. Esta tela captura a entrada do processo sem inventar resultado antes da reconciliação.</p>
 
       <div class="journey" aria-label="Jornada do usuário">
-        <div class="journey-step active">
-          <div class="k">Etapa 01</div>
-          <div class="t">Entrada</div>
-          <p>Referencia, contexto e documentos disponíveis.</p>
+          <div class="journey-step active">
+            <div class="k">Etapa 01</div>
+            <div class="t">Entrada</div>
+            <p>Referência, contexto e documentos disponíveis.</p>
+          </div>
+          <div class="journey-step">
+            <div class="k">Etapa 02</div>
+            <div class="t">Reconciliação</div>
+            <p>Leitura, estruturação e cruzamento da operação.</p>
+          </div>
+          <div class="journey-step">
+            <div class="k">Etapa 03</div>
+            <div class="t">Governança</div>
+            <p>Resumo final, pendências e ponto de revisão operacional.</p>
+          </div>
         </div>
-        <div class="journey-step">
-          <div class="k">Etapa 02</div>
-          <div class="t">Processamento</div>
-          <p>Leitura, estruturação e conciliação da operação.</p>
-        </div>
-        <div class="journey-step">
-          <div class="k">Etapa 03</div>
-          <div class="t">Resultado</div>
-          <p>Resumo final e ponto de revisão operacional.</p>
-        </div>
-      </div>
 
       <div class="grid">
         <form class="card" id="process-form">
-          <div class="label">Dados do processo</div>
+          <div class="label">Dados da operação</div>
           <div class="field">
             <label for="reference">Referência</label>
             <input id="reference" name="reference" placeholder="Ex.: PO-2026-0142" required />
@@ -188,13 +188,13 @@
           </div>
 
           <div class="actions">
-            <button class="btn btn-primary" type="submit">Enviar para análise</button>
+            <button class="btn btn-primary" type="submit">Enviar para reconciliação</button>
             <a class="btn btn-secondary" href="/">Cancelar</a>
           </div>
         </form>
 
         <aside class="card">
-          <div class="label">Documentos</div>
+          <div class="label">Ingestão documental</div>
           <div class="hint">Anexe os arquivos que você já possui. Se ainda não tiver tudo, avance com o que estiver disponível e complete depois.</div>
 
           <div class="upload">
@@ -209,7 +209,7 @@
           </div>
           <div class="upload">
             <strong>Documento de transporte</strong>
-            <small>BL, AWB ou CRT. A conferência segue com a etapa seguinte.</small>
+            <small>BL, AWB ou CRT. O motor usa esse arquivo na reconciliação com a invoice.</small>
             <input id="transport" type="file" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls" style="margin-top:10px;" />
           </div>
 
@@ -222,22 +222,22 @@
         <div class="step">
           <div class="n">1</div>
           <h3>Entrada</h3>
-          <p>Captura de referência e documentos para iniciar a conferência.</p>
+          <p>Captura de referência e documentos para iniciar a operação.</p>
         </div>
         <div class="step">
           <div class="n">2</div>
-          <h3>Processamento</h3>
-          <p>A próxima etapa mostra o progresso da leitura e da conciliação.</p>
+          <h3>Reconciliação</h3>
+          <p>A próxima etapa mostra o progresso da leitura, regras e cruzamento.</p>
         </div>
         <div class="step">
           <div class="n">3</div>
-          <h3>Resultado</h3>
-          <p>O fechamento exibe o estado final e o ponto de revisão.</p>
+          <h3>Governança</h3>
+          <p>O fechamento exibe o estado final, a pendência e o ponto de decisão.</p>
         </div>
       </div>
 
       <div class="footer">
-        <span>Sem números fabricados. A tela só registra a entrada.</span>
+        <span>Sem números fabricados. A tela só registra a operação.</span>
         <span><a href="/loading.html">Ver etapa seguinte</a></span>
       </div>
     </section>

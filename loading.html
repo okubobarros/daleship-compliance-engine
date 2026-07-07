@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Processando | Despachante de Bolso</title>
+  <title>Reconciliação | Despachante de Bolso</title>
   <meta name="theme-color" content="#f3f4f6" />
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
@@ -109,37 +109,37 @@
           <div class="brand-sub">Inteligência aduaneira para importação</div>
         </div>
       </a>
-      <a class="btn secondary" href="/simulacao.html">Editar entrada</a>
+      <a class="btn secondary" href="/simulacao.html">Editar operação</a>
     </header>
 
     <section class="panel">
-      <div class="eyebrow">Processando</div>
-      <h1>Conferindo documentos e preparando o resultado</h1>
-      <p class="lead">A tela abaixo representa o estado real de processamento. Ela lê a entrada salva na etapa anterior e mantém o usuário orientado enquanto a análise termina.</p>
+      <div class="eyebrow">Reconciliação</div>
+      <h1>Processando a operação e validando exceções</h1>
+      <p class="lead">A tela abaixo representa o estado real de processamento. Ela lê a operação salva na etapa anterior e mantém o usuário orientado enquanto o engine cruza dados e aplica regras.</p>
 
       <div class="journey" aria-label="Jornada do usuário">
-        <div class="journey-step done">
-          <div class="k">Etapa 01</div>
-          <div class="t">Entrada</div>
-          <p>Dados capturados e documentação registrada.</p>
+          <div class="journey-step done">
+            <div class="k">Etapa 01</div>
+            <div class="t">Entrada</div>
+            <p>Dados capturados e documentação registrada.</p>
+          </div>
+          <div class="journey-step active">
+            <div class="k">Etapa 02</div>
+            <div class="t">Reconciliação</div>
+            <p>Leitura, estruturação e cruzamento em andamento.</p>
+          </div>
+          <div class="journey-step">
+            <div class="k">Etapa 03</div>
+            <div class="t">Governança</div>
+            <p>Resumo final, pendências e revisão operacional.</p>
+          </div>
         </div>
-        <div class="journey-step active">
-          <div class="k">Etapa 02</div>
-          <div class="t">Processamento</div>
-          <p>Leitura, estruturação e conciliação em andamento.</p>
-        </div>
-        <div class="journey-step">
-          <div class="k">Etapa 03</div>
-          <div class="t">Resultado</div>
-          <p>Resumo final e revisão operacional.</p>
-        </div>
-      </div>
 
       <div class="track">
         <div class="card">
-          <div class="label" style="font-size:11px; font-weight:800; letter-spacing:.14em; color:#6b7280; text-transform:uppercase;">Progresso</div>
+          <div class="label" style="font-size:11px; font-weight:800; letter-spacing:.14em; color:#6b7280; text-transform:uppercase;">Cobertura</div>
           <div id="process-title" style="margin-top:8px; font-size:22px; font-weight:700; letter-spacing:-.03em;">Processo sem referência</div>
-          <div id="process-subtitle" style="margin-top:6px; color:#6b7280; line-height:1.6;">Nenhuma entrada registrada ainda.</div>
+          <div id="process-subtitle" style="margin-top:6px; color:#6b7280; line-height:1.6;">Nenhuma operação registrada ainda.</div>
 
           <div class="progress" aria-label="Barra de progresso">
             <div class="bar" id="bar"></div>
@@ -148,17 +148,17 @@
 
           <div class="steps">
             <div class="step" id="step-1"><span class="dot"></span><span>Recebendo arquivos e referência</span></div>
-            <div class="step" id="step-2"><span class="dot"></span><span>Estruturando campos e tipos de documento</span></div>
-            <div class="step" id="step-3"><span class="dot"></span><span>Preparando o fechamento da conferência</span></div>
+            <div class="step" id="step-2"><span class="dot"></span><span>Estruturando campos e regras</span></div>
+            <div class="step" id="step-3"><span class="dot"></span><span>Preparando a governança da decisão</span></div>
           </div>
         </div>
 
         <div class="card">
-          <div class="label" style="font-size:11px; font-weight:800; letter-spacing:.14em; color:#6b7280; text-transform:uppercase;">Entrada capturada</div>
+          <div class="label" style="font-size:11px; font-weight:800; letter-spacing:.14em; color:#6b7280; text-transform:uppercase;">Operação capturada</div>
           <div class="summary" id="summary"></div>
           <div class="meta">
             <div class="pill"><strong>Estado</strong> Em andamento</div>
-            <div class="pill"><strong>Saída</strong> Resultado</div>
+            <div class="pill"><strong>Saída</strong> Governança</div>
           </div>
           <div id="session-source" style="margin-top:14px; padding:14px; border:1px solid #eceef1; border-radius:16px; background:#fff; color:#4b5563; line-height:1.6; font-size:13px;">A etapa de processamento usará a sessão atual do usuário quando houver dados registrados.</div>
         </div>
@@ -170,8 +170,8 @@
       </div>
 
       <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
-        <a class="btn primary" href="/resultado.html">Ir para resultado</a>
-        <a class="btn secondary" href="/simulacao.html">Voltar à entrada</a>
+        <a class="btn primary" href="/resultado.html">Ir para governança</a>
+        <a class="btn secondary" href="/simulacao.html">Voltar à operação</a>
       </div>
     </section>
   </div>
@@ -189,9 +189,9 @@
     const steps = [document.getElementById('step-1'), document.getElementById('step-2'), document.getElementById('step-3')];
     let current = 0;
 
-    if (source) {
-      title.textContent = source.reference || 'Processo sem referência';
-      subtitle.textContent = [source.origin, source.destination].filter(Boolean).join(' · ') || 'Entrada registrada na sessão local.';
+      if (source) {
+        title.textContent = source.reference || 'Processo sem referência';
+        subtitle.textContent = [source.origin, source.destination].filter(Boolean).join(' · ') || 'Entrada registrada na sessão local.';
       summary.innerHTML = [
         ['Referência', source.reference || '—'],
         ['Origem', source.origin || '—'],
@@ -204,8 +204,8 @@
       sessionSource.textContent = source.files
         ? `Sessão ativa carregada com ${Object.values(source.files).filter(Boolean).length} documentos persistidos.`
         : 'Sessão ativa sem documentos persistidos.';
-    } else {
-      summary.innerHTML = '<div><strong>Nenhuma entrada encontrada</strong><br><span style="color:#6b7280;">Volte e preencha a etapa anterior.</span></div>';
+      } else {
+      summary.innerHTML = '<div><strong>Nenhuma operação encontrada</strong><br><span style="color:#6b7280;">Volte e preencha a etapa anterior.</span></div>';
       sessionSource.textContent = 'Nenhuma sessão capturada. Volte para a etapa anterior para iniciar o fluxo.';
     }
 

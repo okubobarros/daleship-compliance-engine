@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Resultado | Despachante de Bolso</title>
+  <title>Governança | Despachante de Bolso</title>
   <meta name="theme-color" content="#f3f4f6" />
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
@@ -121,9 +121,9 @@
     </aside>
     <main class="main">
       <div class="panel">
-        <div class="eyebrow">Resultado</div>
-        <h1>Fechamento da conferência</h1>
-        <p class="lead">Esta tela não inventa números. Ela mostra o estado consolidado da operação e os próximos passos para a revisão ou para o motor real de processamento.</p>
+        <div class="eyebrow">Governança</div>
+        <h1>Fechamento assistido da operação</h1>
+        <p class="lead">Esta tela não inventa números. Ela mostra o estado consolidado da operação, as pendências e o próximo passo para revisão humana ou continuidade do fluxo.</p>
 
         <div class="journey" aria-label="Jornada do usuário">
           <div class="journey-step done">
@@ -133,44 +133,44 @@
           </div>
           <div class="journey-step done">
             <div class="k">Etapa 02</div>
-            <div class="t">Processamento</div>
-            <p>Leitura e conciliação concluídas.</p>
+            <div class="t">Reconciliação</div>
+            <p>Leitura e cruzamento concluídos.</p>
           </div>
           <div class="journey-step active">
             <div class="k">Etapa 03</div>
-            <div class="t">Resultado</div>
+            <div class="t">Governança</div>
             <p>Resumo pronto para decisão e revisão.</p>
           </div>
         </div>
 
         <div class="grid">
           <section class="card">
-            <div class="label">Resumo da entrada</div>
+            <div class="label">Resumo da operação</div>
             <div id="meta" class="summary"></div>
             <div id="coverage" style="margin-top:12px; padding:12px 14px; border:1px solid #eceef1; border-radius:14px; background:#fff; color:#4b5563; line-height:1.6; font-size:13px;">Cobertura documental e status aparecem aqui quando a sessão anterior estiver presente.</div>
             <div class="empty">
-              <strong style="display:block; color:#111827; margin-bottom:6px;">Resultado operacional ainda não calculado neste shell público.</strong>
-              A análise real acontece no motor da aplicação. Quando o backend estiver conectado, esta área passa a exibir custo, apontamentos e o parecer do agente.
+              <strong style="display:block; color:#111827; margin-bottom:6px;">Resultado operacional ainda não consolidado neste shell público.</strong>
+              A análise real acontece no motor da aplicação. Quando o backend estiver conectado, esta área passa a exibir pendências, justificativas e o parecer humano.
             </div>
             <div class="actions">
-              <a class="btn primary" href="/simulacao.html">Nova conferência</a>
-              <a class="btn secondary" href="/loading.html">Revisar processamento</a>
+              <a class="btn primary" href="/simulacao.html">Nova operação</a>
+              <a class="btn secondary" href="/loading.html">Revisar reconciliação</a>
             </div>
           </section>
 
           <section class="card">
-            <div class="label">Estado</div>
+            <div class="label">Governança</div>
             <div style="margin-top:12px; font-size:24px; font-weight:800; letter-spacing:-.03em;" id="status-title">Aguardando operação</div>
-            <div id="status-subtitle" style="margin-top:6px; color:#6b7280; line-height:1.6;">Sem processo carregado.</div>
+            <div id="status-subtitle" style="margin-top:6px; color:#6b7280; line-height:1.6;">Sem operação carregada.</div>
 
             <div style="margin-top:18px; border:1px solid #eceef1; border-radius:18px; padding:18px; background:#fff;">
               <div class="label">Próximo passo</div>
-              <p style="margin:10px 0 0; color:#4b5563; line-height:1.7;">Envie a operação na etapa anterior para manter a sequência da jornada e siga para o motor real de conferência.</p>
+              <p style="margin:10px 0 0; color:#4b5563; line-height:1.7;">Envie a operação na etapa anterior para manter a sequência da jornada e siga para a decisão assistida.</p>
             </div>
 
             <div class="empty" style="margin-top:18px;">
               <strong style="display:block; color:#111827; margin-bottom:6px;">Sem mock, sem número inventado.</strong>
-              Esta página serve como state view da operação: referência, documentos e status.
+              Esta página serve como state view da operação: referência, documentos, cobertura e status.
             </div>
           </section>
         </div>
