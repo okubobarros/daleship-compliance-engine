@@ -108,7 +108,7 @@
       <div style="margin-top:22px; display:flex; align-items:center; justify-content:center; gap:9px; font-size:13px; font-weight:500; color:#9aa1ab;">
         <i data-lucide="loader-circle" style="width:16px; height:16px; color:#2563EB;"></i> Redirecionando para o login em {{ countdown }}s…
       </div>
-      <button onClick="{{ goRequest }}" style="margin-top:22px; width:100%; border:none; cursor:pointer; font-family:inherit; font-size:14.5px; font-weight:600; color:#fff; padding:14px; border-radius:13px; display:flex; align-items:center; justify-content:center; gap:8px; background:linear-gradient(90deg,#2563EB,#F97316);">
+      <button onClick="{{ goLogin }}" style="margin-top:22px; width:100%; border:none; cursor:pointer; font-family:inherit; font-size:14.5px; font-weight:600; color:#fff; padding:14px; border-radius:13px; display:flex; align-items:center; justify-content:center; gap:8px; background:linear-gradient(90deg,#2563EB,#F97316);">
         Ir para o login agora <i data-lucide="arrow-right" style="width:17px; height:17px;"></i>
       </button>
     </div>
@@ -117,7 +117,7 @@
     <!-- voltar -->
     <sc-if value="{{ showBack }}" hint-placeholder-val="{{ true }}">
     <div style="margin-top:24px; padding-top:20px; border-top:1px solid #f0f1f3; text-align:center;">
-      <a href="#" onclick="{{ goRequest }}" style="font-size:13.5px; font-weight:500; color:#6B7280;">← Voltar para o login</a>
+      <a href="./registro.html" onclick="{{ goLogin }}" style="font-size:13.5px; font-weight:500; color:#6B7280;">← Voltar para o login</a>
     </div>
     </sc-if>
 
@@ -179,6 +179,7 @@ class Component extends DCLogic {
       goSent: (e) => { e.preventDefault(); this.setState({ view: 'sent' }); },
       goReset: (e) => { e.preventDefault(); this.setState({ view: 'reset', pass: '', confirm: '' }); },
       goDone: (e) => { e.preventDefault(); if (!canSave) return; this.setState({ view: 'done' }); this.startCountdown(); },
+      goLogin: (e) => { e.preventDefault(); clearInterval(this._t); window.location.href = './registro.html'; },
       goRequest: (e) => { e.preventDefault(); clearInterval(this._t); this.setState({ view: 'request', pass: '', confirm: '' }); },
       noop: (e) => e.preventDefault(),
       onPass: (e) => this.setState({ pass: e.target.value }),

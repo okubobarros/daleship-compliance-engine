@@ -72,16 +72,16 @@
         <div style="margin-top:7px; font-size:12px; font-weight:500; color:{{ strengthColor }}; min-height:16px;">{{ strengthLabel }}</div>
       </div>
 
-      <button onClick="{{ noop }}" disabled="{{ btnDisabled }}" style="{{ btnStyle }}">
+      <button onClick="{{ goNext }}" disabled="{{ btnDisabled }}" style="{{ btnStyle }}">
         <i data-lucide="arrow-right" style="width:18px; height:18px;"></i> Criar conta grátis
       </button>
 
-      <div style="text-align:center; font-size:14px; font-weight:400; color:#6B7280;">Já tem conta? <a href="#" style="font-weight:600;">Entrar</a></div>
+      <div style="text-align:center; font-size:14px; font-weight:400; color:#6B7280;">Já tem conta? <a href="./estado-vazio.html" style="font-weight:600;">Entrar</a></div>
 
     </div>
 
     <p style="margin:24px 0 0; padding-top:20px; border-top:1px solid #f0f1f3; font-size:12px; font-weight:400; color:#9aa1ab; line-height:1.6; text-align:center;">
-      Ao criar sua conta, você concorda com os <a href="#" style="color:#6B7280; text-decoration:underline;">Termos de Uso</a> e a <a href="#" style="color:#6B7280; text-decoration:underline;">Política de Privacidade</a> do Despachante de Bolso.
+      Ao criar sua conta, você concorda com os <a href="./homepage.html" style="color:#6B7280; text-decoration:underline;">Termos de Uso</a> e a <a href="./homepage.html" style="color:#6B7280; text-decoration:underline;">Política de Privacidade</a> do Despachante de Bolso.
     </p>
 
   </div>
@@ -124,7 +124,7 @@ class Component extends DCLogic {
     return {
       onPass: (e) => this.setState({ pass: e.target.value }),
       togglePass: (e) => { e.preventDefault(); this.setState(s => ({ show: !s.show })); },
-      noop: (e) => e.preventDefault(),
+      goNext: (e) => { e.preventDefault(); if (this.state.pass) window.location.href = './estado-vazio.html'; },
       passType: this.state.show ? 'text' : 'password',
       eyeIcon: this.state.show ? 'eye-off' : 'eye',
       seg0: seg(0), seg1: seg(1), seg2: seg(2), seg3: seg(3),
