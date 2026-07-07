@@ -10,6 +10,10 @@ def _codigos(achados):
     return {a["codigo"] for a in achados}
 
 
+def _riscos(achados):
+    return [a for a in achados if a["severidade"] != "info"]
+
+
 def main() -> None:
     # helpers de parsing
     assert rd.codigo_incoterm("FOB Ningbo") == "FOB"
@@ -37,18 +41,35 @@ def main() -> None:
     assert next(a for a in ach if a["codigo"] == "FREIGHT_RULE")["severidade"] == "atencao"
     print("OK regras_documentais — FOB + Prepaid é incompatível")
 
-    # 3) CIF (vendedor paga) + Prepaid -> coerente, nenhum achado
-    assert rd.avaliar({"invoice": {"incoterm": "CIF"},
-                       "documento_transporte": {"condicao_frete": "Freight Prepaid"}}) == []
-    # FOB + Collect -> coerente
+    # 3) Tudo presente e coerente -> nenhum RISCO e nenhum 'não avaliado' (nada faltando)
+    ach = rd.avaliar({"invoice": {"incoterm": "CIF", "condicao_frete": "Freight Prepaid"},
+                      "documento_transporte": {"incoterm": "CIF"}})
+    assert ach == [], f"esperado silêncio quando tudo presente e coerente, veio {ach}"
+    # FOB + Collect com os dois Incoterms presentes -> coerente, silêncio
     assert rd.avaliar({"invoice": {"incoterm": "FOB"},
-                       "documento_transporte": {"condicao_frete": "Freight Collect"}}) == []
-    print("OK regras_documentais — combinações coerentes não geram achado")
+                       "documento_transporte": {"incoterm": "FOB", "condicao_frete": "Freight Collect"}}) == []
+    print("OK regras_documentais — tudo presente e coerente = silêncio (sem risco, sem 'não avaliado')")
 
-    # 4) Dado ausente NÃO vira divergência falsa
-    assert rd.avaliar({"invoice": {"incoterm": "FOB"}, "documento_transporte": {}}) == []
-    assert rd.avaliar({"invoice": {}, "documento_transporte": {}}) == []
-    print("OK regras_documentais — dado ausente não gera falso positivo")
+    # 4) Dado ausente NÃO vira risco falso, MAS gera 'não avaliado' explícito (info)
+    ach = rd.avaliar({"invoice": {"incoterm": "FOB"}, "documento_transporte": {}})
+    assert _riscos(ach) == [], "ausência não pode gerar risco falso"
+    na = next(a for a in ach if a["codigo"] == "COERENCIA_NAO_AVALIADA")
+    assert na["severidade"] == "info"
+    assert "BL" in na["descricao"] and "frete" in na["descricao"]
+    assert na["evidencia"] and na["por_que_importa"] and na["acao_recomendada"]
+
+    # sem nenhum dado -> também explícito, nunca silêncio
+    ach = rd.avaliar({"invoice": {}, "documento_transporte": {}})
+    assert _riscos(ach) == [] and "COERENCIA_NAO_AVALIADA" in _codigos(ach)
+    print("OK regras_documentais — dado ausente = 'não avaliado' explícito (info), nunca risco falso nem silêncio")
+
+    # 5) 'Não avaliado' e risco coexistem: mismatch dispara E o frete fica não avaliado
+    ach = rd.avaliar({"invoice": {"incoterm": "FOB"}, "documento_transporte": {"incoterm": "CIF"}})
+    cods = _codigos(ach)
+    assert "INCOTERM_MISMATCH" in cods and "COERENCIA_NAO_AVALIADA" in cods
+    na = next(a for a in ach if a["codigo"] == "COERENCIA_NAO_AVALIADA")
+    assert "frete" in na["descricao"]  # o que faltou foi a condição de frete
+    print("OK regras_documentais — risco e 'não avaliado' coexistem quando cabe")
 
 
 if __name__ == "__main__":

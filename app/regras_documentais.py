@@ -74,6 +74,32 @@ def avaliar(campos_por_papel: dict[str, dict]) -> list[dict]:
 
     achados: list[dict] = []
 
+    # 0) Visibilidade explícita: quando falta Incoterm ou condição de frete em um dos documentos,
+    # as checagens abaixo não têm como rodar. Em vez de silêncio (que o analista poderia ler como
+    # "está tudo ok"), emite-se um apontamento INFORMATIVO dizendo exatamente qual dado faltou.
+    # Severidade 'info' de propósito: é visibilidade, não risco — não bloqueia nem infla o score.
+    faltas = []
+    if not inc_inv:
+        faltas.append("Incoterm na Invoice")
+    if not inc_bl:
+        faltas.append("Incoterm no documento de transporte (BL)")
+    if not frete:
+        faltas.append("condição de frete (Prepaid/Collect)")
+    if faltas:
+        achados.append({
+            "codigo": "COERENCIA_NAO_AVALIADA", "tipo": "documental", "severidade": "info",
+            "orgao": "-",
+            "descricao": "Coerência Invoice × documento de transporte não avaliada — falta: "
+                         + ", ".join(faltas) + ".",
+            "evidencia": f"Invoice: {inc_inv or 'ausente'} · BL: {inc_bl or 'ausente'} · "
+                         f"frete: {frete or 'ausente'}",
+            "por_que_importa": "Sem esses campos não há como verificar se o Incoterm confere entre a "
+                               "Invoice e o BL nem se o frete é compatível — uma incoerência, se existir, "
+                               "passaria despercebida.",
+            "acao_recomendada": "Anexe/complete o documento de transporte com Incoterm e condição de "
+                                "frete para permitir a checagem.",
+        })
+
     # 1) Incoterm divergente entre a Invoice e o BL — precisa dos dois lados para comparar.
     if inc_inv and inc_bl and inc_inv != inc_bl:
         achados.append({
