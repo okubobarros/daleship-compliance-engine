@@ -131,4 +131,13 @@ def extrair_campos(texto: str) -> dict:
     m_tot = re.search(r"(?:total|amount|valor\s*total)\s*[:.]?\s*(?:USD|US\$|R\$|\$)?\s*([\d.,]{2,})", texto or "", re.I)
     if m_tot:
         campos["valor_total"] = m_tot.group(1).strip()
+    # Incoterm (2020) + termo geográfico opcional: 'FOB Ningbo', 'CIF Santos'.
+    m_inc = re.search(r"\b(EXW|FCA|FAS|FOB|CFR|CIF|CPT|CIP|DAP|DPU|DDP)\b(?:\s+([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ .'-]{1,28}))?",
+                      texto or "", re.I)
+    if m_inc:
+        local = (m_inc.group(2) or "").strip(" .,-")
+        campos["incoterm"] = (m_inc.group(1).upper() + (f" {local}" if local else "")).strip()
+    m_frete = re.search(r"freight\s*(prepaid|collect)|frete\s*(pago|a\s*pagar|a\s*cobrar)", texto or "", re.I)
+    if m_frete:
+        campos["condicao_frete"] = m_frete.group(0).strip()
     return campos

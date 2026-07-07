@@ -48,7 +48,10 @@ _INSTRUCAO = (
     "pelo próprio conteúdo (ex.: 'Bill of Lading'=B/L, 'Air Waybill'=AWB, 'CRT'=CRT). "
     "IMPORTANTE: 'itens' são APENAS as linhas de MERCADORIA/PRODUTO da fatura (com descrição do "
     "produto, quantidade, valor). NUNCA inclua como item: cabeçalho, endereço, CEP, CNPJ, nome do "
-    "comprador/vendedor, condições de pagamento, totais ou observações."
+    "comprador/vendedor, condições de pagamento, totais ou observações. "
+    "'incoterm' é o termo Incoterms 2020 (EXW/FCA/FAS/FOB/CFR/CIF/CPT/CIP/DAP/DPU/DDP) com o local, "
+    "quando houver (ex.: 'FOB Ningbo'). 'condicao_frete' é como o frete aparece no documento "
+    "(ex.: 'Freight Prepaid', 'Freight Collect', 'Frete a pagar')."
 )
 
 _SCHEMA = {
@@ -61,6 +64,8 @@ _SCHEMA = {
         "moeda": {"type": "string", "nullable": True},
         "peso_bruto_kg": {"type": "string", "nullable": True},
         "volumes": {"type": "string", "nullable": True},
+        "incoterm": {"type": "string", "nullable": True},
+        "condicao_frete": {"type": "string", "nullable": True},
         "itens": {
             "type": "array",
             "items": {
@@ -81,6 +86,7 @@ _FORMATO_JSON = (
     'Responda APENAS com JSON válido neste formato (sem markdown, sem comentários): '
     '{"tipo_detectado": str, "tipo_documento_transporte": str|null, "numero_documento": str|null, '
     '"valor_total": str|null, "moeda": str|null, "peso_bruto_kg": str|null, "volumes": str|null, '
+    '"incoterm": str|null, "condicao_frete": str|null, '
     '"itens": [{"codigo": str|null, "descricao": str, "ncm": str|null, "quantidade": str|null}]}'
 )
 
@@ -203,6 +209,8 @@ def _normalizar_bruto(bruto: dict) -> dict:
         "valor_total": bruto.get("valor_total"),
         "peso_bruto": bruto.get("peso_bruto_kg"),
         "volumes": bruto.get("volumes"),
+        "incoterm": bruto.get("incoterm"),
+        "condicao_frete": bruto.get("condicao_frete"),
     }
     itens = []
     for it in bruto.get("itens") or []:

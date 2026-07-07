@@ -105,13 +105,19 @@ def confirmar_tipo_transporte(doc_id: str, dossie_id: str, novo_tipo: str, autor
 # --- Apontamentos ---
 
 def inserir_apontamento(dossie_id: str, tipo: str, severidade: str, orgao: str,
-                        descricao: str, norma_id: str | None) -> str:
+                        descricao: str, norma_id: str | None,
+                        evidencia: str | None = None, por_que_importa: str | None = None,
+                        acao_recomendada: str | None = None) -> str:
+    """Insere um apontamento. Os campos de decisão (evidencia/por_que_importa/acao_recomendada)
+    são opcionais: preenchidos por regras que seguem o formato do Cockpit, NULL nos demais."""
     ap_id = str(uuid.uuid4())
     with conectar() as conn, conn.cursor() as cur:
         cur.execute(
-            "INSERT INTO apontamentos (id, dossie_id, tipo, severidade, orgao, descricao, norma_citada_id, status) "
-            "VALUES (%s, %s, %s, %s, %s, %s, %s, 'pendente')",
-            (ap_id, dossie_id, tipo, severidade, orgao, descricao, norma_id),
+            "INSERT INTO apontamentos (id, dossie_id, tipo, severidade, orgao, descricao, "
+            "norma_citada_id, evidencia, por_que_importa, acao_recomendada, status) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'pendente')",
+            (ap_id, dossie_id, tipo, severidade, orgao, descricao, norma_id,
+             evidencia, por_que_importa, acao_recomendada),
         )
         conn.commit()
     return ap_id

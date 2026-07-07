@@ -18,6 +18,7 @@ import db
 import extracao
 import llm_extracao
 import rag
+import regras_documentais
 import regras_regulatorias
 
 
@@ -193,6 +194,14 @@ def processar_dossie(cliente_id: str, referencia: str, arquivos: dict) -> str:
     for div in _conciliar(docs_meta):
         db.inserir_apontamento(dossie_id, div["tipo"], div["severidade"], div["orgao"],
                                div["descricao"], None)
+
+    # --- Jornada principal (DESIGN_SYSTEM §3): coerência Invoice × documento de transporte
+    #     (Incoterm divergente, condição de frete incompatível). Achados no formato de decisão. ---
+    campos_por_papel = {d["papel"]: (d.get("dados_extraidos") or {}).get("campos", {}) for d in docs_meta}
+    for ach in regras_documentais.avaliar(campos_por_papel):
+        db.inserir_apontamento(dossie_id, ach["tipo"], ach["severidade"], ach["orgao"],
+                               ach["descricao"], None, ach.get("evidencia"),
+                               ach.get("por_que_importa"), ach.get("acao_recomendada"))
 
     # --- Nó 2+5: para cada NCM, exigência de anuência e precedente de classificação, com citação ---
     for ncm in ncms:

@@ -41,12 +41,22 @@ Os 7 layouts ainda mostram mais de uma possibilidade de produto, mas a decisão 
 
 O corte é intencional: a primeira entrega precisa parecer um produto único, não um portfólio de features.
 
-## 4. Conceitos novos que os layouts introduzem (ainda não existem no backend)
-- **"Confiança da simulação"** (ex.: 82%, "11 de 14 variáveis confirmadas") — precisaria de um score.
-- **"Índice de risco / 100"** no cockpit (gauge) — idem, um score agregado dos apontamentos.
-- **Margem projetada** — hoje o CTI calcula custo/unitário, não margem de venda (falta preço de venda).
-- **Cadastro/trial/reset de senha** — hoje a auth é um login fixo de demo, não multi-usuário real.
-Todos são construíveis, mas são **novo escopo**, não reskin do que já existe.
+## 4. Conceitos novos que os layouts introduzem
+Estado do motor (frente 1 — construída em 07/07/2026):
+- ✅ **Verificação Invoice × BL (Incoterm + frete)** — a jornada principal (§3) que a landing anuncia.
+  `app/regras_documentais.py` (puro, testado): `INCOTERM_MISMATCH` (crítico) e `FREIGHT_RULE`
+  (atenção), sem citação inventada (é coerência Incoterms 2020, não norma indexada). Extração passou a
+  capturar `incoterm` e `condicao_frete` (`extracao.extrair_campos` + `llm_extracao`).
+- ✅ **"Índice de risco / 100"** do cockpit — `app/score_risco.py` (puro, testado): agregação
+  determinística e explicável da severidade dos apontamentos (crítico≫atenção≫info), faixas/cores iguais
+  às do layout (`<40` Baixo · `<70` Médio · `≥70` Alto).
+- ✅ **Estrutura "Evidência / Por que importa / Ação recomendada"** — migration `0005` adiciona os 3
+  campos (aditivos, NULL nos apontamentos antigos); a regra documental já os preenche.
+
+Ainda **não** existem (novo escopo, quando priorizado):
+- **"Confiança da simulação"** (ex.: 82%) — lado do simulador/CTI (secundário), não do cockpit.
+- **Margem projetada** — o CTI calcula custo/unitário, não margem de venda (falta preço de venda).
+- **Cadastro/trial/reset de senha** — auth é login fixo de demo, não multi-usuário real.
 
 ## 5. Decisões em aberto (para o dono do produto)
 1. **Naming:** adotar "Despachante de Bolso"/"ComexPilot" como marca oficial? (afeta repo, telas, docs)
