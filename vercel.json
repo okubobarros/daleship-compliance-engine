@@ -3,10 +3,47 @@
   "framework": null,
   "buildCommand": "",
   "installCommand": "",
+  "redirects": [
+    {
+      "source": "/design/mockups/homepage.html",
+      "destination": "/landing.html",
+      "permanent": false
+    },
+    {
+      "source": "/design/mockups/estado-vazio.html",
+      "destination": "/simulacao.html",
+      "permanent": false
+    },
+    {
+      "source": "/design/mockups/estados-carregamento.html",
+      "destination": "/loading.html",
+      "permanent": false
+    },
+    {
+      "source": "/design/mockups/resumo-importacao.html",
+      "destination": "/resultado.html",
+      "permanent": false
+    },
+    {
+      "source": "/design/mockups/registro.html",
+      "destination": "/simulacao.html",
+      "permanent": false
+    },
+    {
+      "source": "/design/mockups/redefinir-senha.html",
+      "destination": "/landing.html",
+      "permanent": false
+    },
+    {
+      "source": "/design/mockups/cockpit-decisao.html",
+      "destination": "/resultado.html",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/",
-      "destination": "/design/mockups/homepage.html"
+      "destination": "/landing.html"
     }
   ]
 }

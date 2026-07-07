@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simulação | Despachante de Bolso</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Poppins', system-ui, sans-serif; background: #f4f6fa; color:#111827; }
+    a { text-decoration:none; color:inherit; }
+    .shell { display:flex; min-height:100vh; }
+    .sidebar { width:80px; background:#111827; display:flex; flex-direction:column; align-items:center; padding:20px 0; }
+    .mark { width:44px; height:44px; border-radius:14px; background:linear-gradient(135deg,#2563EB,#6D28D9); box-shadow:0 10px 24px rgba(109,40,217,.34); }
+    .main { flex:1; padding:34px 40px 44px; }
+    .top { display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap; }
+    .eyebrow { font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#6b7280; }
+    h1 { margin:8px 0 0; font-size:32px; letter-spacing:-.03em; }
+    .muted { color:#6b7280; margin-top:6px; }
+    .grid { margin-top:24px; display:grid; grid-template-columns:1.2fr .8fr; gap:20px; }
+    .card { background:#fff; border:1px solid #eceef1; border-radius:20px; padding:24px; box-shadow:0 10px 30px rgba(17,24,39,.05); }
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:20px; }
+    .stat { background:#fff; border:1px solid #eceef1; border-radius:18px; padding:20px; }
+    .label { font-size:12px; font-weight:700; letter-spacing:.12em; color:#6b7280; text-transform:uppercase; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; padding:14px 18px; border-radius:14px; font-weight:700; }
+    .btn-primary { background:#2563EB; color:#fff; box-shadow:0 14px 28px rgba(37,99,235,.22); }
+    .btn-secondary { border:1px solid #e5e7eb; background:#fff; color:#374151; }
+    .actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:22px; }
+    .tag { display:inline-flex; padding:6px 10px; border-radius:999px; background:rgba(37,99,235,.08); color:#1d4ed8; font-size:12px; font-weight:600; }
+    .bullet { display:flex; gap:10px; margin-top:14px; color:#374151; }
+    @media (max-width: 960px) { .grid, .stats { grid-template-columns:1fr; } .main { padding:24px; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="mark"></div>
+      <div style="margin-top:34px; display:flex; flex-direction:column; gap:10px;">
+        <div class="mark" style="width:46px;height:46px;opacity:.22;"></div>
+        <div class="mark" style="width:46px;height:46px;opacity:.12;"></div>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="top">
+        <div>
+          <div class="eyebrow">Sua primeira simulação</div>
+          <h1>Importe com inteligência. Venda com lucro.</h1>
+          <div class="muted">Diga o que você quer importar e veja o custo real da operação antes de gastar um centavo.</div>
+        </div>
+        <div class="card" style="width:330px;">
+          <div class="label">Confiança da simulação</div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:8px;">
+            <div style="font-size:32px; font-weight:800; color:#6D28D9;">82%</div>
+            <div style="font-size:13px; color:#6b7280;">11 de 14 variáveis confirmadas</div>
+          </div>
+          <div style="height:10px; border-radius:999px; background:#eef0f3; margin-top:12px; overflow:hidden;">
+            <div style="height:100%; width:82%; background:linear-gradient(90deg,#2563EB,#6D28D9);"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="label">Custo total</div>
+          <div style="margin-top:12px; font-size:32px; font-weight:800;">R$ 148.320</div>
+          <div class="muted">Landed cost · 14 itens</div>
+        </div>
+        <div class="stat">
+          <div class="label">Impostos</div>
+          <div style="margin-top:12px; font-size:32px; font-weight:800;">R$ 43.013</div>
+          <div class="muted">II + IPI + PIS/COFINS + ICMS</div>
+        </div>
+        <div class="stat">
+          <div class="label">Frete internacional</div>
+          <div style="margin-top:12px; font-size:32px; font-weight:800;">R$ 19.281</div>
+          <div class="muted">Shenzhen → Santos · marítimo</div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <section class="card">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="mark" style="width:48px;height:48px;"></div>
+            <div>
+              <div style="font-size:16px; font-weight:700;">Parecer do agente</div>
+              <div style="font-size:13px; color:#6D28D9; font-weight:600;">ComexPilot · seu despachante de IA</div>
+            </div>
+          </div>
+          <p style="margin:18px 0 0; color:#374151; line-height:1.72;">
+            O que mais comprime a margem não são os impostos federais, e sim o ICMS do estado de destino.
+            Assumindo São Paulo, com alíquota de 18%, a margem projetada cai de 34% para 28%.
+          </p>
+          <div class="actions">
+            <a class="btn btn-primary" href="/loading.html">Executar simulação</a>
+            <a class="btn btn-secondary" href="/resultado.html">Ver resultado pronto</a>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="label">Composição de custos</div>
+          <div style="margin-top:20px; width:180px; height:180px; border-radius:50%; background:conic-gradient(#2563EB 0 198deg,#6D28D9 198deg 302deg,#F97316 302deg 350deg,#6B7280 350deg 360deg); display:grid; place-items:center; margin-inline:auto;">
+            <div style="width:118px; height:118px; border-radius:50%; background:#fff; display:grid; place-items:center; text-align:center;">
+              <div style="font-size:12px; color:#6b7280;">Total</div>
+              <div style="font-size:22px; font-weight:800;">R$ 148,3k</div>
+            </div>
+          </div>
+          <div class="bullet"><span style="width:10px;height:10px;border-radius:3px;background:#2563EB;display:inline-block;margin-top:7px;"></span>Mercadoria (FOB)</div>
+          <div class="bullet"><span style="width:10px;height:10px;border-radius:3px;background:#6D28D9;display:inline-block;margin-top:7px;"></span>Impostos</div>
+          <div class="bullet"><span style="width:10px;height:10px;border-radius:3px;background:#F97316;display:inline-block;margin-top:7px;"></span>Frete internacional</div>
+          <div class="bullet"><span style="width:10px;height:10px;border-radius:3px;background:#6B7280;display:inline-block;margin-top:7px;"></span>Despesas aduaneiras</div>
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

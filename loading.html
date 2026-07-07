@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Processando | Despachante de Bolso</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:'Poppins', system-ui, sans-serif; background:#f4f6fa; color:#111827; }
+    .wrap { max-width:980px; margin:0 auto; padding:40px 24px 60px; }
+    .card { background:#fff; border:1px solid #eceef1; border-radius:22px; padding:28px; box-shadow:0 12px 28px rgba(17,24,39,.05); }
+    .row { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+    .label { font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#6b7280; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; padding:12px 18px; border-radius:12px; font-weight:700; }
+    .primary { background:#2563EB; color:#fff; box-shadow:0 14px 28px rgba(37,99,235,.22); }
+    .secondary { border:1px solid #e5e7eb; color:#374151; background:#fff; }
+    .step { margin-top:16px; padding:14px 16px; border-radius:14px; background:#f8fafc; border:1px solid #eef0f3; }
+    .pulse { width:12px; height:12px; border-radius:50%; background:#6D28D9; display:inline-block; animation:pulse 1.2s infinite ease-in-out; }
+    @keyframes pulse { 0%,100% { opacity:.4; transform:scale(.85); } 50% { opacity:1; transform:scale(1.1); } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="row">
+        <div>
+          <div class="label">Processando operação</div>
+          <h1 style="margin:8px 0 0; font-size:32px;">Validando documentos e calculando risco</h1>
+          <div style="margin-top:6px; color:#6b7280;">Importação da China · 14 itens analisados pelo agente</div>
+        </div>
+        <a class="btn secondary" href="/simulacao.html">Editar entrada</a>
+      </div>
+
+      <div style="margin-top:24px; height:10px; border-radius:999px; background:#eef0f3; overflow:hidden;">
+        <div style="height:100%; width:72%; background:linear-gradient(90deg,#2563EB,#6D28D9);"></div>
+      </div>
+
+      <div class="step"><span class="pulse"></span> Classificando NCM</div>
+      <div class="step"><span class="pulse"></span> Calculando tributos</div>
+      <div class="step"><span class="pulse"></span> Estimando frete e seguro</div>
+      <div class="step"><span class="pulse"></span> Compondo margem</div>
+
+      <div style="margin-top:24px; display:flex; gap:12px; flex-wrap:wrap;">
+        <a class="btn primary" href="/resultado.html">Ver resultado</a>
+        <a class="btn secondary" href="/simulacao.html">Voltar à simulação</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
