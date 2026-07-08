@@ -48,7 +48,13 @@ module.exports = async (req, res) => {
       return;
     }
     const upstream = await buscarResumo(apiBase, dossieId, token);
-    res.status(upstream.status).setHeader("Content-Type", "application/json").send(upstream.body);
+    // Sem encadear .setHeader() no meio: é o método NATIVO do Node (não um helper do Vercel
+    // como .status()/.json()), nem sempre retorna `this` de forma consistente entre runtimes —
+    // encadear pode quebrar silenciosamente e, pior, deixar a resposta em estado parcial (o que
+    // faria o catch abaixo falhar de novo ao tentar responder, virando um 500 sem corpo).
+    res.setHeader("Content-Type", "application/json");
+    res.status(upstream.status);
+    res.send(upstream.body);
   } catch (e) {
     res.status(502).json({ error: "falha ao consultar a API", detail: String((e && e.message) || e) });
   }
