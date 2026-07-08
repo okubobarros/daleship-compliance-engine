@@ -175,6 +175,31 @@
           </section>
         </div>
 
+        <section class="card" id="confianca-card" style="margin-top:18px; display:none;">
+          <div class="label">Índice de confiança do dossiê</div>
+          <div style="display:grid; grid-template-columns:auto 1fr; gap:20px; align-items:center; margin-top:12px;">
+            <div style="position:relative; width:104px; height:104px;">
+              <div id="conf-ring" style="position:absolute; inset:0; border-radius:50%;"></div>
+              <div style="position:absolute; inset:14px; border-radius:50%; background:#fafbfc;"></div>
+              <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+                <span id="conf-pct" style="font-size:22px; font-weight:800; letter-spacing:-.02em;">—</span>
+              </div>
+            </div>
+            <div>
+              <p style="margin:0; color:#4b5563; line-height:1.65; font-size:13.5px;">
+                O índice é a porcentagem de itens cuja classificação de NCM o agente confirmou com
+                alta certeza (reordenando por IA + Regras Gerais de Interpretação).
+                <strong style="color:#111827;">Confiança baixa não é erro do sistema:</strong>
+                significa que o agente não conseguiu confirmar aquele item com certeza suficiente —
+                a sugestão continua disponível, mas recomenda-se
+                <strong style="color:#111827;">revisão manual</strong> antes de submeter.
+              </p>
+              <div id="conf-badge" style="display:none; margin-top:12px; padding:9px 14px; border-radius:12px; background:rgba(249,115,22,.10); border:1px solid rgba(249,115,22,.28); color:#9a3d0a; font-size:13px; font-weight:600;"></div>
+              <div id="conf-msg" style="margin-top:10px; color:#6b7280; font-size:12.5px;"></div>
+            </div>
+          </div>
+        </section>
+
         <div class="foot">
           <span><a href="/">Voltar à home</a></span>
           <span><a href="/loading.html">Ver etapa anterior</a></span>
@@ -211,6 +236,35 @@
       meta.innerHTML = '<div><strong>Entrada</strong> nenhuma operação carregada</div><div><strong>Arquivo</strong> use a etapa anterior para registrar documentos</div>';
       coverage.textContent = 'Cobertura documental: nenhuma sessão encontrada.';
     }
+
+    // Índice de confiança — só aparece quando ?dossie_id= aponta para um dossiê REAL e
+    // consolidado. Chama /api/resumo (proxy Vercel; o Bearer token nunca chega ao browser).
+    // A explicação de "confiança baixa" já está fixa no HTML acima do percentual — nunca
+    // é montada dinamicamente sem ela (evita a possibilidade de mostrar o número sozinho).
+    (function () {
+      const dossieId = new URLSearchParams(location.search).get('dossie_id');
+      if (!dossieId) return;
+      fetch(`/api/resumo?dossie_id=${encodeURIComponent(dossieId)}`)
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
+        .then((resumo) => {
+          const p = resumo.indice_confianca;
+          const pct = (p == null) ? 0 : p;
+          const cor = pct >= 70 ? '#16A34A' : pct >= 40 ? '#F97316' : '#E05252';
+          document.getElementById('conf-ring').style.background =
+            `conic-gradient(${cor} ${(pct / 100 * 360).toFixed(1)}deg, #eef0f3 0deg)`;
+          document.getElementById('conf-pct').textContent = (p == null) ? '—' : p + '%';
+          document.getElementById('conf-pct').style.color = cor;
+          const baixa = (resumo.excecoes && resumo.excecoes.ncm_confianca_baixa) || 0;
+          const badge = document.getElementById('conf-badge');
+          if (baixa > 0) {
+            badge.style.display = 'block';
+            badge.textContent = `${baixa} item(ns) com confiança baixa — revisão manual recomendada`;
+          }
+          if (resumo.mensagem) document.getElementById('conf-msg').textContent = resumo.mensagem;
+          document.getElementById('confianca-card').style.display = 'block';
+        })
+        .catch(() => { /* sem dossiê consolidado ainda — seção fica oculta, sem inventar número */ });
+    })();
   </script>
 </body>
 </html>

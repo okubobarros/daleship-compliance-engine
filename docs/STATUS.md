@@ -16,14 +16,24 @@ código (`/saude`, `/dossies/{id}/resumo`, `POST /admin/processar-fila`); endpoi
 ### Site público (Vercel) — `www.despachantedebolso.com.br`
 Construído em paralelo (commits `da5df1b`…`0577376`, 06–07/07/2026), fora desta sessão de engenharia
 de backend. É um **shell de jornada estático** (`index.html`, `simulacao.html`, `loading.html`,
-`resultado.html`), com estado guardado em `sessionStorage` do navegador — **sem chamada nenhuma à
-API**. O próprio `resultado.html` é honesto sobre isso: *"A análise real acontece no motor da
-aplicação. Quando o backend estiver conectado, esta área passa a exibir pendências…"*.
+`resultado.html`), com estado guardado em `sessionStorage` do navegador.
 
-**⚠️ Gap ativo:** o componente de índice de confiança (`api/static/indice-confianca.html`, com gauge
-reaproveitado do brief `cockpit-decisao.html` e a explicação fixa de "confiança baixa") **existe e foi
-testado isoladamente, mas não está incluído em nenhuma página do site público.** É o próximo passo
-óbvio — ver §6.
+**Correção sobre o próprio site em produção (achada e corrigida em 08/07/2026):** `GET /api/main` e
+`/api/main.py` no domínio Vercel retornavam **500** — o Vercel auto-detecta `api/main.py` +
+`api/requirements.txt` (convenção zero-config) como uma Serverless Function Python própria, que
+colide com o deploy real do Render e quebra (sem `DATABASE_URL` como env var do Vercel). O site
+principal não era afetado. Corrigido com `.vercelignore` (exclui só `api/main.py` do build do Vercel).
+
+**Índice de confiança: ligado.** `resultado.html` agora tem a seção real, alimentada por
+`api/resumo.js` (Vercel Serverless Function, proxy server-side que guarda o `API_TOKEN` — nunca vai
+ao browser). Fluxo: `resultado.html?dossie_id=<uuid>` → `fetch('/api/resumo?dossie_id=...')` →
+`resumo.js` injeta o Bearer e chama o Render → renderiza gauge + a explicação fixa de "confiança
+baixa" (sempre no mesmo bloco do número, nunca separada) + badge de exceções + mensagem agregada.
+Validado em browser real (harness local espelhando o comportamento do Vercel) com o dossiê real
+`bc9afb26-982a-4235-90b9-f4c79c6ad80b`. Sem `?dossie_id=`, a seção fica oculta — nunca mostra número
+sem lastro. **Falta:** configurar `API_TOKEN` (mesmo valor do Render) no projeto Vercel e confirmar
+que o deploy do Vercel pegou o `.vercelignore` novo — isso só se confirma olhando o dashboard/próximo
+build do Vercel.
 
 ## 2. O motor (app/) — Fase 1 Comex, em Python, não em n8n
 
@@ -89,14 +99,16 @@ que segue não iniciada.
 
 ## 6. Próximos passos (ordem sugerida)
 
-1. **Confirmar rotação de credenciais** (bloqueante de segurança, só o dono confirma).
-2. **Ligar o índice de confiança ao site público** — incluir `api/static/indice-confianca.html` em
-   `resultado.html`, chamando `GET /dossies/{id}/resumo` (server-side, para o `API_TOKEN` não vazar
-   ao cliente — ver runbook em `api/README.md`). Hoje é o gap mais visível: componente pronto, site
-   no ar, mas desconectados.
+1. **Confirmar rotação de credenciais** (bloqueante de segurança, só o dono confirma) — segue
+   pendente mesmo com a API e o site conectados.
+2. **Configurar `API_TOKEN` no projeto Vercel** e confirmar que o `.vercelignore` novo entrou no
+   próximo build (dashboard do Vercel — só o dono vê o log). Sem isso, o índice de confiança em
+   `resultado.html?dossie_id=...` volta o erro 503 do proxy (fail-closed, não quebra o site).
 3. **Decidir o destino de `ROADMAP.md`/`PROJECT_STRUCTURE.md`** (§5).
 4. **Conectar o restante da jornada pública** (`simulacao.html`, `loading.html`) ao motor real
-   (`app/processamento.py` via a mesma API), substituindo o `sessionStorage` mockado.
+   (`app/processamento.py` via a mesma API), substituindo o `sessionStorage` mockado — hoje só
+   `resultado.html` lê dado real, e só quando `?dossie_id=` aponta para um dossiê já consolidado
+   (não existe ainda upload real de documento a partir do site público).
 5. **Habilitar quota paga** (Gemini billing ou créditos OpenRouter) para o rerank de NCM em lote —
    hoje o free tier degrada ~71% dos itens para confiança baixa sob carga (ver
    [ncm_rerank_status] na memória da sessão).

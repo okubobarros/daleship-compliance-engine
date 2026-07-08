@@ -3,16 +3,20 @@
 Endpoint **mínimo** (só este — não o Cockpit inteiro; Frente 2 segue pausada) que expõe o
 `resumo_consolidado` de um dossiê para a seção "Índice de confiança" em despachantedebolso.com.br.
 
-## Status (08/07/2026): NO AR
-Deploy validado ao vivo em `https://daleship-compliance-engine.onrender.com` — `GET /saude` → `200`,
-as 3 rotas conferem, endpoint protegido responde 401 sem token. Ver `docs/STATUS.md` (raiz do repo)
-para o estado completo do projeto. **Pendente:** ligar `static/indice-confianca.html` ao site público
-(hoje construído mas não incluído em nenhuma página — ver `docs/STATUS.md` §6).
+## Status (08/07/2026): NO AR e conectado ao site público
+API validada ao vivo em `https://daleship-compliance-engine.onrender.com` — `GET /saude` → `200`,
+as 3 rotas conferem, endpoint protegido responde 401 sem token. A seção "Índice de confiança" está
+ligada em `resultado.html` (site Vercel) via `resumo.js` (proxy) — ver §"Como a seção entra no site"
+abaixo. Ver `docs/STATUS.md` (raiz do repo) para o estado completo do projeto.
 
 ## Arquivos
-- `main.py` — FastAPI. `GET /dossies/{id}/resumo` → `{indice_confianca, score_risco, excecoes, mensagem, ncm}`.
-- `static/indice-confianca.html` — componente visual (gauge reaproveitado do brief `cockpit-decisao.html`),
-  com a explicação FIXA de "confiança baixa" acoplada ao número (nunca um sem o outro).
+- `main.py` — FastAPI (Render). `GET /dossies/{id}/resumo` → `{indice_confianca, score_risco, excecoes, mensagem, ncm}`.
+- `resumo.js` — Vercel Serverless Function (Node.js). Proxy server-side: `resultado.html` chama
+  `/api/resumo?dossie_id=...` same-origin; esta função injeta o `API_TOKEN` (env var do Vercel) e
+  repassa a resposta do Render. O token nunca aparece no browser.
+- `static/indice-confianca.html` — componente standalone original (gauge + explicação fixa), usado
+  como referência/demo isolada. A versão em produção está inlined em `resultado.html` (mesmo texto
+  fixo de "confiança baixa", mesma técnica de gauge via `conic-gradient`).
 
 ## Variáveis de ambiente (nomes EXATOS lidos no código; nunca hardcode)
 Só o endpoint `/resumo` precisa das 3 primeiras. Se for usar `/admin/processar-fila` (ou rodar o
@@ -48,9 +52,28 @@ Via Docker (mesmo contexto do deploy real — ver Dockerfile): a partir da RAIZ 
 `docker build -f api/Dockerfile -t daleship-api .`
 
 ## Como a seção entra no site (token NÃO vai ao cliente)
-O backend do site chama o endpoint **server-side** (com o `API_TOKEN`), injeta o JSON como
-`window.__RESUMO__` na página, e inclui `static/indice-confianca.html`. Assim o token nunca é
-exposto no browser. Se `window.__RESUMO__` não existir, o componente cai num exemplo de demonstração.
+`resultado.html` é 100% estático (sem servidor próprio) — por isso o desenho original ("backend do
+site injeta `window.__RESUMO__`") não se aplicava. Implementação real: **`resumo.js`, uma Vercel
+Serverless Function** (auto-detectada por estar em `api/*.js`), guarda o `API_TOKEN` como env var do
+Vercel e faz a chamada ao Render server-side. O browser chama `/api/resumo?dossie_id=<uuid>`
+(same-origin, sem CORS, sem token exposto); `resultado.html` lê `?dossie_id=` da própria URL.
+
+**Config necessária no projeto Vercel** (Project Settings → Environment Variables):
+| Var | Valor |
+|---|---|
+| `API_TOKEN` | **mesmo valor** configurado no Render |
+| `RENDER_API_URL` | opcional, default `https://daleship-compliance-engine.onrender.com` |
+
+Sem `?dossie_id=` na URL, ou se o dossiê não estiver consolidado, a seção fica **oculta** — nunca
+mostra um número sem lastro real. Demo com dado real: acrescente
+`?dossie_id=bc9afb26-982a-4235-90b9-f4c79c6ad80b` (dossiê de validação, IVPL Paulo) à URL de
+`resultado.html`.
+
+**`.vercelignore`** (raiz do repo) exclui `api/main.py` do build do Vercel — sem isso, o Vercel
+auto-detecta `main.py`+`requirements.txt` como uma Serverless Function Python própria (convenção
+zero-config), que colide com o deploy real (Render) e quebra com 500 (`DATABASE_URL` não existe como
+env var do Vercel). Confirmado em produção antes do fix: `GET /api/main` e `/api/main.py` no domínio
+Vercel retornavam 500; o site principal não era afetado.
 
 ## ⚠️ Pendente (BLOQUEANTE, só o dono confirma) — rotacionar as credenciais vazadas
 As keys abaixo vazaram em texto claro nos anexos n8n; rotação ainda **não confirmada**:

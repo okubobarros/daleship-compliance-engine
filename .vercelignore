@@ -1,0 +1,7 @@
+# api/main.py é o backend Python real, deployado separadamente no Render (Docker).
+# Sem esta exclusão, o Vercel auto-detecta main.py + api/requirements.txt (convenção
+# zero-config) e tenta buildar uma Serverless Function Python própria — que colide com
+# o deploy do Render e quebra com 500 (confirmado em produção: DATABASE_URL não existe
+# como env var do Vercel). api/resumo.js (a function real deste projeto Vercel) não é
+# afetada por esta exclusão.
+api/main.py
