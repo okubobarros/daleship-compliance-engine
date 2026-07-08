@@ -27,9 +27,17 @@ O backend do site chama o endpoint **server-side** (com o `API_TOKEN`), injeta o
 `window.__RESUMO__` na página, e inclui `static/indice-confianca.html`. Assim o token nunca é
 exposto no browser. Se `window.__RESUMO__` não existir, o componente cai num exemplo de demonstração.
 
-## ⚠️ Pré-requisito BLOQUEANTE antes de publicar (não automatizável por aqui)
-1. **Rotacionar** as credenciais que vazaram nos anexos n8n e confirmar: service_role do Supabase
-   (`cpzjxgcekxyunktmcmay`), Gemini key (`classificador_fiscal.txt`), OpenRouter key.
-2. Configurar as vars acima **no host de deploy** com as keys rotacionadas (nunca commitar).
-3. Auditoria do repo já confirmada limpa (`.env` gitignorado, histórico sem secret, `.env.example`
-   só placeholder). O deploy público espera (1) e o acesso de infra ao domínio.
+## ⚠️ Passo 1 (BLOQUEANTE) — rotacionar as credenciais vazadas (só o dono faz)
+As keys abaixo vazaram em texto claro nos anexos n8n; rotacione ANTES de publicar:
+- **Supabase service_role** (projeto `cpzjxgcekxyunktmcmay`): Dashboard → Project Settings → API →
+  "Reset service_role" (ou Legacy API keys → regenerar). Atualize também a senha do DB se foi exposta.
+- **Gemini** (`classificador_fiscal.txt`): https://aistudio.google.com/apikey → apagar a key antiga → criar nova.
+- **OpenRouter** (`custos CTI.json`/n8n): https://openrouter.ai/keys → revogar a antiga → criar nova.
+Depois, cole as novas em `DATABASE_URL` / `GEMINI_API_KEY` / `OPENROUTER_API_KEY` **no host** (não no repo).
+
+## Passo 2 — publicar (turnkey, host-agnóstico via Dockerfile)
+Railway: `railway up` na pasta `api/` (detecta o Dockerfile) e defina as env vars no painel.
+Render: novo Web Service apontando para `api/` (Docker) + env vars. Fly: `fly launch` em `api/`.
+Em qualquer um: setar `DATABASE_URL`, `API_TOKEN` (gere um forte), `API_CORS_ORIGENS=https://despachantedebolso.com.br`.
+Só falta o acesso de infra ao domínio — que é do dono. A auditoria do repo já está limpa
+(`.env` gitignorado, histórico sem secret, `.env.example` só placeholder).
