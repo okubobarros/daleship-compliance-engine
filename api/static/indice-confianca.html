@@ -1,0 +1,70 @@
+<!-- Seção "Índice de confiança do dossiê" para despachantedebolso.com.br.
+     Reaproveita o gauge + paleta + Poppins do brief cockpit-decisao.html (sem reabrir o mockup).
+     REGRA DE PRODUTO: o percentual e a explicação de "confiança baixa" vivem no MESMO bloco —
+     é impossível renderizar o número sem a explicação ao lado (render() monta os dois juntos).
+     Dados: a página injeta window.__RESUMO__ (obtido server-side do endpoint, para o token NÃO
+     ir ao cliente). Sem dado injetado, cai num exemplo de demonstração. -->
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<div id="indice-confianca"></div>
+<script>
+(function () {
+  // Texto de contexto FIXO — sempre exibido ao lado do percentual (requisito não negociável).
+  var EXPLICACAO = "O índice é a porcentagem de itens cuja classificação de NCM o agente confirmou " +
+    "com alta certeza (reordenando por IA + Regras Gerais de Interpretação). " +
+    "<b>Confiança baixa não é erro do sistema:</b> significa que o agente não conseguiu confirmar " +
+    "aquele item com certeza suficiente — a sugestão continua disponível, mas recomenda-se " +
+    "<b>revisão manual</b> antes de submeter.";
+
+  function corDe(p) { return p >= 70 ? "#16A34A" : p >= 40 ? "#F97316" : "#E05252"; }
+  function rotuloDe(p) { return p >= 70 ? "Alta" : p >= 40 ? "Média" : "Baixa"; }
+
+  function render(r) {
+    var ncm = (r && r.ncm) || {}, exc = (r && r.excecoes) || {};
+    var indef = (r.indice_confianca == null);
+    var p = indef ? 0 : r.indice_confianca;
+    var cor = corDe(p), filled = (p / 100 * 270).toFixed(1) + "deg";
+    var baixa = exc.ncm_confianca_baixa || 0;
+    var numero = indef ? "—" : p + "%";
+
+    var el = document.getElementById("indice-confianca");
+    el.style.cssText = "font-family:'Poppins',system-ui,sans-serif; color:#111827; max-width:820px;";
+    el.innerHTML =
+      '<div style="background:#fff; border:1px solid #eceef1; border-radius:20px; padding:26px 30px; ' +
+      'box-shadow:0 10px 30px rgba(17,24,39,.05); display:grid; grid-template-columns:auto 1fr; gap:34px; align-items:center;">' +
+
+        // GAUGE (reaproveitado do cockpit)
+        '<div style="position:relative; width:190px; height:190px;">' +
+          '<div style="position:absolute; inset:0; border-radius:50%; background:conic-gradient(from 225deg, ' +
+            cor + ' 0 ' + filled + ', #eef0f3 ' + filled + ' 270deg, transparent 270deg 360deg);"></div>' +
+          '<div style="position:absolute; inset:22px; border-radius:50%; background:#fff;"></div>' +
+          '<div style="position:absolute; left:0; right:0; bottom:40px; text-align:center;">' +
+            '<div style="font-size:40px; font-weight:700; letter-spacing:-.03em; line-height:1; color:' + cor + ';">' + numero + '</div>' +
+            '<div style="font-size:12px; font-weight:500; color:#9aa1ab; margin-top:3px;">confiança ' + (indef ? '—' : rotuloDe(p)) + '</div>' +
+          '</div>' +
+        '</div>' +
+
+        // NÚMERO + EXPLICAÇÃO FIXA (mesmo bloco — nunca um sem o outro)
+        '<div>' +
+          '<div style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; ' +
+            'letter-spacing:.12em; text-transform:uppercase; color:#6B7280;">Índice de confiança do dossiê</div>' +
+          '<div style="margin-top:6px; font-size:15px; line-height:1.6; font-weight:400; color:#374151;">' + EXPLICACAO + '</div>' +
+          (baixa ? '<div style="margin-top:16px; display:inline-flex; align-items:center; gap:10px; ' +
+              'background:rgba(249,115,22,.1); border:1px solid rgba(249,115,22,.28); border-radius:12px; ' +
+              'padding:10px 16px;">' +
+              '<span style="font-size:20px; font-weight:700; color:#9a3d0a;">' + baixa + '</span>' +
+              '<span style="font-size:13.5px; font-weight:500; color:#9a3d0a;">' +
+              'item(ns) com confiança baixa — revisão manual recomendada</span></div>' : '') +
+          (r.mensagem ? '<div style="margin-top:14px; font-size:13px; font-weight:400; color:#6B7280;">' +
+              r.mensagem + '</div>' : '') +
+        '</div>' +
+      '</div>';
+  }
+
+  // Exemplo de demonstração quando a página não injetou dados reais.
+  var demo = { indice_confianca: 0, ncm: { alta: 0, baixa: 93, total: 93 },
+    excecoes: { ncm_confianca_baixa: 93, coerencia_nao_avaliada: 1, apontamentos_criticos: 0 },
+    mensagem: "93 item(ns) com confiança baixa (revisão manual recomendada); 1 coerência Invoice×BL não avaliada" };
+  render(window.__RESUMO__ || demo);
+})();
+</script>
