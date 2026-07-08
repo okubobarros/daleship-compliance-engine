@@ -87,21 +87,27 @@ def _processar_item(descricao: str) -> dict:
                 "posicao_fila": None}
 
 
-def processar(n_paralelo: int = N_PARALELO) -> dict:
-    """Processa todos os pendentes com N threads até esvaziar a fila. Retorna estatísticas."""
+def processar(n_paralelo: int = N_PARALELO, max_itens: int | None = None) -> dict:
+    """Processa pendentes com N threads até esvaziar a fila (ou até max_itens, p/ simular
+    parada/crash no meio). Retorna estatísticas."""
     stats: Counter = Counter()
     lock = threading.Lock()
+    processados = [0]
 
     def loop():
         conn = psycopg2.connect(DATABASE_URL)   # 1 conexão por thread (claim/gravar)
         try:
             while True:
+                with lock:
+                    if max_itens is not None and processados[0] >= max_itens:
+                        return
                 item = _claim_one(conn)
                 if item is None:
                     return
                 res = _processar_item(item["descricao"])
                 status = _gravar(conn, item["id"], res)
                 with lock:
+                    processados[0] += 1
                     stats[status] += 1
                     stats[f"provedor::{res.get('provedor')}"] += 1
         finally:
