@@ -18,12 +18,21 @@ E classificando o cobertor em 6301 (ver PROVEDORES). Gemini segue principal (pad
 from __future__ import annotations
 
 import json
+import logging
 import os
 import pathlib
 import re
+from collections import Counter
 
 import httpx
 from dotenv import load_dotenv
+
+_log = logging.getLogger("rerank_ncm")
+
+# Telemetria em processo: quantas vezes cada provedor foi o que RESPONDEU (e quantas caiu em
+# confiança baixa). Em processo = reseta no restart do app; para histórico durável, ler o log.
+# Serve para saber, em uso real, com que frequência caímos para o 2º/3º da fila (ver estatisticas()).
+USO_PROVEDOR: Counter = Counter()
 
 load_dotenv(pathlib.Path(__file__).resolve().parent.parent / ".env")
 
@@ -34,17 +43,16 @@ _GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{_GEMINI
 _OR_KEY = os.environ.get("OPENROUTER_API_KEY", "").strip()
 _OR_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-# Cadeia de fallback, em ordem. (tipo, modelo). Gemini principal; depois free do OpenRouter.
-# Modelos do OpenRouter VALIDADOS respondendo 200 + classificando o cobertor em 6301 (08/07/2026):
-# nemotron-super-120b e nemotron-ultra-550b concordaram com o Gemini (6301.90.00) nos 3 itens;
-# gpt-oss-20b acertou a família nos 3 (divergiu só na subposição do item 2: 6301.10 vs .90).
-# Os modelos "populares" (llama-3.3-70b, qwen3-next-80b, gpt-oss-120b) estavam em 429 upstream —
-# por isso NÃO estão na cadeia. A escolha de provedor padrão fica para depois (goal).
+# Cadeia de fallback, em ordem. (tipo, modelo). Gemini principal; depois free do OpenRouter,
+# MAIORES PRIMEIRO (mais confiáveis na subposição — ver divergência do gpt-oss-20b no item 2:
+# 6301.10 elétrico vs 6301.90 correto). Validados respondendo 200 + classificando o cobertor em
+# 6301 (08/07/2026). Os "populares" (llama-3.3-70b, qwen3-next-80b, gpt-oss-120b) estavam em 429
+# upstream — fora da cadeia. Escolha de provedor padrão fica para depois (goal).
 PROVEDORES: list[tuple[str, str]] = [
     ("gemini", _GEMINI_MODEL),
+    ("openrouter", "nvidia/nemotron-3-ultra-550b-a55b:free"),
     ("openrouter", "nvidia/nemotron-3-super-120b-a12b:free"),
     ("openrouter", "openai/gpt-oss-20b:free"),
-    ("openrouter", "nvidia/nemotron-3-ultra-550b-a55b:free"),
 ]
 
 _INSTRUCAO = ("Você é classificador fiscal NCM/SH brasileiro. Classifique a mercadoria pelo que ELA "
@@ -125,7 +133,7 @@ def escolher(item: str, candidatos: list[dict], rgi_texto: str,
     """
     validos = {c["ncm"] for c in candidatos}
     tentativas: list[str] = []
-    for tipo, modelo in (provedores or PROVEDORES):
+    for posicao, (tipo, modelo) in enumerate(provedores or PROVEDORES):
         try:
             resp = _chamar(tipo, modelo, item, candidatos, rgi_texto)
         except Exception as e:
@@ -133,13 +141,27 @@ def escolher(item: str, candidatos: list[dict], rgi_texto: str,
             continue
         ncm = _normalizar_ncm((resp or {}).get("ncm_escolhido"))
         if ncm and ncm in validos:
-            return {"ncm": ncm, "confianca": "alta", "provedor": f"{tipo}:{modelo}",
+            chave = f"{tipo}:{modelo}"
+            USO_PROVEDOR[chave] += 1
+            # posicao 0 = venceu o principal; >0 = caiu para o N-ésimo da fila.
+            _log.info("rerank via %s (posição %d na fila; %d provedor(es) falharam antes)",
+                      chave, posicao, len(tentativas))
+            return {"ncm": ncm, "confianca": "alta", "provedor": chave, "posicao_fila": posicao,
                     "rgi": (resp.get("rgi_aplicavel") or "").strip() or None,
                     "justificativa": (resp.get("justificativa") or "").strip(),
                     "tentativas": tentativas}
         tentativas.append(f"{modelo}: {'fora-da-lista' if ncm else 'sem-json'}")
     # Degradação segura: top-1 do retrieval, confiança BAIXA — nunca trava nem silencia.
+    USO_PROVEDOR["fallback:retrieval"] += 1
+    _log.warning("rerank em confianca_baixa — todos os provedores falharam: %s", tentativas)
     return {"ncm": candidatos[0]["ncm"] if candidatos else None, "confianca": "baixa",
-            "provedor": "retrieval", "rgi": None,
+            "provedor": "retrieval", "posicao_fila": None, "rgi": None,
             "justificativa": "Rerank indisponível (todos os provedores falharam) — top-1 por "
                              "similaridade pura, a confirmar.", "tentativas": tentativas}
+
+
+def estatisticas() -> dict:
+    """Contagem em processo de qual provedor respondeu cada rerank (e quantas caíram em baixa).
+    Para inspecionar em uso real com que frequência caímos para o 2º/3º da fila. Reseta no restart
+    do app — histórico durável fica no log (logger 'rerank_ncm')."""
+    return dict(USO_PROVEDOR)
