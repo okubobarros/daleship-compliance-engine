@@ -11,6 +11,7 @@ import sys
 import psycopg2
 import psycopg2.extras
 
+import rerank_ncm
 from config import DATABASE_URL
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -95,30 +96,61 @@ def melhores_precedentes(descricoes: list[str], tipo_documento: str = "solucao_c
     return resultados
 
 
-def sugerir_ncm(descricoes: list[str], k: int = 3) -> list[list[dict]]:
-    """Sugere NCMs prováveis por descrição de produto (risco de classificação — call Bonano).
+def _carregar_rgi(cur) -> str:
+    """Texto das Regras Gerais de Interpretação (6 linhas) para alimentar o rerank."""
+    cur.execute("SELECT identificador, texto FROM normas WHERE tipo_documento = 'RGI' "
+                "AND data_vigencia_fim IS NULL ORDER BY identificador")
+    return "\n\n".join(f"{r['identificador']}: {r['texto']}" for r in cur.fetchall())
 
-    Busca semântica sobre as descrições NCM (agora hierárquicas), restrita a códigos COMPLETOS
-    de 8 dígitos (os que vão na DUIMP). Embeda todas as descrições numa chamada. Retorna, por
-    item, uma lista de candidatos [{codigo, descricao, distancia}] ordenados (vazia = sem
-    sugestão confiável). NUNCA afirma — é probabilidade a revisar."""
+
+def _candidatos_ncm(cur, vetor, k: int) -> list[dict]:
+    lit = "[" + ",".join(str(x) for x in vetor) + "]"
+    cur.execute(
+        "SELECT id, identificador, texto, fonte_url, embedding <=> %s::vector AS distancia "
+        "FROM normas WHERE tipo_documento = 'NCM' AND data_vigencia_fim IS NULL "
+        "  AND embedding IS NOT NULL "
+        "  AND identificador ~ 'NCM [0-9]{4}\\.[0-9]{2}\\.[0-9]{2}$' "
+        "ORDER BY embedding <=> %s::vector LIMIT %s",
+        (lit, lit, k),
+    )
+    return [dict(r) for r in cur.fetchall()]
+
+
+def sugerir_ncm(descricoes: list[str], k: int = 25) -> list[dict]:
+    """Sugere o NCM por item: retrieval top-k (índice HNSW) + rerank LLM+RGI (rerank_ncm),
+    substituindo a similaridade pura — que tem recall ok mas ranking fraco (produto acabado perde
+    para matéria-prima). Retorna, por item, um dict:
+      {ncm, texto, id, confianca ('alta'|'baixa'), provedor, rgi, justificativa, candidatos, sim_top1}
+    ou {ncm: None, candidatos: []} quando o retrieval não traz nada. NUNCA afirma (é 'VERIFIQUE');
+    confianca='baixa' quando o rerank cai no fallback de similaridade pura."""
     emb = get_embedder()
     if not descricoes or not getattr(emb, "disponivel", False):
-        return [[] for _ in descricoes]
+        return [{"ncm": None, "confianca": "baixa", "candidatos": []} for _ in descricoes]
     vetores = asyncio.run(emb.embed(descricoes, input_type="query"))
-    saida: list[list[dict]] = []
+
+    # 1) Retrieval (rápido, via índice) — pega candidatos de todos os itens e fecha a conexão
+    #    ANTES de chamar o LLM (não segura conexão de banco durante o rerank).
     with _conectar_ann() as conn, conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-        for v in vetores:
-            lit = "[" + ",".join(str(x) for x in v) + "]"
-            cur.execute(
-                "SELECT id, identificador, texto, fonte_url, embedding <=> %s::vector AS distancia "
-                "FROM normas WHERE tipo_documento = 'NCM' AND data_vigencia_fim IS NULL "
-                "  AND embedding IS NOT NULL "
-                "  AND identificador ~ 'NCM [0-9]{4}\\.[0-9]{2}\\.[0-9]{2}$' "
-                "ORDER BY embedding <=> %s::vector LIMIT %s",
-                (lit, lit, k),
-            )
-            saida.append([dict(r) for r in cur.fetchall()])
+        rgi = _carregar_rgi(cur)
+        cands_por_item = [_candidatos_ncm(cur, v, k) for v in vetores]
+
+    # 2) Rerank por item (LLM + RGI, com fallback multi-provedor)
+    saida: list[dict] = []
+    for desc, cands in zip(descricoes, cands_por_item):
+        if not cands:
+            saida.append({"ncm": None, "confianca": "baixa", "candidatos": []})
+            continue
+        cand_llm = [{"ncm": c["identificador"].replace("NCM ", ""), "texto": (c["texto"] or "")[:150]}
+                    for c in cands]
+        esc = rerank_ncm.escolher(desc, cand_llm, rgi)
+        escolhido = next((c for c in cands if c["identificador"].replace("NCM ", "") == esc["ncm"]), cands[0])
+        saida.append({
+            "ncm": esc["ncm"] or cands[0]["identificador"].replace("NCM ", ""),
+            "texto": escolhido["texto"], "id": escolhido["id"],
+            "confianca": esc["confianca"], "provedor": esc["provedor"],
+            "rgi": esc["rgi"], "justificativa": esc["justificativa"],
+            "candidatos": cands, "sim_top1": round((1 - cands[0]["distancia"]) * 100, 1),
+        })
     return saida
 
 

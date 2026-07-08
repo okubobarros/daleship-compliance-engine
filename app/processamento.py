@@ -63,33 +63,36 @@ def _sugerir_classificacao(dossie_id: str, itens: list[dict]) -> None:
     Nunca afirma: mostra 'provável X, alternativas Y/Z — verifique'. Item já com NCM na origem
     é apenas conferido (coerência)."""
     descricoes = [i.get("descricao", "") for i in itens]
-    sugestoes = rag.sugerir_ncm(descricoes, k=3)
+    sugestoes = rag.sugerir_ncm(descricoes)   # k=25 (retrieval via HNSW) + rerank LLM+RGI
     sem_sugestao = []
-    for item, cands in zip(itens, sugestoes):
+    for item, s in zip(itens, sugestoes):
         rotulo = item.get("codigo") or (item.get("descricao", "")[:30])
-        validos = [c for c in cands if c["distancia"] <= NCM_DIST_MAX]
-        if not validos:
+        if not s.get("ncm"):
             sem_sugestao.append(rotulo)
             continue
-        melhor = validos[0]
-        ncm_prov = melhor["identificador"].replace("NCM ", "")
-        alt = ", ".join(c["identificador"].replace("NCM ", "") for c in validos[1:3])
-        desc_prov = melhor["texto"].split(" — ", 1)[-1][:70]
+        ncm_prov = s["ncm"]
+        # alternativas: candidatos de maior similaridade que não a escolha do rerank
+        alt = ", ".join([c["identificador"].replace("NCM ", "") for c in s.get("candidatos", [])
+                         if c["identificador"].replace("NCM ", "") != ncm_prov][:2])
+        desc_prov = (s.get("texto") or "").split(" — ", 1)[-1][:70]
         # Alíquotas da NCM provável (camada Tributos) — carga tributária estimada, a verificar.
         trib = rag.tributos_por_ncm(ncm_prov)
         trib_txt = ""
         if trib:
             trib_txt = (f" Alíquotas (ref.): II {trib['ii']}% · IPI {trib['ipi']}% · "
                         f"PIS {trib['pis']}% · COFINS {trib['cofins']}%.")
-        # Sugestão de NCM é CONSELHO ("verifique"), não divergência detectada -> severidade
-        # 'info': não infla o índice de risco (senão invoice grande = muitos itens = falso "Alto").
-        # Quando houver NCM declarado na origem e ele DIVERGIR da sugestão, aí sim vira atenção/risco.
+        # Sugestão de NCM é CONSELHO ("verifique"), não divergência -> severidade 'info' (não infla
+        # o risco). Marcador de confiança: rerank LLM+RGI (alta) vs fallback de similaridade (baixa).
+        if s.get("confianca") == "alta":
+            conf_txt = f" [classificado por {s['provedor']}" + (f", {s['rgi']}" if s.get("rgi") else "") + "]"
+        else:
+            conf_txt = " [CONFIANÇA BAIXA — rerank indisponível; sugestão por similaridade pura]"
         db.inserir_apontamento(
             dossie_id, "classificacao", "info", "RFB",
             f"Item {rotulo} ({item.get('descricao','')[:45]}): NCM provável {ncm_prov} "
             f"({desc_prov})" + (f"; alternativas {alt}" if alt else "") + " — VERIFIQUE."
-            + trib_txt,
-            melhor["id"])
+            + trib_txt + conf_txt,
+            s.get("id"))
     if sem_sugestao:
         db.inserir_apontamento(dossie_id, "classificacao", "info", "-",
             f"{len(sem_sugestao)} item(ns) sem sugestão de NCM com confiança — classificar manualmente: "
