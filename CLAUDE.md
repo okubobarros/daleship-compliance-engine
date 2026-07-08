@@ -30,10 +30,11 @@ A tese científica original da Fase 1 do PIPE/FAPESP trata roteamento dinâmico 
 
 | Documento | Escopo real | Observação |
 |---|---|---|
-| `docs/ROADMAP.md` | **Ambas as fases, na ordem correta** | Fonte de verdade sobre sequência — sempre consultar primeiro |
+| `docs/STATUS.md` | **Estado real de implementação, atualizado 08/07/2026** | O que está DE FATO construído/no ar hoje (API Render, site Vercel, motor `app/` em Python) — leia PRIMEIRO se a pergunta for "o que já existe", não "o que planejamos" |
+| `docs/ROADMAP.md` | **Ambas as fases, na ordem correta** | Fonte de verdade sobre sequência de PRODUTO — mas a seção de arquitetura da Fase 1 (n8n) está superada, ver `docs/STATUS.md` §5 |
 | `docs/ComexPilot.md` | Fase 1 (Comex) | Levantamento de requisitos bruto do especialista de domínio da trading — fonte primária de fontes normativas a indexar e perguntas de produto já respondidas para a Fase 1, já que não há protótipo anterior a herdar (ver seção 2) |
 | `docs/MCP_SISCOMEX_INTEGRATION.md` | Fase 1 (Comex) | Trata comex como frente ativa, corretamente |
-| `docs/PROJECT_STRUCTURE.md` | Ambas as fases | Estrutura de pastas já contempla `n8n/` (Fase 1) e `app/` (Fase 2) |
+| `docs/PROJECT_STRUCTURE.md` | Ambas as fases | ⚠️ Árvore de pastas SUPERADA: descreve `n8n/` como motor da Fase 1 e `app/` reservado para Fase 2/LangGraph — o motor real da Fase 1 é Python em `app/` (não n8n), e existe uma pasta `api/` (FastAPI, já em deploy) não prevista aqui. Ver `docs/STATUS.md` |
 | `docs/PRD.md` | **Fase 2 (MAPA/defensivos)** | Escrito antes da inversão de ordem — os requisitos funcionais valem para a Fase 2, não para o MVP de Comex da Fase 1 |
 | `docs/ARCHITECTURE.md` | **Fase 2 (MAPA/defensivos)**, mas a decisão de stack (LangGraph, pgvector, modelo único) vale como destino final também para quando Comex migrar de n8n para código | Ler junto com a seção 2 deste arquivo |
 | `docs/DATA_SOURCES.md` | **Fase 2 (MAPA/defensivos)** | Para as fontes de Comex (NCM, Tratamento Administrativo, Soluções de Consulta), **não existe base já indexada em nenhum protótipo anterior** (ver correção na seção 2) — usar `docs/ComexPilot.md` como mapa de fontes a indexar do zero |

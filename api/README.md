@@ -3,6 +3,12 @@
 Endpoint **mínimo** (só este — não o Cockpit inteiro; Frente 2 segue pausada) que expõe o
 `resumo_consolidado` de um dossiê para a seção "Índice de confiança" em despachantedebolso.com.br.
 
+## Status (08/07/2026): NO AR
+Deploy validado ao vivo em `https://daleship-compliance-engine.onrender.com` — `GET /saude` → `200`,
+as 3 rotas conferem, endpoint protegido responde 401 sem token. Ver `docs/STATUS.md` (raiz do repo)
+para o estado completo do projeto. **Pendente:** ligar `static/indice-confianca.html` ao site público
+(hoje construído mas não incluído em nenhuma página — ver `docs/STATUS.md` §6).
+
 ## Arquivos
 - `main.py` — FastAPI. `GET /dossies/{id}/resumo` → `{indice_confianca, score_risco, excecoes, mensagem, ncm}`.
 - `static/indice-confianca.html` — componente visual (gauge reaproveitado do brief `cockpit-decisao.html`),
@@ -32,29 +38,30 @@ worker), precisa também das de LLM/embeddings.
   `DATABASE_URL=... GEMINI_API_KEY=... OPENROUTER_API_KEY=... VOYAGE_API_KEY=... python app/worker_ncm.py`
   (roda uma vez, drena tudo e sai). Bom para um Render **Cron/One-off Job** manual.
 
-## Rodar
+## Rodar localmente
 ```
 pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 8000
+uvicorn main:app --host 0.0.0.0 --port 8000        # a partir de api/
 curl -H "Authorization: Bearer $API_TOKEN" http://localhost:8000/dossies/<uuid>/resumo
 ```
+Via Docker (mesmo contexto do deploy real — ver Dockerfile): a partir da RAIZ do repo,
+`docker build -f api/Dockerfile -t daleship-api .`
 
 ## Como a seção entra no site (token NÃO vai ao cliente)
 O backend do site chama o endpoint **server-side** (com o `API_TOKEN`), injeta o JSON como
 `window.__RESUMO__` na página, e inclui `static/indice-confianca.html`. Assim o token nunca é
 exposto no browser. Se `window.__RESUMO__` não existir, o componente cai num exemplo de demonstração.
 
-## ⚠️ Passo 1 (BLOQUEANTE) — rotacionar as credenciais vazadas (só o dono faz)
-As keys abaixo vazaram em texto claro nos anexos n8n; rotacione ANTES de publicar:
+## ⚠️ Pendente (BLOQUEANTE, só o dono confirma) — rotacionar as credenciais vazadas
+As keys abaixo vazaram em texto claro nos anexos n8n; rotação ainda **não confirmada**:
 - **Supabase service_role** (projeto `cpzjxgcekxyunktmcmay`): Dashboard → Project Settings → API →
   "Reset service_role" (ou Legacy API keys → regenerar). Atualize também a senha do DB se foi exposta.
 - **Gemini** (`classificador_fiscal.txt`): https://aistudio.google.com/apikey → apagar a key antiga → criar nova.
 - **OpenRouter** (`custos CTI.json`/n8n): https://openrouter.ai/keys → revogar a antiga → criar nova.
-Depois, cole as novas em `DATABASE_URL` / `GEMINI_API_KEY` / `OPENROUTER_API_KEY` **no host** (não no repo).
+As novas keys vão em `DATABASE_URL` / `GEMINI_API_KEY` / `OPENROUTER_API_KEY` **no host** (Render →
+Environment), nunca no repo.
 
-## Passo 2 — publicar (turnkey, host-agnóstico via Dockerfile)
-Railway: `railway up` na pasta `api/` (detecta o Dockerfile) e defina as env vars no painel.
-Render: novo Web Service apontando para `api/` (Docker) + env vars. Fly: `fly launch` em `api/`.
-Em qualquer um: setar `DATABASE_URL`, `API_TOKEN` (gere um forte), `API_CORS_ORIGENS=https://despachantedebolso.com.br`.
-Só falta o acesso de infra ao domínio — que é do dono. A auditoria do repo já está limpa
-(`.env` gitignorado, histórico sem secret, `.env.example` só placeholder).
+## Deploy real (Render, host atual)
+Dockerfile Path: `api/Dockerfile` · Root Directory: `.` (raiz do repo — o contexto de build é a raiz,
+não `api/`; ver comentário no topo do Dockerfile). Env vars mínimas: `DATABASE_URL`, `API_TOKEN`,
+`ALLOWED_ORIGINS` (nome exato — não é `API_CORS_ORIGENS`). Auto-deploy no push a `main`.

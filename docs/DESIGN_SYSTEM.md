@@ -7,6 +7,14 @@ arquivos, que são a fonte visual de verdade.
 > ⚠️ Os mockups são estáticos (exportados de uma ferramenta de design; usam um mini-runtime `x-dc` com
 > dados fictícios). Não são o app. São a **especificação visual** do frontend.
 
+## 0. Atualização (08/07/2026): o site público já existe, além dos mockups
+Desde então, um site público real foi construído a partir destes mockups e está **no ar** em
+`www.despachantedebolso.com.br` (Vercel): `index.html`, `simulacao.html`, `loading.html`,
+`resultado.html` na raiz do repo, roteado por `vercel.json`. É um shell de jornada com estado em
+`sessionStorage` — **ainda sem conexão com a API real** (`api/`). Ver `docs/STATUS.md` para o estado
+completo e o gap de integração (índice de confiança pronto em `api/static/`, mas não incluído em
+nenhuma página pública ainda).
+
 ## 1. Marca e tokens
 - **Nome de produto nos layouts:** "Despachante de Bolso" (agente de IA chamado **"ComexPilot"**).
   ⚠️ Diferente do nome interno do repo (`daleship-compliance-engine`). Decisão de naming em aberto — ver §5.
