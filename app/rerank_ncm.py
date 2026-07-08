@@ -9,11 +9,11 @@ Resiliência (a lição do Gemini 503): NÃO depender de um provedor. Cadeia de 
 erro/429/5xx cai para o próximo. Se TODOS falharem, devolve o top-1 do retrieval marcado como
 `confianca='baixa'` — a sugestão NUNCA trava nem falha em silêncio.
 
-Nota de provedores (2026-07): dos modelos free pedidos no goal, `qwen/qwen-2.5-72b-instruct:free` e
-`deepseek/deepseek-chat:free` saíram do tier gratuito do OpenRouter (404 "unavailable for free").
-Substituídos por equivalentes free VIVOS no catálogo: `qwen/qwen3-next-80b-a3b-instruct:free` e
-`openai/gpt-oss-120b:free`. Gemini segue como principal (decisão de provedor padrão fica para depois
-dos números, conforme o goal).
+Nota de provedores (2026-07): a lista de free do goal envelheceu. `qwen-2.5-72b:free` e
+`deepseek-chat:free` saíram do tier gratuito (404); `llama-3.3-70b:free`, `qwen3-next-80b:free` e
+`gpt-oss-120b:free` retornam 429 "rate-limited upstream" de forma persistente. Mas a conta NÃO está
+globalmente throttled — 13 outros free respondem 200. A cadeia usa os que foram VALIDADOS respondendo
+E classificando o cobertor em 6301 (ver PROVEDORES). Gemini segue principal (padrão fica p/ depois).
 """
 from __future__ import annotations
 
@@ -35,11 +35,16 @@ _OR_KEY = os.environ.get("OPENROUTER_API_KEY", "").strip()
 _OR_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 # Cadeia de fallback, em ordem. (tipo, modelo). Gemini principal; depois free do OpenRouter.
+# Modelos do OpenRouter VALIDADOS respondendo 200 + classificando o cobertor em 6301 (08/07/2026):
+# nemotron-super-120b e nemotron-ultra-550b concordaram com o Gemini (6301.90.00) nos 3 itens;
+# gpt-oss-20b acertou a família nos 3 (divergiu só na subposição do item 2: 6301.10 vs .90).
+# Os modelos "populares" (llama-3.3-70b, qwen3-next-80b, gpt-oss-120b) estavam em 429 upstream —
+# por isso NÃO estão na cadeia. A escolha de provedor padrão fica para depois (goal).
 PROVEDORES: list[tuple[str, str]] = [
     ("gemini", _GEMINI_MODEL),
-    ("openrouter", "meta-llama/llama-3.3-70b-instruct:free"),
-    ("openrouter", "qwen/qwen3-next-80b-a3b-instruct:free"),
-    ("openrouter", "openai/gpt-oss-120b:free"),
+    ("openrouter", "nvidia/nemotron-3-super-120b-a12b:free"),
+    ("openrouter", "openai/gpt-oss-20b:free"),
+    ("openrouter", "nvidia/nemotron-3-ultra-550b-a55b:free"),
 ]
 
 _INSTRUCAO = ("Você é classificador fiscal NCM/SH brasileiro. Classifique a mercadoria pelo que ELA "
