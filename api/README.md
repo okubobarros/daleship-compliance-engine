@@ -8,12 +8,29 @@ Endpoint **mínimo** (só este — não o Cockpit inteiro; Frente 2 segue pausad
 - `static/indice-confianca.html` — componente visual (gauge reaproveitado do brief `cockpit-decisao.html`),
   com a explicação FIXA de "confiança baixa" acoplada ao número (nunca um sem o outro).
 
-## Variáveis de ambiente (nunca hardcode)
-| Var | Uso |
-|---|---|
-| `DATABASE_URL` | Postgres (Supabase) — **use a key ROTACIONADA** |
-| `API_TOKEN` | Bearer exigido (fail-closed: sem ele, o endpoint responde 503) |
-| `API_CORS_ORIGENS` | origens permitidas (default `https://despachantedebolso.com.br`) |
+## Variáveis de ambiente (nomes EXATOS lidos no código; nunca hardcode)
+Só o endpoint `/resumo` precisa das 3 primeiras. Se for usar `/admin/processar-fila` (ou rodar o
+worker), precisa também das de LLM/embeddings.
+| Var (exata) | Obrigatória p/ | Uso |
+|---|---|---|
+| `DATABASE_URL` | /resumo e worker | connection string Postgres (`postgresql://postgres:SENHA@db.<ref>.supabase.co:5432/postgres`) — use a **senha rotacionada**. O código NÃO usa `SUPABASE_SERVICE_ROLE_KEY`. |
+| `API_TOKEN` | /resumo e /admin | Bearer (fail-closed: sem ele → 503) |
+| `ALLOWED_ORIGINS` | /resumo (browser) | origens CORS, separadas por vírgula (default `https://despachantedebolso.com.br`) |
+| `GEMINI_API_KEY` | worker/admin | rerank NCM (é `GEMINI_API_KEY`, não `GOOGLE_API_KEY`) |
+| `GEMINI_MODEL` | opcional | default `gemini-3.5-flash` |
+| `OPENROUTER_API_KEY` | worker/admin | fallback do rerank |
+| `VOYAGE_API_KEY` | worker/admin | embeddings (retrieval k=25) |
+| `NCM_WORKER_PARALELO` | opcional | N do worker (default 3) |
+
+## Processar a fila de NCM — SOB DEMANDA (não há worker 24/7)
+`worker_ncm.processar()` **drena a fila até esvaziar e encerra** (não fica em loop de polling). Duas formas:
+- **(a) Endpoint** `POST /admin/processar-fila` (protegido pelo `API_TOKEN`) — drena e retorna as stats.
+  `?max=N` drena no máximo N itens por chamada (evita timeout de HTTP em fila grande). Ex.:
+  `curl -X POST -H "Authorization: Bearer $API_TOKEN" https://<api>/admin/processar-fila?max=25`
+  Como é um Web Service já ligado, não custa um Background Worker extra no Render.
+- **(b) Comando manual** (Render Shell ou local apontando para o Supabase de produção):
+  `DATABASE_URL=... GEMINI_API_KEY=... OPENROUTER_API_KEY=... VOYAGE_API_KEY=... python app/worker_ncm.py`
+  (roda uma vez, drena tudo e sai). Bom para um Render **Cron/One-off Job** manual.
 
 ## Rodar
 ```

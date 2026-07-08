@@ -18,11 +18,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 DATABASE_URL = os.environ["DATABASE_URL"]
 API_TOKEN = os.environ.get("API_TOKEN", "").strip()
-ORIGENS = [o.strip() for o in os.environ.get(
-    "API_CORS_ORIGENS", "https://despachantedebolso.com.br").split(",") if o.strip()]
+# Origens de CORS por env var (lista separada por vírgula) — setar no Render/Vercel sem editar
+# código a cada mudança de domínio. Default: o domínio de produção.
+ALLOWED_ORIGINS = [o.strip() for o in os.environ.get(
+    "ALLOWED_ORIGINS", "https://despachantedebolso.com.br").split(",") if o.strip()]
 
 app = FastAPI(title="Despachante de Bolso — Índice de Confiança", version="0.1.0")
-app.add_middleware(CORSMiddleware, allow_origins=ORIGENS, allow_methods=["GET"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=ALLOWED_ORIGINS,
+                   allow_methods=["GET", "POST"], allow_headers=["*"])
 
 
 def _auth(authorization: str = Header(default="")):
@@ -66,3 +69,20 @@ def resumo_dossie(dossie_id: str):
         "mensagem": resumo.get("mensagem"),      # mensagem agregada já existente
         "ncm": ncm,
     }
+
+
+@app.post("/admin/processar-fila", dependencies=[Depends(_auth)])
+def processar_fila(max: int | None = None):
+    """Modo SOB DEMANDA (opção a): drena a fila de NCM até esvaziar e ENCERRA — não é worker 24/7.
+    Reaproveita worker_ncm.processar (já validado), sem reescrever a lógica de fila. Protegido pelo
+    mesmo API_TOKEN. `?max=N` drena no máximo N itens (útil p/ drenar em blocos e evitar timeout de
+    HTTP em fila grande). Import é lazy: o endpoint /resumo não carrega a árvore do app.
+
+    Nota: a chamada BLOQUEIA enquanto processa (o rerank LLM leva segundos/minutos). Para fila grande,
+    chame com `?max=N` repetidamente, ou rode o script (ver README) num Cron/One-off Job do Render."""
+    import os as _os
+    import sys as _sys
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), "..", "app"))
+    import worker_ncm
+    stats = worker_ncm.processar(max_itens=max)
+    return {"processado": True, "stats": stats}
