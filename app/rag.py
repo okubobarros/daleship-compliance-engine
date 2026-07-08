@@ -148,6 +148,7 @@ def sugerir_ncm(descricoes: list[str], k: int = 25) -> list[dict]:
             "ncm": esc["ncm"] or cands[0]["identificador"].replace("NCM ", ""),
             "texto": escolhido["texto"], "id": escolhido["id"],
             "confianca": esc["confianca"], "provedor": esc["provedor"],
+            "posicao_fila": esc.get("posicao_fila"),
             "rgi": esc["rgi"], "justificativa": esc["justificativa"],
             "candidatos": cands, "sim_top1": round((1 - cands[0]["distancia"]) * 100, 1),
         })
