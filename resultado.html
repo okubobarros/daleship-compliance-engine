@@ -134,6 +134,132 @@
     .doc-meta { margin-top:12px; color:#4b5563; font-size:13px; line-height:1.55; }
     .doc-impact { margin-top:14px; font-size:12px; font-weight:700; color:#2563EB; }
     .doc-impact.max { color:#16A34A; }
+    .executive-shell {
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:12px;
+      align-items:stretch;
+    }
+    .executive-box {
+      border:1px solid #eceef1;
+      border-radius:18px;
+      padding:16px;
+      background:#fff;
+      box-shadow:0 10px 24px rgba(17,24,39,.03);
+    }
+    .executive-title {
+      font-size:22px;
+      font-weight:800;
+      letter-spacing:-.03em;
+      color:#111827;
+    }
+    .executive-copy {
+      margin-top:8px;
+      color:#4b5563;
+      line-height:1.65;
+      font-size:13px;
+    }
+    .action-links {
+      margin-top:14px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .action-links a {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px 14px;
+      border-radius:12px;
+      border:1px solid #e5e7eb;
+      background:#fff;
+      color:#374151;
+      font-weight:700;
+      font-size:13px;
+    }
+    .action-links a.primary {
+      border:none;
+      background:linear-gradient(90deg,#2563EB,#6D28D9);
+      color:#fff;
+      box-shadow:0 14px 28px rgba(37,99,235,.18);
+    }
+    .score-grid {
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:10px;
+    }
+    .score-chip {
+      border:1px solid #eceef1;
+      border-radius:16px;
+      padding:14px;
+      background:#fafbfc;
+    }
+    .score-chip .k { font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:#6b7280; }
+    .score-chip .v { margin-top:8px; font-size:18px; font-weight:800; color:#111827; }
+    .score-chip .s { margin-top:4px; color:#6b7280; font-size:12px; line-height:1.5; }
+    .criteria-grid {
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:12px;
+    }
+    .criteria-card {
+      border:1px solid #eceef1;
+      border-radius:18px;
+      padding:16px;
+      background:#fff;
+      box-shadow:0 10px 24px rgba(17,24,39,.03);
+    }
+    .criteria-card.ok { border-color:rgba(22,163,74,.18); background:rgba(22,163,74,.03); }
+    .criteria-card.watch { border-color:rgba(249,115,22,.18); background:rgba(249,115,22,.03); }
+    .criteria-card.critical { border-color:rgba(224,82,82,.18); background:rgba(224,82,82,.03); }
+    .criteria-head {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .criteria-name { font-size:15px; font-weight:800; color:#111827; }
+    .criteria-severity {
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      border-radius:999px;
+      padding:5px 8px;
+      border:1px solid #eceef1;
+      background:#fff;
+      color:#6b7280;
+    }
+    .criteria-card.ok .criteria-severity { color:#166534; border-color:rgba(22,163,74,.24); background:rgba(22,163,74,.08); }
+    .criteria-card.watch .criteria-severity { color:#9a3412; border-color:rgba(249,115,22,.24); background:rgba(249,115,22,.08); }
+    .criteria-card.critical .criteria-severity { color:#9f1239; border-color:rgba(224,82,82,.24); background:rgba(224,82,82,.08); }
+    .criteria-text { margin-top:10px; color:#4b5563; font-size:13px; line-height:1.6; }
+    .criteria-meta {
+      margin-top:12px;
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:10px;
+    }
+    .criteria-box {
+      border:1px solid #eceef1;
+      border-radius:14px;
+      padding:12px;
+      background:#fff;
+      font-size:13px;
+      line-height:1.55;
+      color:#374151;
+    }
+    .criteria-box strong {
+      display:block;
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color:#6b7280;
+      margin-bottom:6px;
+    }
     .findings-shell {
       margin-top:18px;
       display:grid;
@@ -220,11 +346,7 @@
       color:#374151;
       cursor:pointer;
     }
-    .review-actions button:disabled {
-      opacity:.45;
-      cursor:not-allowed;
-      box-shadow:none;
-    }
+    .review-actions button:disabled { opacity:.45; cursor:not-allowed; box-shadow:none; }
     .review-actions button.primary-action {
       border:none;
       color:#fff;
@@ -473,6 +595,43 @@
 
         <div class="doc-grid" id="doc-grid" aria-label="Documentos da auditoria"></div>
 
+        <section class="card" style="margin-top:18px;">
+          <div class="label">Leitura executiva</div>
+          <div class="executive-shell">
+            <div class="executive-box">
+              <div class="executive-title" id="executive-title">Operação consolidada para revisão humana</div>
+              <div class="executive-copy" id="executive-copy">Invoice e Packing List formam a base mínima da análise. O relatório destaca o que está validado, o que permanece pendente e quais ajustes destravam a próxima decisão.</div>
+              <div class="action-links">
+                <a class="primary" href="/simulacao.html">Ajustar documentos</a>
+                <a href="/">Nova operação</a>
+              </div>
+            </div>
+            <div class="executive-box">
+              <div class="label">Resumo de risco</div>
+              <div class="score-grid" style="margin-top:12px;">
+                <div class="score-chip">
+                  <div class="k">Cobertura</div>
+                  <div class="v" id="coverage-summary">0%</div>
+                  <div class="s">Base documental disponível para cruzamento.</div>
+                </div>
+                <div class="score-chip">
+                  <div class="k">Criticidade</div>
+                  <div class="v" id="risk-summary">Aguardando</div>
+                  <div class="s">Leitura executiva por severidade dos achados.</div>
+                </div>
+              </div>
+              <div style="margin-top:12px; color:#6b7280; font-size:13px; line-height:1.6;" id="source-summary">
+                Resultado gerado a partir da sessão local.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" style="margin-top:18px;">
+          <div class="label">Critérios avaliados</div>
+          <div class="criteria-grid" id="criteria-grid"></div>
+        </section>
+
         <div class="grid" style="margin-top:18px;">
           <section class="card">
             <div class="label">Módulos liberados</div>
@@ -486,8 +645,7 @@
             <div class="label">Próxima ação</div>
             <div style="margin-top:12px; font-size:24px; font-weight:800; letter-spacing:-.03em;" id="next-title">Cobertura insuficiente</div>
             <div style="margin-top:6px; color:#6b7280; line-height:1.6;" id="next-copy">Anexe Invoice e Packing List para liberar a auditoria.</div>
-            <button class="primary-cta locked" id="cta-button" type="button" style="display:none;">Executar pré-análise</button>
-            <div style="margin-top:12px; color:#6b7280; font-size:13px; line-height:1.6;" id="cta-help">Cobertura mínima recomendada: 70%.</div>
+            <div style="margin-top:14px; color:#374151; font-size:13px; line-height:1.65;" id="cta-help">Sem reexecução automática: o resultado encerra a rodada atual e qualquer nova análise começa na simulação.</div>
           </section>
         </div>
 
@@ -541,13 +699,19 @@
     const auditSummary = document.getElementById('audit-summary');
     const nextTitle = document.getElementById('next-title');
     const nextCopy = document.getElementById('next-copy');
-    const ctaButton = document.getElementById('cta-button');
-    const ctaHelp = document.getElementById('cta-help');
+    const executiveTitle = document.getElementById('executive-title');
+    const executiveCopy = document.getElementById('executive-copy');
+    const coverageSummary = document.getElementById('coverage-summary');
+    const riskSummary = document.getElementById('risk-summary');
+    const sourceSummary = document.getElementById('source-summary');
+    const criteriaGrid = document.getElementById('criteria-grid');
     const findingList = document.getElementById('finding-list');
     const reviewState = document.getElementById('review-state');
     const reviewCopy = document.getElementById('review-copy');
     const reviewEvidence = document.getElementById('review-evidence');
     const auditLog = document.getElementById('audit-log');
+    const dossieId = new URLSearchParams(window.location.search).get('dossie_id');
+    let remoteSummary = null;
 
     const files = {
       invoice: source?.files?.invoice || null,
@@ -604,6 +768,57 @@
       ['Volumes', packingReady ? 'Packing' : 'Obrigatório', packingReady ? 'ready' : ''],
       ['Cadastro', erpReady ? 'ERP' : 'Opcional', erpReady ? 'ready' : ''],
     ];
+
+    const criteria = [
+      {
+        key: 'base',
+        name: 'Base documental mínima',
+        severity: ready ? 'ok' : 'critical',
+        status: ready ? 'Libera leitura' : 'Bloqueia avanço',
+        detail: ready
+          ? 'Invoice e Packing List já sustentam a triagem inicial do dossiê.'
+          : 'Faltam Invoice e Packing List para autorizar a leitura completa.',
+        evidence: `Invoice ${invoiceReady ? 'anexada' : 'pendente'} · Packing List ${packingReady ? 'anexada' : 'pendente'}.`,
+        action: ready ? 'Prosseguir para a revisão assistida.' : 'Solicitar os dois documentos obrigatórios.',
+      },
+      {
+        key: 'fiscal',
+        name: 'Coerência fiscal',
+        severity: invoiceReady ? 'ok' : 'critical',
+        status: invoiceReady ? 'Validada' : 'Sem base',
+        detail: invoiceReady
+          ? `Referência ${source?.reference || '—'} e descrição "${source?.summary || 'não informada'}" foram registrados na operação.`
+          : 'Sem Invoice não há descrição fiscal para comparar valor, item e referência.',
+        evidence: invoiceReady ? 'Campos fiscais persistidos na sessão.' : 'Sem Invoice capturada.',
+        action: invoiceReady ? 'Cruzamento fiscal habilitado.' : 'Anexar Invoice antes de seguir.',
+      },
+      {
+        key: 'logistica',
+        name: 'Coerência logística',
+        severity: transportReady ? 'ok' : 'critical',
+        status: transportReady ? 'Cobertura presente' : 'Pendente',
+        detail: transportReady
+          ? 'Documento de transporte disponível para cruzar rota, modal e Incoterm.'
+          : 'Sem documento de transporte a leitura logística fica incompleta.',
+        evidence: transportReady ? 'BL/AWB/CRT reconhecido na sessão.' : 'Documento de transporte ausente.',
+        action: transportReady ? 'Comparar com a Invoice e revisar frete.' : 'Aguardar o documento de transporte.',
+      },
+      {
+        key: 'cadastro',
+        name: 'Cadastro / ERP',
+        severity: erpReady ? 'ok' : 'watch',
+        status: erpReady ? 'Reforça precisão' : 'Opcional',
+        detail: erpReady
+          ? 'ERP anexado para reforçar SKU, NCM e descrição com uma quarta camada de conferência.'
+          : 'Opcional, mas útil para reduzir inconsistência de cadastro e detalhamento.',
+        evidence: erpReady ? 'Arquivo ERP persistido.' : 'Sem ERP na operação.',
+        action: erpReady ? 'Usar como camada adicional de validação.' : 'Adicionar se houver base mestre disponível.',
+      },
+    ];
+
+    function severityLabel(severity) {
+      return severity === 'critical' ? 'crítico' : severity === 'watch' ? 'atenção' : 'ok';
+    }
 
     const findings = [];
     if (files.invoice) {
@@ -738,6 +953,40 @@
       </div>
     `).join('');
 
+    const criticalCount = criteria.filter((item) => item.severity === 'critical').length;
+    const watchCount = criteria.filter((item) => item.severity === 'watch').length;
+    coverageSummary.textContent = `${coverage}%`;
+    riskSummary.textContent = criticalCount ? `${criticalCount} crítico(s)` : watchCount ? `${watchCount} atenção` : 'Baixa';
+    executiveTitle.textContent = ready
+      ? 'Leitura completa com revisão humana obrigatória'
+      : 'Leitura parcial com bloqueio operacional';
+    executiveCopy.textContent = ready
+      ? 'A operação está pronta para revisão humana. Os critérios abaixo mostram o que foi validado, o que ainda exige atenção e o que permanece opcional, mesmo em lotes grandes com milhares de linhas.'
+      : 'A tela não pede uma nova pré-análise; ela consolida o que foi possível validar e sinaliza o que falta para uma leitura confiável.';
+    sourceSummary.textContent = dossieId
+      ? (remoteSummary
+        ? `Fonte remota consolidada para dossiê ${dossieId}.`
+        : `Dossiê ${dossieId} ainda pode ser consultado pelo backend consolidado.`
+      )
+      : 'Resultado gerado a partir da sessão local da simulação.';
+
+    criteriaGrid.innerHTML = criteria.map((item) => `
+      <article class="criteria-card ${item.severity}">
+        <div class="criteria-head">
+          <div>
+            <div class="criteria-name">${item.name}</div>
+            <div class="criteria-text" style="margin-top:4px;">${item.status}</div>
+          </div>
+          <div class="criteria-severity">${severityLabel(item.severity)}</div>
+        </div>
+        <div class="criteria-text">${item.detail}</div>
+        <div class="criteria-meta">
+          <div class="criteria-box"><strong>Evidência</strong>${item.evidence}</div>
+          <div class="criteria-box"><strong>Ação recomendada</strong>${item.action}</div>
+        </div>
+      </article>
+    `).join('');
+
     auditSummary.textContent = ready
       ? 'Cobertura suficiente para iniciar a auditoria com leitura, cruzamento e revisão humana.'
       : 'A operação ainda não atingiu a cobertura mínima para iniciar o diagnóstico.';
@@ -746,43 +995,8 @@
     nextCopy.textContent = maxed
       ? 'Todas as verificações estarão disponíveis. A barra está no máximo e o cockpit está pronto para análise completa.'
       : ready
-        ? 'Cobertura mínima atingida. O CTA premium fica liberado para executar a pré-análise.'
+        ? 'Cobertura mínima atingida. O relatório já pode ser revisto sem nova pré-análise.'
         : 'Anexe Invoice e Packing List para liberar a auditoria.';
-
-    ctaButton.style.display = ready ? 'inline-flex' : 'none';
-    ctaButton.textContent = ready ? 'Executar pré-análise' : 'Adicionar documentos';
-    ctaButton.classList.toggle('locked', !ready);
-    ctaButton.classList.toggle('max', maxed);
-    ctaHelp.textContent = ready
-      ? (maxed ? 'Cobertura máxima atingida. Agora todas as verificações podem ser exibidas.' : 'Cobertura mínima atingida. A auditoria já pode iniciar.')
-      : 'Cobertura mínima recomendada: 70%.';
-    ctaButton.onclick = () => {
-      if (ready) {
-        const request = {
-          id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-          requestedAt: new Date().toISOString(),
-          entryPoint: 'resultado',
-        };
-        sessionStorage.setItem('daleship.execution_request', JSON.stringify(request));
-        if (source) {
-          sessionStorage.setItem('daleship.process', JSON.stringify({
-            ...source,
-            stage: 'loading',
-            status: 'executando',
-            updatedAt: new Date().toISOString(),
-          }));
-        }
-        location.href = '/loading.html';
-      }
-    };
-
-    if (!ready) {
-      ctaButton.setAttribute('aria-disabled', 'true');
-      ctaButton.disabled = true;
-    } else {
-      ctaButton.removeAttribute('aria-disabled');
-      ctaButton.disabled = false;
-    }
 
     document.querySelectorAll('.review-actions button').forEach((button) => {
       button.disabled = !ready;
@@ -809,7 +1023,7 @@
       : 'A tela ainda depende de mais evidência para liberar a revisão assistida.';
     reviewEvidence.textContent = maxed
       ? 'Todas as verificações estão disponíveis. O dossiê entrou em modo completo.'
-      : 'Invoice, Packing List, transporte e ERP são cruzados de acordo com a cobertura disponível.';
+      : 'Invoice, Packing List, transporte e ERP são cruzados por criticidade e cobertura, preservando contexto para dossiês grandes.';
 
     const auditEntries = [
       {
@@ -845,6 +1059,27 @@
         </div>
       </article>
     `).join('');
+
+    if (dossieId) {
+      fetch(`/api/resumo?dossie_id=${encodeURIComponent(dossieId)}`)
+        .then((response) => (response.ok ? response.json() : null))
+        .then((payload) => {
+          if (!payload) return;
+          remoteSummary = payload;
+          if (typeof payload.indice_confianca === 'number') {
+            coverageSummary.textContent = `${payload.indice_confianca}%`;
+          }
+          if (typeof payload.score_risco === 'number') {
+            riskSummary.textContent = `${payload.score_risco}/100`;
+          }
+          executiveTitle.textContent = payload.mensagem?.slice(0, 72) || executiveTitle.textContent;
+          executiveCopy.textContent = payload.mensagem || executiveCopy.textContent;
+          sourceSummary.textContent = `Resumo consolidado pelo backend para ${payload.referencia || dossieId}.`;
+        })
+        .catch(() => {
+          sourceSummary.textContent = `Backend consolidado indisponível para ${dossieId}; exibindo a leitura local.`;
+        });
+    }
   </script>
 </body>
 </html>

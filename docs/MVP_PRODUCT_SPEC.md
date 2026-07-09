@@ -97,6 +97,7 @@ CTI pode permanecer como módulo interno/extra, mas não deve disputar a home, a
 - A interface deve mostrar estado, cobertura e responsabilidade, não só “resultado”.
 - A navegação pública não deve usar mock como fallback nem repetir o mesmo ciclo sem uma nova submissão ou reexecução explícita.
 - A reconciliação pública só fica liberada quando Invoice e Packing List foram anexados; referência isolada não é suficiente para seguir.
+- A tela de resultado precisa se comportar como relatório final: cobertura, criticidade, critérios avaliados, achados e próxima ação. Sem CTA de reexecução na mesma rodada.
 
 ## 9. O que fica para depois
 

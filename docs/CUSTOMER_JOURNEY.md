@@ -54,7 +54,7 @@ Quando o produto já tiver passado pelas etapas 1-5 com 1-2 clientes, o piloto f
 Para a jornada pública do Comex, a navegação precisa respeitar estas regras:
 1. `simulacao.html` só avança quando Invoice e Packing List estão anexados; a referência ajuda no contexto, mas não libera a reconciliação sozinha.
 2. `loading.html` só executa quando existe um pedido explícito de pré-análise com base documental mínima; sem esse pedido, a tela não usa fallback nem mock e apenas mostra o estado bloqueado.
-3. `resultado.html` é o estado final da execução atual; o botão `Executar pré-análise` só aparece quando a operação já tem Invoice e Packing List e cria um novo pedido de execução válido.
+3. `resultado.html` é o estado final da execução atual; ele precisa exibir leitura executiva, critérios avaliados, achados por severidade e ação recomendada. Não deve existir botão de reexecução que reabra `loading.html` dentro da mesma rodada.
 4. Não existe loop automático `loading -> resultado -> loading` sem uma nova submissão, correção ou reexecução explícita do usuário.
 
 ---
