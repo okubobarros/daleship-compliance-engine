@@ -2,7 +2,7 @@
 
 **Referência:** PRD.md, ARCHITECTURE.md, DATA_SOURCES.md, MCP_SISCOMEX_INTEGRATION.md
 
-**Mudança de estratégia (registrada aqui para contexto):** a ordem de exposição ao mercado foi invertida. Fase 1 é o motor de raciocínio (extração, explicabilidade, trilha auditável) construído do zero e aplicado ao domínio de Comex, guiado pelo levantamento de requisitos em `docs/ComexPilot.md`, para gerar uma demonstração rápida a uma trading real. **Não há protótipo n8n do PIPE/FAPESP pronto para reaproveitar** — essa é uma frente paralela e independente, sem nada construído ainda. Fase 2 é a transição para a vertical MAPA/Bioinsumos, que continua sendo a aposta de negócio principal (ver `Simulacao_Daleship_v2.xlsx` — Comex tem a pior margem estrutural das quatro simulações). **Fase 1 é validação técnica e porta de entrada comercial, não a tese de receita de longo prazo.**
+**Mudança de estratégia (registrada aqui para contexto):** a ordem de exposição ao mercado foi invertida, mas o produto continua sendo um só. A Fase 1 é o motor de raciocínio (extração, explicabilidade, trilha auditável) aplicado ao domínio de Comex, guiado pelo levantamento de requisitos em `docs/ComexPilot.md`, para gerar uma demonstração rápida a uma trading real. A Fase 2 expande a mesma base para MAPA/Bioinsumos e inteligência regulatória. **Não são produtos diferentes; são fases da mesma plataforma.** Comex funciona como validação técnica e porta de entrada comercial, enquanto a vertical regulatória maior segue como a aposta de receita de longo prazo.
 
 ---
 
@@ -18,13 +18,18 @@ Não existe workflow n8n pronto de nenhum protótipo anterior — a Fase 1 é co
 - Ganho real de n8n aqui: prototipagem visual rápida e menor fricção para conectar APIs externas (PUCOMEX, DOU) sem escrever cliente HTTP do zero.
 - **Risco a controlar**: os guardrails mais importantes que definimos (`INFRA_COST_GUARDRAILS.md`) — grounding obrigatório, validação de schema antes de mostrar ao usuário, isolamento de `cliente_id` — são mais frágeis de garantir dentro de nós visuais do n8n do que em código testável. **Mitigação**: qualquer nó do n8n que faça verificação de grounding ou validação de saída deve ser um nó de código (Function/Code node), nunca depender só de instrução de prompt dentro de um nó de IA.
 
-### Fase 2 (MAPA/Bioinsumos): migrar para código (LangGraph), como já decidido em ARCHITECTURE.md
+### Fase 2 (MAPA/Bioinsumos + inteligência regulatória): migrar para código (LangGraph), como já decidido em ARCHITECTURE.md
 
 Para o produto de longo prazo, a decisão registrada em `ARCHITECTURE.md` continua correta e não muda:
 - Testabilidade e CI real (n8n não versiona bem em git, dificulta revisão de código e testes automatizados).
 - `interrupt`/`resume` nativo do LangGraph para o human-in-the-loop é mais robusto do que qualquer padrão de "esperar aprovação" montado à mão em n8n.
 - Menor custo operacional em escala — n8n como motor de produção (self-hosted ou cloud) adiciona uma camada de infraestrutura e execução que o roadmap de custo mínimo (`INFRA_COST_GUARDRAILS.md`) não precisa pagar.
 - Auditoria e log append-only são mais fáceis de garantir por contrato de código do que por configuração de workflow visual.
+
+O escopo funcional que cresce aqui é o mesmo núcleo da Fase 1, mais três capacidades de produto:
+- dados estruturados como ativo reutilizável entre verticais;
+- compliance embutido no fluxo, com gates e revisão humana;
+- agentes verticais por função, com market access e inteligência regulatória como camada superior.
 
 ### Recomendação prática de transição
 

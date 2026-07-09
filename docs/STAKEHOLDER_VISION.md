@@ -1,6 +1,6 @@
 # Visão Multi-Stakeholder — Tech Founder, UX, Negócio, CIO
 
-> **Nota de escopo (ver CLAUDE.md, seção 5):** este documento descreve a Fase 2 do projeto (MAPA/Anvisa/Ibama — defensivos e bioinsumos). A Fase 1 atual é Comex — consulte `docs/ROADMAP.md` e `docs/MVP_PRODUCT_SPEC.md` para o escopo em execução agora.
+> **Nota de escopo (ver CLAUDE.md, seção 5):** este documento descreve a evolução futura do mesmo produto em fases. A Fase 1 atual é Comex — consulte `docs/ROADMAP.md` e `docs/MVP_PRODUCT_SPEC.md` para o escopo em execução agora.
 
 **Referência:** ARCHITECTURE.md, PRD.md, CUSTOMER_JOURNEY.md
 

@@ -1,6 +1,6 @@
 # Jornada do Cliente — Do Primeiro Contato ao Uso Recorrente
 
-> **Nota de escopo (ver CLAUDE.md, seção 5):** este documento descreve a Fase 2 do projeto (MAPA/Anvisa/Ibama — defensivos e bioinsumos). A Fase 1 atual é Comex — consulte `docs/ROADMAP.md` e `docs/MVP_PRODUCT_SPEC.md` para o escopo em execução agora.
+> **Nota de escopo (ver CLAUDE.md, seção 5):** este documento descreve a evolução futura do mesmo produto em fases. A Fase 1 atual é Comex; a vertical MAPA/Anvisa/Ibama é a continuação natural da mesma base, das mesmas regras e da mesma trilha de evidência. Consulte `docs/ROADMAP.md` e `docs/MVP_PRODUCT_SPEC.md` para o escopo em execução agora.
 
 **Referência:** PRD.md (seção 5, versão resumida) — este documento aprofunda cada etapa com o que o produto precisa entregar e como medir sucesso.
 

@@ -1,6 +1,17 @@
 # PRD — Motor de Conformidade Embutido para Registro de Defensivos Agrícolas (MVP)
 
-> **Nota de escopo (ver CLAUDE.md, seção 5):** este documento descreve a Fase 2 do projeto (MAPA/Anvisa/Ibama — defensivos e bioinsumos). A Fase 1 atual é Comex — consulte `docs/ROADMAP.md` e `docs/MVP_PRODUCT_SPEC.md` para o escopo em execução agora.
+> **Nota de escopo (ver CLAUDE.md, seção 5):** este documento descreve a evolução do mesmo produto em fases. A Fase 1 atual é Comex; a vertical MAPA/Anvisa/Ibama é a continuação natural da mesma base de dados, das mesmas regras e da mesma trilha de evidência. Consulte `docs/ROADMAP.md` e `docs/MVP_PRODUCT_SPEC.md` para o escopo em execução agora.
+
+## 0. Tese do produto único
+
+O produto não é uma coleção de ferramentas separadas. É uma única plataforma de compliance embutido, construída sobre o mesmo núcleo de:
+- dado estruturado e versionado;
+- regras de conformidade com evidência;
+- revisão humana auditável;
+- agentes verticais por função;
+- inteligência regulatória e market access como camadas de evolução.
+
+O que muda entre fases não é a base do produto, e sim o domínio, a profundidade regulatória e o tipo de decisão apoiada.
 
 **Versão:** 1.0
 **Status:** Draft para construção com Claude Code
