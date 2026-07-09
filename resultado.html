@@ -525,8 +525,7 @@
 
   <script>
     const state = JSON.parse(sessionStorage.getItem('daleship.process') || 'null');
-    const intake = JSON.parse(sessionStorage.getItem('daleship.intake') || 'null');
-    const source = state || intake;
+    const source = state;
     const coverageValue = document.getElementById('coverage-value');
     const coverageLabel = document.getElementById('coverage-label');
     const coverageState = document.getElementById('coverage-state');
@@ -745,6 +744,20 @@
       : 'Cobertura mínima recomendada: 70%.';
     ctaButton.onclick = () => {
       if (ready) {
+        const request = {
+          id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          requestedAt: new Date().toISOString(),
+          entryPoint: 'resultado',
+        };
+        sessionStorage.setItem('daleship.execution_request', JSON.stringify(request));
+        if (source) {
+          sessionStorage.setItem('daleship.process', JSON.stringify({
+            ...source,
+            stage: 'loading',
+            status: 'executando',
+            updatedAt: new Date().toISOString(),
+          }));
+        }
         location.href = '/loading.html';
       }
     };

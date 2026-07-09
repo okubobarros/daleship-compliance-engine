@@ -49,6 +49,14 @@ Quando o produto já tiver passado pelas etapas 1-5 com 1-2 clientes, o piloto f
 2. Acesso a um conjunto real de dossiês históricos da trading para calibrar o sistema antes do teste ao vivo.
 3. Sessão de fechamento com os números reais do piloto, não estimativa — é isso que abre a conversa comercial seguinte (contrato ou expansão).
 
+## Contrato de navegação pública
+
+Para a jornada pública do Comex, a navegação precisa respeitar estas regras:
+1. `simulacao.html` só avança quando existe referência ou pelo menos um documento relevante; sem isso, a tela permanece parada e orienta o usuário a completar a operação.
+2. `loading.html` só executa quando existe um pedido explícito de pré-análise; sem esse pedido, a tela não usa fallback nem mock e apenas mostra o estado bloqueado.
+3. `resultado.html` é o estado final da execução atual; o botão `Executar pré-análise` apenas cria um novo pedido de execução quando existe uma operação válida para processar.
+4. Não existe loop automático `loading -> resultado -> loading` sem uma nova submissão, correção ou reexecução explícita do usuário.
+
 ---
 
 ## Job to be Done — tabela consolidada

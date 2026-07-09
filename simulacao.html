@@ -234,8 +234,9 @@
 
       <div class="footer">
         <span>Sem números fabricados. A tela só registra a operação.</span>
-        <span><a href="/loading.html">Ver a reconciliação</a></span>
+        <span><a href="/loading.html" id="start-reconciliation">Ver a reconciliação</a></span>
       </div>
+      <div class="session-note" id="flow-warning" style="display:none; margin-top:14px; border-color:rgba(224,82,82,.24); background:rgba(224,82,82,.05); color:#9a3412;">Adicione ao menos uma referência ou um documento para iniciar a reconciliação.</div>
     </section>
   </div>
 
@@ -245,8 +246,57 @@
     const transport = document.getElementById('transport');
     const selected = document.getElementById('selected-files');
     const sessionNote = document.getElementById('session-note');
+    const flowWarning = document.getElementById('flow-warning');
+    const startReconciliation = document.getElementById('start-reconciliation');
     const form = document.getElementById('process-form');
     const intake = JSON.parse(sessionStorage.getItem('daleship.intake') || 'null');
+
+    function hasMeaningfulInput(state) {
+      return Boolean(
+        state.reference ||
+        state.origin ||
+        state.destination ||
+        state.summary ||
+        Object.values(state.files).some(Boolean)
+      );
+    }
+
+    function buildProcessState() {
+      return {
+        reference: document.getElementById('reference').value.trim(),
+        origin: document.getElementById('origin').value.trim(),
+        destination: document.getElementById('destination').value.trim(),
+        summary: document.getElementById('summary').value.trim(),
+        files: {
+          invoice: invoice.files[0]?.name || null,
+          packing: packing.files[0]?.name || null,
+          transport: transport.files[0]?.name || null,
+        },
+        stage: 'preparacao',
+        status: 'pronta_para_execucao',
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
+    function requestExecution(event) {
+      if (event) event.preventDefault();
+      const state = buildProcessState();
+      if (!hasMeaningfulInput(state)) {
+        flowWarning.style.display = 'block';
+        return false;
+      }
+
+      flowWarning.style.display = 'none';
+      const request = {
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        requestedAt: new Date().toISOString(),
+        entryPoint: 'simulacao',
+      };
+      sessionStorage.setItem('daleship.process', JSON.stringify(state));
+      sessionStorage.setItem('daleship.execution_request', JSON.stringify(request));
+      location.href = '/loading.html';
+      return true;
+    }
 
     function renderFiles() {
       const files = [
@@ -270,22 +320,10 @@
     renderFiles();
 
     form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const state = {
-        reference: document.getElementById('reference').value.trim(),
-        origin: document.getElementById('origin').value.trim(),
-        destination: document.getElementById('destination').value.trim(),
-        summary: document.getElementById('summary').value.trim(),
-        files: {
-          invoice: invoice.files[0]?.name || null,
-          packing: packing.files[0]?.name || null,
-          transport: transport.files[0]?.name || null,
-        },
-        startedAt: new Date().toISOString(),
-      };
-      sessionStorage.setItem('daleship.process', JSON.stringify(state));
-      location.href = '/loading.html';
+      requestExecution(event);
     });
+
+    startReconciliation.addEventListener('click', requestExecution);
   </script>
 </body>
 </html>

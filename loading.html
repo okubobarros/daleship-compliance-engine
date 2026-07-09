@@ -178,8 +178,8 @@
 
   <script>
     const state = JSON.parse(sessionStorage.getItem('daleship.process') || 'null');
-    const intake = JSON.parse(sessionStorage.getItem('daleship.intake') || 'null');
-    const source = state || intake;
+    const executionRequest = JSON.parse(sessionStorage.getItem('daleship.execution_request') || 'null');
+    const source = state;
     const title = document.getElementById('process-title');
     const subtitle = document.getElementById('process-subtitle');
     const summary = document.getElementById('summary');
@@ -188,8 +188,35 @@
     const sessionSource = document.getElementById('session-source');
     const steps = [document.getElementById('step-1'), document.getElementById('step-2'), document.getElementById('step-3')];
     let current = 0;
+    const hasRequest = Boolean(executionRequest);
 
-      if (source) {
+    function renderIdleState() {
+      title.textContent = source?.reference || 'Nenhuma execução solicitada';
+      subtitle.textContent = source
+        ? 'A operação foi salva, mas ainda não existe um pedido explícito para rodar a pré-análise.'
+        : 'Nenhuma operação foi encaminhada para o motor.';
+      summary.innerHTML = source
+        ? [
+            ['Referência', source.reference || '—'],
+            ['Origem', source.origin || '—'],
+            ['Destino', source.destination || '—'],
+            ['Invoice', source.files?.invoice || source.files?.bl || 'não anexada'],
+            ['Packing List', source.files?.packing || 'não anexada'],
+            ['Transporte', source.files?.transport || source.files?.bl || 'não anexado'],
+          ].map(([label, value]) => `<div><strong>${label}</strong><br><span style="color:#6b7280;">${value}</span></div>`).join('')
+        : '<div><strong>Sem operação ativa</strong><br><span style="color:#6b7280;">Volte para a simulação e envie os documentos antes de iniciar.</span></div>';
+      sessionSource.textContent = source
+        ? 'Operação salva, aguardando pedido explícito de execução.'
+        : 'Nenhuma sessão capturada. Volte para a etapa anterior para iniciar o fluxo.';
+      bar.style.width = '0%';
+      percent.textContent = '0%';
+      steps.forEach((el) => {
+        el.classList.remove('active', 'done');
+      });
+      document.title = 'Reconciliação bloqueada | Despachante de Bolso';
+    }
+
+    if (hasRequest && source) {
         title.textContent = source.reference || 'Processo sem referência';
         subtitle.textContent = [source.origin, source.destination].filter(Boolean).join(' · ') || 'Operação registrada na sessão local.';
       summary.innerHTML = [
@@ -204,13 +231,12 @@
       sessionSource.textContent = source.files
         ? `Sessão ativa carregada com ${Object.values(source.files).filter(Boolean).length} documentos persistidos.`
         : 'Sessão ativa sem documentos persistidos.';
-      } else {
-      summary.innerHTML = '<div><strong>Nenhuma operação encontrada</strong><br><span style="color:#6b7280;">Volte e preencha a etapa anterior.</span></div>';
-      sessionSource.textContent = 'Nenhuma sessão capturada. Volte para a etapa anterior para iniciar o fluxo.';
+    } else {
+      renderIdleState();
     }
 
     function tick() {
-      const target = source ? 100 : 42;
+      const target = hasRequest && source ? 100 : 0;
       current = Math.min(current + 12, target);
       bar.style.width = `${current}%`;
       percent.textContent = `${current}%`;
@@ -220,14 +246,19 @@
       });
       if (current < target) {
         window.setTimeout(tick, 500);
-      } else if (source) {
+      } else if (hasRequest && source) {
+        sessionStorage.removeItem('daleship.execution_request');
+        const nextState = { ...source, stage: 'resultado', status: 'executado', executedAt: new Date().toISOString() };
+        sessionStorage.setItem('daleship.process', JSON.stringify(nextState));
         window.setTimeout(() => {
           location.href = '/resultado.html';
         }, 700);
       }
     }
 
-    tick();
+    if (hasRequest && source) {
+      tick();
+    }
   </script>
 </body>
 </html>

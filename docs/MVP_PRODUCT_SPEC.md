@@ -95,6 +95,7 @@ CTI pode permanecer como módulo interno/extra, mas não deve disputar a home, a
 - Revisão humana nunca tratada como detalhe.
 - Progressão do fluxo com contexto, não com spinner genérico.
 - A interface deve mostrar estado, cobertura e responsabilidade, não só “resultado”.
+- A navegação pública não deve usar mock como fallback nem repetir o mesmo ciclo sem uma nova submissão ou reexecução explícita.
 
 ## 9. O que fica para depois
 
