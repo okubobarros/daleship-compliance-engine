@@ -89,6 +89,49 @@
     .dot { width:12px; height:12px; border-radius:50%; background:#d1d5db; flex:0 0 auto; }
     .step.active .dot { background:#2563EB; box-shadow:0 0 0 5px rgba(37,99,235,.10); }
     .step.done .dot { background:#16a34a; box-shadow:0 0 0 5px rgba(22,163,74,.10); }
+    .status-feed {
+      margin-top:16px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .feed-item {
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      border:1px solid #eceef1;
+      border-radius:14px;
+      padding:12px 14px;
+      background:#fff;
+      color:#374151;
+    }
+    .feed-dot {
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background:#d1d5db;
+      flex:0 0 auto;
+      margin-top:5px;
+    }
+    .feed-item.ok {
+      border-color:rgba(22,163,74,.18);
+      background:rgba(22,163,74,.04);
+    }
+    .feed-item.ok .feed-dot {
+      background:#16A34A;
+      box-shadow:0 0 0 5px rgba(22,163,74,.10);
+    }
+    .feed-item.watch {
+      border-color:rgba(249,115,22,.18);
+      background:rgba(249,115,22,.04);
+    }
+    .feed-item.watch .feed-dot {
+      background:#f97316;
+      box-shadow:0 0 0 5px rgba(249,115,22,.10);
+    }
+    .feed-item .k { font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:#6b7280; }
+    .feed-item .t { margin-top:4px; font-size:13px; font-weight:700; color:#111827; }
+    .feed-item .v { margin-top:4px; font-size:12px; line-height:1.55; color:#4b5563; }
     .meta { display:flex; gap:12px; flex-wrap:wrap; margin-top:18px; }
     .pill { display:inline-flex; align-items:center; gap:8px; padding:9px 12px; border-radius:999px; background:#fff; border:1px solid #eceef1; color:#4b5563; font-size:13px; }
     .pill strong { color:#111827; }
@@ -151,6 +194,7 @@
             <div class="step" id="step-2"><span class="dot"></span><span>Cruzando campos e sinais</span></div>
             <div class="step" id="step-3"><span class="dot"></span><span>Preparando o parecer final</span></div>
           </div>
+          <div class="status-feed" id="status-feed" aria-live="polite"></div>
         </div>
 
         <div class="card">
@@ -187,13 +231,32 @@
     const percent = document.getElementById('percent');
     const sessionSource = document.getElementById('session-source');
     const steps = [document.getElementById('step-1'), document.getElementById('step-2'), document.getElementById('step-3')];
+    const statusFeed = document.getElementById('status-feed');
     let current = 0;
     const hasRequest = Boolean(executionRequest);
+    const ready = Boolean(source?.files?.invoice && source?.files?.packing);
+    const feedEntries = [];
+
+    function appendFeed(kind, title, detail) {
+      feedEntries.push({ kind, title, detail });
+      statusFeed.innerHTML = feedEntries.map((entry) => `
+        <article class="feed-item ${entry.kind}">
+          <span class="feed-dot"></span>
+          <div>
+            <div class="k">EXECUÇÃO</div>
+            <div class="t">${entry.title}</div>
+            <div class="v">${entry.detail}</div>
+          </div>
+        </article>
+      `).join('');
+    }
 
     function renderIdleState() {
-      title.textContent = source?.reference || 'Nenhuma execução solicitada';
+      title.textContent = source?.reference || 'Reconciliação bloqueada';
       subtitle.textContent = source
-        ? 'A operação foi salva, mas ainda não existe um pedido explícito para rodar a pré-análise.'
+        ? ready
+          ? 'A operação foi salva, mas ainda não existe um pedido explícito para rodar a pré-análise.'
+          : 'Invoice e Packing List são obrigatórios para liberar a execução.'
         : 'Nenhuma operação foi encaminhada para o motor.';
       summary.innerHTML = source
         ? [
@@ -206,19 +269,27 @@
           ].map(([label, value]) => `<div><strong>${label}</strong><br><span style="color:#6b7280;">${value}</span></div>`).join('')
         : '<div><strong>Sem operação ativa</strong><br><span style="color:#6b7280;">Volte para a simulação e envie os documentos antes de iniciar.</span></div>';
       sessionSource.textContent = source
-        ? 'Operação salva, aguardando pedido explícito de execução.'
+        ? (ready
+          ? 'Operação salva, aguardando pedido explícito de execução.'
+          : 'Operação salva, mas sem base mínima para iniciar. Invoice e Packing List destravam a reconciliação.')
         : 'Nenhuma sessão capturada. Volte para a etapa anterior para iniciar o fluxo.';
       bar.style.width = '0%';
       percent.textContent = '0%';
       steps.forEach((el) => {
         el.classList.remove('active', 'done');
       });
+      statusFeed.innerHTML = '';
+      appendFeed('watch', ready ? 'Aguardando disparo' : 'Fluxo bloqueado', ready
+        ? 'A base documental está pronta, mas ainda falta o clique explícito para iniciar.'
+        : 'A referência sozinha não libera a reconciliação. Anexe Invoice e Packing List.');
       document.title = 'Reconciliação bloqueada | Despachante de Bolso';
     }
 
     if (hasRequest && source) {
-        title.textContent = source.reference || 'Processo sem referência';
-        subtitle.textContent = [source.origin, source.destination].filter(Boolean).join(' · ') || 'Operação registrada na sessão local.';
+      title.textContent = source.reference || 'Processo sem referência';
+      subtitle.textContent = ready
+        ? ([source.origin, source.destination].filter(Boolean).join(' · ') || 'Operação registrada na sessão local.')
+        : 'A execução foi solicitada sem a base mínima; a tela ficará em modo bloqueado.';
       summary.innerHTML = [
         ['Referência', source.reference || '—'],
         ['Origem', source.origin || '—'],
@@ -231,12 +302,29 @@
       sessionSource.textContent = source.files
         ? `Sessão ativa carregada com ${Object.values(source.files).filter(Boolean).length} documentos persistidos.`
         : 'Sessão ativa sem documentos persistidos.';
+      statusFeed.innerHTML = '';
+      appendFeed('ok', 'Entrada recebida', source.files?.invoice
+        ? 'Invoice reconhecida e liberada para leitura.'
+        : 'Invoice ausente; a leitura fica incompleta.');
+      appendFeed(source.files?.packing ? 'ok' : 'watch', 'Base documental', source.files?.packing
+        ? 'Packing List confirmado como suporte de volumes.'
+        : 'Packing List ausente; a cobertura mínima não fecha.');
+      appendFeed(ready ? 'ok' : 'watch', 'Cruzamento documental', ready
+        ? 'A base mínima está pronta para avançar para o cockpit.'
+        : 'O cruzamento não pode avançar sem Invoice e Packing List.');
     } else {
       renderIdleState();
     }
 
+    const milestones = [
+      { value: 18, kind: 'ok', title: 'Invoice lida', detail: 'Campos fiscais e valores começaram a ser estruturados.' },
+      { value: 42, kind: 'ok', title: 'Packing List confirmada', detail: 'Volumes e cubagem entraram no cruzamento.' },
+      { value: 68, kind: 'ok', title: 'Regras aplicadas', detail: 'Exceções, sinais e consistência estão sendo validados.' },
+      { value: 100, kind: 'ok', title: 'Cockpit liberado', detail: 'A pré-análise terminou e o resultado pode abrir.' },
+    ];
+
     function tick() {
-      const target = hasRequest && source ? 100 : 0;
+      const target = hasRequest && source && ready ? 100 : 0;
       current = Math.min(current + 12, target);
       bar.style.width = `${current}%`;
       percent.textContent = `${current}%`;
@@ -244,9 +332,13 @@
         el.classList.toggle('active', current >= (index + 1) * 30 && current < (index + 2) * 30);
         el.classList.toggle('done', current >= (index + 1) * 30);
       });
+      while (milestones.length && current >= milestones[0].value) {
+        const next = milestones.shift();
+        appendFeed(next.kind, next.title, next.detail);
+      }
       if (current < target) {
         window.setTimeout(tick, 500);
-      } else if (hasRequest && source) {
+      } else if (hasRequest && source && ready) {
         sessionStorage.removeItem('daleship.execution_request');
         const nextState = { ...source, stage: 'resultado', status: 'executado', executedAt: new Date().toISOString() };
         sessionStorage.setItem('daleship.process', JSON.stringify(nextState));
@@ -256,7 +348,7 @@
       }
     }
 
-    if (hasRequest && source) {
+    if (hasRequest && source && ready) {
       tick();
     }
   </script>

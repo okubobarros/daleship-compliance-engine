@@ -83,6 +83,69 @@
     }
     .field textarea { min-height: 116px; resize: vertical; }
     .hint { font-size:12px; color:#6b7280; line-height:1.55; }
+    .status-panel {
+      margin-top:22px;
+      border:1px solid #eceef1;
+      border-radius:20px;
+      padding:18px;
+      background:linear-gradient(180deg,#fff,#fafbfc);
+      box-shadow:0 12px 28px rgba(17,24,39,.04);
+    }
+    .status-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; flex-wrap:wrap; }
+    .status-title { margin-top:6px; font-size:20px; font-weight:800; letter-spacing:-.03em; color:#111827; }
+    .status-score { font-size:32px; font-weight:800; letter-spacing:-.04em; color:#111827; line-height:1; }
+    .status-copy { margin-top:10px; color:#4b5563; line-height:1.6; font-size:13px; }
+    .coverage-track {
+      margin-top:14px;
+      height:12px;
+      border-radius:999px;
+      background:#eef0f3;
+      overflow:hidden;
+    }
+    .coverage-fill {
+      width:0%;
+      height:100%;
+      border-radius:inherit;
+      background:linear-gradient(90deg,#2563EB,#6D28D9);
+      transition: width .35s ease, background .3s ease;
+    }
+    .coverage-fill.ready { background:linear-gradient(90deg,#fbbf24,#f97316); }
+    .coverage-fill.max { background:linear-gradient(90deg,#16A34A,#22c55e); }
+    .status-pills {
+      margin-top:14px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .upload-head {
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+    }
+    .upload-chip {
+      display:inline-flex;
+      align-items:center;
+      padding:5px 9px;
+      border-radius:999px;
+      border:1px solid #eceef1;
+      background:#fff;
+      color:#6b7280;
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+    }
+    .upload-chip.ready {
+      color:#166534;
+      border-color:rgba(22,163,74,.22);
+      background:rgba(22,163,74,.08);
+    }
+    .upload-chip.watch {
+      color:#9a3412;
+      border-color:rgba(249,115,22,.22);
+      background:rgba(249,115,22,.08);
+    }
     .upload {
       border:1px dashed #d7dbe3;
       border-radius:16px;
@@ -116,6 +179,15 @@
     .step h3 { margin:10px 0 0; font-size:15px; }
     .step p { margin:8px 0 0; color:#6b7280; font-size:13px; line-height:1.6; }
     .footer { margin-top:18px; color:#6b7280; font-size:13px; display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+    .btn.locked, .btn:disabled {
+      cursor:not-allowed;
+      opacity:.55;
+      box-shadow:none;
+      filter:saturate(.6);
+    }
+    .btn-secondary.locked {
+      pointer-events:none;
+    }
     .session-note {
       margin-top:12px;
       padding:12px 14px;
@@ -153,6 +225,25 @@
         Jornada secundária de apoio à auditoria principal
       </div>
 
+      <div class="status-panel" id="gate-panel" aria-live="polite">
+        <div class="status-head">
+          <div>
+            <div class="label">Cobertura mínima</div>
+            <div class="status-title" id="gate-title">Aguardando Invoice e Packing List</div>
+          </div>
+          <div class="status-score" id="gate-score">0%</div>
+        </div>
+        <div class="coverage-track" aria-label="Progresso de liberação">
+          <div class="coverage-fill" id="gate-fill"></div>
+        </div>
+        <div class="status-copy" id="gate-copy">A referência ajuda no contexto, mas não libera a reconciliação. Anexe Invoice e Packing List para destravar os botões.</div>
+        <div class="status-pills">
+          <span class="upload-chip" id="pill-invoice">Invoice pendente</span>
+          <span class="upload-chip" id="pill-packing">Packing pendente</span>
+          <span class="upload-chip" id="pill-transport">Transporte opcional</span>
+        </div>
+      </div>
+
       <div class="journey" aria-label="Jornada do usuário">
           <div class="journey-step active">
             <div class="k">Etapa 01</div>
@@ -176,7 +267,7 @@
           <div class="label">Dados da operação</div>
           <div class="field">
             <label for="reference">Referência</label>
-            <input id="reference" name="reference" placeholder="Ex.: PO-2026-0142" required />
+            <input id="reference" name="reference" placeholder="Ex.: PO-2026-0142" />
           </div>
           <div class="field">
             <label for="origin">Origem</label>
@@ -192,7 +283,7 @@
           </div>
 
           <div class="actions">
-            <button class="btn btn-primary" type="submit">Salvar e seguir para reconciliação</button>
+            <button class="btn btn-primary locked" id="submit-button" type="submit" disabled>Salvar e seguir para reconciliação</button>
             <a class="btn btn-secondary" href="/">Voltar à home</a>
           </div>
         </form>
@@ -202,17 +293,26 @@
           <div class="hint">Anexe o que já estiver disponível. A cobertura sobe conforme a base fica mais completa.</div>
 
           <div class="upload">
-            <strong>Invoice</strong>
+            <div class="upload-head">
+              <strong>Invoice</strong>
+              <span class="upload-chip" id="invoice-chip">Aguardando</span>
+            </div>
             <small>PDF, imagem ou planilha. O nome do arquivo fica registrado na sessão local.</small>
             <input id="invoice" type="file" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls" style="margin-top:10px;" />
           </div>
           <div class="upload">
-            <strong>Packing List</strong>
+            <div class="upload-head">
+              <strong>Packing List</strong>
+              <span class="upload-chip" id="packing-chip">Aguardando</span>
+            </div>
             <small>Documento separado ou integrado ao pacote da operação.</small>
             <input id="packing" type="file" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls" style="margin-top:10px;" />
           </div>
           <div class="upload">
-            <strong>Documento de transporte</strong>
+            <div class="upload-head">
+              <strong>Documento de transporte</strong>
+              <span class="upload-chip" id="transport-chip">Opcional</span>
+            </div>
             <small>BL, AWB ou CRT. O motor usa esse arquivo na reconciliação com a invoice.</small>
             <input id="transport" type="file" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls" style="margin-top:10px;" />
           </div>
@@ -225,7 +325,7 @@
       <div style="margin-top:18px; border:1px solid #eceef1; border-radius:22px; padding:22px; background:#fff;">
         <div class="label">Na próxima etapa a IA irá</div>
         <div style="margin-top:16px; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px;">
-          <div class="step"><div class="n">✓</div><h3>Ler documentos</h3><p>Invoice, BL, Packing List e ERP entram no mesmo contexto operacional.</p></div>
+          <div class="step"><div class="n">✓</div><h3>Ler documentos</h3><p>Invoice, Packing List, transporte e ERP entram no mesmo contexto operacional.</p></div>
           <div class="step"><div class="n">✓</div><h3>Cruzar informações</h3><p>Campos, valores e referências passam por validação cruzada.</p></div>
           <div class="step"><div class="n">✓</div><h3>Aplicar regras</h3><p>O sistema identifica alertas, inconsistências e sinais de atenção.</p></div>
           <div class="step"><div class="n">✓</div><h3>Preparar parecer</h3><p>A saída já vem pronta para a revisão humana e o próximo passo.</p></div>
@@ -234,9 +334,9 @@
 
       <div class="footer">
         <span>Sem números fabricados. A tela só registra a operação.</span>
-        <span><a href="/loading.html" id="start-reconciliation">Ver a reconciliação</a></span>
+        <span><a href="/loading.html" id="start-reconciliation" class="btn btn-secondary locked" aria-disabled="true" tabindex="-1">Ver a reconciliação</a></span>
       </div>
-      <div class="session-note" id="flow-warning" style="display:none; margin-top:14px; border-color:rgba(224,82,82,.24); background:rgba(224,82,82,.05); color:#9a3412;">Adicione ao menos uma referência ou um documento para iniciar a reconciliação.</div>
+      <div class="session-note" id="flow-warning" style="display:none; margin-top:14px; border-color:rgba(224,82,82,.24); background:rgba(224,82,82,.05); color:#9a3412;">Anexe Invoice e Packing List para liberar a reconciliação. A referência sozinha não destrava o fluxo.</div>
     </section>
   </div>
 
@@ -249,20 +349,36 @@
     const flowWarning = document.getElementById('flow-warning');
     const startReconciliation = document.getElementById('start-reconciliation');
     const form = document.getElementById('process-form');
+    const submitButton = document.getElementById('submit-button');
+    const gateTitle = document.getElementById('gate-title');
+    const gateScore = document.getElementById('gate-score');
+    const gateCopy = document.getElementById('gate-copy');
+    const gateFill = document.getElementById('gate-fill');
+    const pillInvoice = document.getElementById('pill-invoice');
+    const pillPacking = document.getElementById('pill-packing');
+    const pillTransport = document.getElementById('pill-transport');
+    const invoiceChip = document.getElementById('invoice-chip');
+    const packingChip = document.getElementById('packing-chip');
+    const transportChip = document.getElementById('transport-chip');
     const intake = JSON.parse(sessionStorage.getItem('daleship.intake') || 'null');
 
-    function hasMeaningfulInput(state) {
-      return Boolean(
-        state.reference ||
-        state.origin ||
-        state.destination ||
-        state.summary ||
-        Object.values(state.files).some(Boolean)
-      );
+    function getReadiness(state) {
+      const invoiceReady = Boolean(state.files.invoice);
+      const packingReady = Boolean(state.files.packing);
+      const transportReady = Boolean(state.files.transport);
+      const baseCoverage = (invoiceReady ? 40 : 0) + (packingReady ? 30 : 0);
+      const coverage = baseCoverage + (transportReady ? 30 : 0);
+      return {
+        invoiceReady,
+        packingReady,
+        transportReady,
+        coverage,
+        canProceed: invoiceReady && packingReady,
+      };
     }
 
     function buildProcessState() {
-      return {
+      const state = {
         reference: document.getElementById('reference').value.trim(),
         origin: document.getElementById('origin').value.trim(),
         destination: document.getElementById('destination').value.trim(),
@@ -276,17 +392,80 @@
         status: 'pronta_para_execucao',
         updatedAt: new Date().toISOString(),
       };
+      const readiness = getReadiness(state);
+      return {
+        ...state,
+        coverage: readiness.coverage,
+        ready: readiness.canProceed,
+      };
+    }
+
+    function renderGate(state) {
+      const readiness = getReadiness(state);
+      const { invoiceReady, packingReady, transportReady, coverage, canProceed } = readiness;
+      const locked = !canProceed;
+
+      gateScore.textContent = `${coverage}%`;
+      gateFill.style.width = `${coverage}%`;
+      gateFill.classList.toggle('ready', canProceed && coverage < 100);
+      gateFill.classList.toggle('max', coverage >= 100);
+      gateTitle.textContent = canProceed
+        ? (coverage >= 100 ? 'Base completa para reconciliação' : 'Cobertura mínima liberada')
+        : 'Aguardando Invoice e Packing List';
+      gateCopy.textContent = canProceed
+        ? (coverage >= 100
+          ? 'Invoice, Packing List e transporte já formam uma base robusta. Os botões seguem liberados e a reconciliação pode começar.'
+          : 'A base mínima está completa. A referência ajuda no contexto, mas os botões só liberam após Invoice e Packing List.')
+        : 'A referência ajuda no contexto, mas não libera a reconciliação. Anexe Invoice e Packing List para destravar os botões.';
+
+      pillInvoice.textContent = invoiceReady ? 'Invoice anexada' : 'Invoice pendente';
+      pillPacking.textContent = packingReady ? 'Packing anexado' : 'Packing pendente';
+      pillTransport.textContent = transportReady ? 'Transporte anexado' : 'Transporte opcional';
+      pillInvoice.classList.toggle('ready', invoiceReady);
+      pillInvoice.classList.toggle('watch', !invoiceReady);
+      pillPacking.classList.toggle('ready', packingReady);
+      pillPacking.classList.toggle('watch', !packingReady);
+      pillTransport.classList.toggle('ready', transportReady);
+      pillTransport.classList.toggle('watch', !transportReady);
+
+      invoiceChip.classList.toggle('ready', invoiceReady);
+      invoiceChip.classList.toggle('watch', !invoiceReady);
+      invoiceChip.textContent = invoiceReady ? 'Anexado' : 'Aguardando';
+      packingChip.classList.toggle('ready', packingReady);
+      packingChip.classList.toggle('watch', !packingReady);
+      packingChip.textContent = packingReady ? 'Anexado' : 'Aguardando';
+      transportChip.classList.toggle('ready', transportReady);
+      transportChip.classList.toggle('watch', !transportReady);
+      transportChip.textContent = transportReady ? 'Anexado' : 'Opcional';
+
+      submitButton.disabled = locked;
+      submitButton.classList.toggle('locked', locked);
+      submitButton.textContent = canProceed ? 'Salvar e seguir para reconciliação' : 'Anexe Invoice e Packing List';
+
+      startReconciliation.classList.toggle('locked', locked);
+      startReconciliation.setAttribute('aria-disabled', locked ? 'true' : 'false');
+      startReconciliation.setAttribute('tabindex', locked ? '-1' : '0');
+      flowWarning.style.display = locked ? 'block' : 'none';
+      flowWarning.style.borderColor = locked ? 'rgba(224,82,82,.24)' : 'rgba(22,163,74,.24)';
+      flowWarning.style.background = locked ? 'rgba(224,82,82,.05)' : 'rgba(22,163,74,.06)';
+      flowWarning.style.color = locked ? '#9a3412' : '#166534';
+      flowWarning.textContent = locked
+        ? 'Anexe Invoice e Packing List para liberar a reconciliação. A referência sozinha não destrava o fluxo.'
+        : (coverage >= 100
+          ? 'Cobertura completa. A reconciliação está pronta para avançar.'
+          : 'Cobertura mínima liberada. O fluxo pode seguir para a reconciliação.');
     }
 
     function requestExecution(event) {
       if (event) event.preventDefault();
       const state = buildProcessState();
-      if (!hasMeaningfulInput(state)) {
+      if (!state.ready) {
+        renderGate(state);
         flowWarning.style.display = 'block';
         return false;
       }
 
-      flowWarning.style.display = 'none';
+      renderGate(state);
       const request = {
         id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
         requestedAt: new Date().toISOString(),
@@ -314,6 +493,7 @@
           ? `Sessão anterior detectada no wizard: ${fromWizard.map(([, file]) => file).join(' · ')}.`
           : 'Sessão anterior detectada, mas sem anexos persistidos.';
       }
+      renderGate(buildProcessState());
     }
 
     [invoice, packing, transport].forEach((input) => input.addEventListener('change', renderFiles));

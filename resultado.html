@@ -220,6 +220,11 @@
       color:#374151;
       cursor:pointer;
     }
+    .review-actions button:disabled {
+      opacity:.45;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
     .review-actions button.primary-action {
       border:none;
       color:#fff;
@@ -463,7 +468,7 @@
           <div class="coverage-track" aria-label="Cobertura documental">
             <div class="coverage-fill" id="coverage-fill"></div>
           </div>
-          <div class="coverage-note" id="coverage-note">Invoice e Draft BL destravam a leitura inicial. Packing List e ERP elevam a precisão do parecer.</div>
+          <div class="coverage-note" id="coverage-note">Invoice e Packing List destravam a leitura inicial. Transporte e ERP elevam a precisão do parecer.</div>
         </div>
 
         <div class="doc-grid" id="doc-grid" aria-label="Documentos da auditoria"></div>
@@ -480,8 +485,8 @@
           <section class="card">
             <div class="label">Próxima ação</div>
             <div style="margin-top:12px; font-size:24px; font-weight:800; letter-spacing:-.03em;" id="next-title">Cobertura insuficiente</div>
-            <div style="margin-top:6px; color:#6b7280; line-height:1.6;" id="next-copy">Adicione mais evidência para liberar a auditoria.</div>
-            <button class="primary-cta locked" id="cta-button" type="button">Executar pré-análise</button>
+            <div style="margin-top:6px; color:#6b7280; line-height:1.6;" id="next-copy">Anexe Invoice e Packing List para liberar a auditoria.</div>
+            <button class="primary-cta locked" id="cta-button" type="button" style="display:none;">Executar pré-análise</button>
             <div style="margin-top:12px; color:#6b7280; font-size:13px; line-height:1.6;" id="cta-help">Cobertura mínima recomendada: 70%.</div>
           </section>
         </div>
@@ -504,7 +509,7 @@
               </div>
               <div style="margin-top:16px; padding:14px; border-radius:16px; background:#fff; border:1px solid #eceef1;">
                 <div class="label">Evidência principal</div>
-                <div style="margin-top:8px; color:#4b5563; line-height:1.65; font-size:13px;" id="review-evidence">Invoice, BL, Packing List e ERP são cruzados de acordo com a cobertura disponível.</div>
+                <div style="margin-top:8px; color:#4b5563; line-height:1.65; font-size:13px;" id="review-evidence">Invoice, Packing List, transporte e ERP são cruzados de acordo com a cobertura disponível.</div>
               </div>
             </div>
           </div>
@@ -544,52 +549,60 @@
     const reviewEvidence = document.getElementById('review-evidence');
     const auditLog = document.getElementById('audit-log');
 
-    const files = source?.files || {};
-    const fileCount = Object.values(files).filter(Boolean).length;
-    const coverage = Number(source?.coverage ?? (fileCount === 0 ? 0 : fileCount === 1 ? 30 : fileCount === 2 ? 70 : 100));
-    const ready = coverage >= 70;
+    const files = {
+      invoice: source?.files?.invoice || null,
+      packing: source?.files?.packing || null,
+      transport: source?.files?.transport || source?.files?.bl || null,
+      erp: source?.files?.erp || null,
+    };
+    const invoiceReady = Boolean(files.invoice);
+    const packingReady = Boolean(files.packing);
+    const transportReady = Boolean(files.transport);
+    const erpReady = Boolean(files.erp);
+    const coverage = (invoiceReady ? 40 : 0) + (packingReady ? 30 : 0) + (transportReady ? 20 : 0) + (erpReady ? 10 : 0);
+    const ready = invoiceReady && packingReady;
     const maxed = coverage >= 100;
 
     const documents = [
       {
         key: 'invoice',
         name: 'Invoice Comercial',
-        status: files.invoice ? 'Recebida' : 'Aguardando',
-        detail: files.invoice ? 'Descrição validada. Valores identificados. Itens estruturados.' : 'Base para descrição, valores e itens.',
+        status: invoiceReady ? 'Recebida' : 'Aguardando',
+        detail: invoiceReady ? 'Descrição validada. Valores identificados. Itens estruturados.' : 'Base para descrição, valores e itens.',
         impact: '+30% cobertura',
-        tone: files.invoice ? 'ready' : 'locked',
+        tone: invoiceReady ? 'ready' : 'locked',
       },
       {
-        key: 'bl',
+        key: 'transport',
         name: 'Draft Bill of Lading',
-        status: files.bl ? 'Recebido' : 'Aguardando',
-        detail: files.bl ? 'Modal identificado. Incoterm encontrado. Rota validada.' : 'Valida rota, modal e Incoterm.',
-        impact: '+25% cobertura',
-        tone: files.bl ? 'warn' : 'locked',
+        status: transportReady ? 'Recebido' : 'Aguardando',
+        detail: transportReady ? 'Modal identificado. Incoterm encontrado. Rota validada.' : 'Valida rota, modal e Incoterm.',
+        impact: '+20% cobertura',
+        tone: transportReady ? 'warn' : 'locked',
       },
       {
         key: 'packing',
         name: 'Packing List',
-        status: files.packing ? 'Recebida' : 'Opcional',
-        detail: files.packing ? 'Peso, volumes e cubagem mais precisos.' : 'Melhora precisão de peso, volumes e cubagem.',
-        impact: files.packing ? '+20% cobertura' : '+20% opcional',
-        tone: files.packing ? 'ready' : 'locked',
+        status: packingReady ? 'Recebida' : 'Obrigatória',
+        detail: packingReady ? 'Peso, volumes e cubagem mais precisos.' : 'Completa a base mínima para seguir.',
+        impact: packingReady ? '+30% cobertura' : '+30% opcional',
+        tone: packingReady ? 'ready' : 'locked',
       },
       {
         key: 'erp',
         name: 'ERP',
-        status: files.erp ? 'Recebido' : 'Opcional',
-        detail: files.erp ? 'Cadastro mestre, SKU, NCM e descrição atualizados.' : 'Melhora cadastro mestre, SKU, NCM e descrição.',
-        impact: files.erp ? '+25% cobertura' : '+25% opcional',
-        tone: files.erp ? 'ready' : 'locked',
+        status: erpReady ? 'Recebido' : 'Opcional',
+        detail: erpReady ? 'Cadastro mestre, SKU, NCM e descrição atualizados.' : 'Melhora cadastro mestre, SKU, NCM e descrição.',
+        impact: erpReady ? '+10% cobertura' : '+10% opcional',
+        tone: erpReady ? 'ready' : 'locked',
       },
     ];
 
     const modules = [
-      ['Fiscal', files.invoice ? 'Invoice' : 'Pendente', files.invoice ? 'ready' : ''],
-      ['Logística', files.bl ? 'Draft BL' : 'Pendente', files.bl ? 'ready' : ''],
-      ['Volumes', files.packing ? 'Packing' : 'Opcional', files.packing ? 'ready' : ''],
-      ['Cadastro', files.erp ? 'ERP' : 'Opcional', files.erp ? 'ready' : ''],
+      ['Fiscal', invoiceReady ? 'Invoice' : 'Pendente', invoiceReady ? 'ready' : ''],
+      ['Logística', transportReady ? 'Draft BL' : 'Pendente', transportReady ? 'ready' : ''],
+      ['Volumes', packingReady ? 'Packing' : 'Obrigatório', packingReady ? 'ready' : ''],
+      ['Cadastro', erpReady ? 'ERP' : 'Opcional', erpReady ? 'ready' : ''],
     ];
 
     const findings = [];
@@ -611,7 +624,7 @@
       });
     }
 
-    if (files.bl) {
+    if (files.transport) {
       findings.push({
         severity: 'ok',
         title: 'Draft BL disponível',
@@ -629,7 +642,7 @@
       });
     }
 
-    if (files.invoice && files.bl) {
+    if (files.invoice && files.transport) {
       findings.push({
         severity: 'watch',
         title: 'Cruzamento Invoice × BL',
@@ -639,7 +652,7 @@
       });
     }
 
-    if (files.packing) {
+    if (packingReady) {
       findings.push({
         severity: 'ok',
         title: 'Packing List reforça o dossiê',
@@ -703,7 +716,7 @@
       ? 'Cobertura máxima atingida. Todas as verificações e cruzamentos já podem ser exibidos.'
       : ready
         ? 'Cobertura mínima atingida. A auditoria já pode iniciar.'
-        : 'Invoice e Draft BL destravam a leitura inicial. Packing List e ERP elevam a precisão do parecer.';
+        : 'Invoice e Packing List destravam a leitura inicial. Transporte e ERP elevam a precisão do parecer.';
 
     docGrid.innerHTML = documents.map((doc) => `
       <article class="doc-card ${doc.tone}">
@@ -734,8 +747,9 @@
       ? 'Todas as verificações estarão disponíveis. A barra está no máximo e o cockpit está pronto para análise completa.'
       : ready
         ? 'Cobertura mínima atingida. O CTA premium fica liberado para executar a pré-análise.'
-        : 'Adicione mais evidência para liberar a auditoria.';
+        : 'Anexe Invoice e Packing List para liberar a auditoria.';
 
+    ctaButton.style.display = ready ? 'inline-flex' : 'none';
     ctaButton.textContent = ready ? 'Executar pré-análise' : 'Adicionar documentos';
     ctaButton.classList.toggle('locked', !ready);
     ctaButton.classList.toggle('max', maxed);
@@ -770,6 +784,11 @@
       ctaButton.disabled = false;
     }
 
+    document.querySelectorAll('.review-actions button').forEach((button) => {
+      button.disabled = !ready;
+      button.setAttribute('aria-disabled', ready ? 'false' : 'true');
+    });
+
     findingList.innerHTML = findings.map((item) => `
       <article class="finding-item ${item.severity}">
         <div class="finding-head">
@@ -790,21 +809,21 @@
       : 'A tela ainda depende de mais evidência para liberar a revisão assistida.';
     reviewEvidence.textContent = maxed
       ? 'Todas as verificações estão disponíveis. O dossiê entrou em modo completo.'
-      : 'Invoice, BL, Packing List e ERP são cruzados de acordo com a cobertura disponível.';
+      : 'Invoice, Packing List, transporte e ERP são cruzados de acordo com a cobertura disponível.';
 
     const auditEntries = [
       {
-        tone: files.invoice ? 'ok' : 'watch',
+        tone: invoiceReady ? 'ok' : 'watch',
         title: 'Entrada recebida',
-        detail: files.invoice
+        detail: invoiceReady
           ? 'Invoice persistida e disponível para cruzamento.'
           : 'Aguarda Invoice para iniciar a leitura completa.',
       },
       {
-        tone: files.invoice && files.bl ? 'ok' : 'watch',
+        tone: invoiceReady && transportReady ? 'ok' : 'watch',
         title: 'Cruzamento documental',
-        detail: files.invoice && files.bl
-          ? 'Invoice e BL já podem ser comparados.'
+        detail: invoiceReady && transportReady
+          ? 'Invoice e transporte já podem ser comparados.'
           : 'Base mínima ainda em montagem.',
       },
       {
