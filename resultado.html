@@ -134,6 +134,136 @@
     .doc-meta { margin-top:12px; color:#4b5563; font-size:13px; line-height:1.55; }
     .doc-impact { margin-top:14px; font-size:12px; font-weight:700; color:#2563EB; }
     .doc-impact.max { color:#16A34A; }
+    .findings-shell {
+      margin-top:18px;
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:18px;
+    }
+    .finding-list {
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin-top:14px;
+    }
+    .finding-item {
+      border:1px solid #eceef1;
+      border-radius:18px;
+      padding:16px 18px;
+      background:#fff;
+      box-shadow:0 10px 24px rgba(17,24,39,.03);
+    }
+    .finding-item.critical { border-color:rgba(224,82,82,.20); background:rgba(224,82,82,.03); }
+    .finding-item.watch { border-color:rgba(249,115,22,.20); background:rgba(249,115,22,.03); }
+    .finding-item.ok { border-color:rgba(22,163,74,.18); background:rgba(22,163,74,.03); }
+    .finding-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+    .finding-title { font-size:16px; font-weight:800; letter-spacing:-.02em; color:#111827; }
+    .finding-severity {
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      border-radius:999px;
+      padding:5px 8px;
+      border:1px solid #eceef1;
+      background:#fff;
+      color:#6b7280;
+    }
+    .finding-item.critical .finding-severity { color:#9f1239; border-color:rgba(224,82,82,.25); background:rgba(224,82,82,.08); }
+    .finding-item.watch .finding-severity { color:#9a3412; border-color:rgba(249,115,22,.25); background:rgba(249,115,22,.08); }
+    .finding-item.ok .finding-severity { color:#166534; border-color:rgba(22,163,74,.25); background:rgba(22,163,74,.08); }
+    .finding-copy { margin-top:10px; color:#4b5563; line-height:1.65; font-size:13px; }
+    .finding-grid { margin-top:12px; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
+    .finding-box {
+      border:1px solid #eceef1;
+      border-radius:14px;
+      padding:12px;
+      background:#fff;
+      font-size:13px;
+      line-height:1.55;
+      color:#374151;
+    }
+    .finding-box strong { display:block; font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:#6b7280; margin-bottom:6px; }
+    .review-panel {
+      border:1px solid #eceef1;
+      border-radius:22px;
+      padding:18px;
+      background:#fafbfc;
+      box-shadow:0 10px 24px rgba(17,24,39,.03);
+      height:100%;
+    }
+    .review-panel .review-state {
+      margin-top:10px;
+      font-size:24px;
+      font-weight:800;
+      letter-spacing:-.03em;
+      color:#111827;
+    }
+    .review-panel .review-copy {
+      margin-top:8px;
+      color:#4b5563;
+      line-height:1.6;
+    }
+    .review-actions {
+      margin-top:16px;
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:10px;
+    }
+    .review-actions button {
+      border:1px solid #e5e7eb;
+      border-radius:14px;
+      padding:12px 14px;
+      background:#fff;
+      font:inherit;
+      font-weight:700;
+      color:#374151;
+      cursor:pointer;
+    }
+    .review-actions button.primary-action {
+      border:none;
+      color:#fff;
+      background:linear-gradient(90deg,#2563EB,#6D28D9);
+      box-shadow:0 12px 28px rgba(37,99,235,.20);
+    }
+    .review-actions button.warn-action {
+      border-color:rgba(249,115,22,.22);
+      color:#9a3412;
+      background:rgba(249,115,22,.04);
+    }
+    .review-actions button.ghost-action {
+      background:#fff;
+      border-style:dashed;
+    }
+    .audit-log {
+      margin-top:14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .audit-event {
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      border:1px solid #eceef1;
+      border-radius:14px;
+      background:#fff;
+      padding:12px 14px;
+    }
+    .audit-dot {
+      width:10px;
+      height:10px;
+      margin-top:5px;
+      border-radius:50%;
+      background:#2563EB;
+      flex:0 0 auto;
+      box-shadow:0 0 0 5px rgba(37,99,235,.10);
+    }
+    .audit-event.watch .audit-dot { background:#f97316; box-shadow:0 0 0 5px rgba(249,115,22,.10); }
+    .audit-event.ok .audit-dot { background:#16A34A; box-shadow:0 0 0 5px rgba(22,163,74,.10); }
+    .audit-event .k { font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:#6b7280; }
+    .audit-event .t { margin-top:4px; font-size:13px; font-weight:700; color:#111827; }
+    .audit-event .v { margin-top:4px; font-size:12px; line-height:1.55; color:#4b5563; }
     .unlock-panel {
       margin-top:24px;
       border:1px solid #eceef1;
@@ -356,6 +486,35 @@
           </section>
         </div>
 
+        <section class="card" style="margin-top:18px;">
+          <div class="label">Achados e revisão humana</div>
+          <div class="findings-shell">
+            <div>
+              <div class="finding-list" id="finding-list"></div>
+            </div>
+            <div class="review-panel">
+              <div class="label">Parecer do cockpit</div>
+              <div class="review-state" id="review-state">Pronto para revisão</div>
+              <div class="review-copy" id="review-copy">A tela consolida cobertura, achados e evidência para o humano decidir o próximo passo.</div>
+              <div class="review-actions">
+                <button class="primary-action" type="button">Aceitar</button>
+                <button class="warn-action" type="button">Corrigir</button>
+                <button class="ghost-action" type="button">Escalar</button>
+                <button class="ghost-action" type="button">Travar avanço</button>
+              </div>
+              <div style="margin-top:16px; padding:14px; border-radius:16px; background:#fff; border:1px solid #eceef1;">
+                <div class="label">Evidência principal</div>
+                <div style="margin-top:8px; color:#4b5563; line-height:1.65; font-size:13px;" id="review-evidence">Invoice, BL, Packing List e ERP são cruzados de acordo com a cobertura disponível.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" style="margin-top:18px;">
+          <div class="label">Linha do tempo da execução</div>
+          <div class="audit-log" id="audit-log"></div>
+        </section>
+
         <div class="foot">
           <span><a href="/">Voltar à home</a></span>
           <span><a href="/loading.html">Ver etapa anterior</a></span>
@@ -380,6 +539,11 @@
     const nextCopy = document.getElementById('next-copy');
     const ctaButton = document.getElementById('cta-button');
     const ctaHelp = document.getElementById('cta-help');
+    const findingList = document.getElementById('finding-list');
+    const reviewState = document.getElementById('review-state');
+    const reviewCopy = document.getElementById('review-copy');
+    const reviewEvidence = document.getElementById('review-evidence');
+    const auditLog = document.getElementById('audit-log');
 
     const files = source?.files || {};
     const fileCount = Object.values(files).filter(Boolean).length;
@@ -428,6 +592,99 @@
       ['Volumes', files.packing ? 'Packing' : 'Opcional', files.packing ? 'ready' : ''],
       ['Cadastro', files.erp ? 'ERP' : 'Opcional', files.erp ? 'ready' : ''],
     ];
+
+    const findings = [];
+    if (files.invoice) {
+      findings.push({
+        severity: 'ok',
+        title: 'Invoice recebida',
+        copy: 'Descrição, itens e valores já entram como base confiável para o cruzamento.',
+        evidence: 'Item Invoice Comercial capturado na sessão.',
+        action: 'Cruzamento documental liberado.',
+      });
+    } else {
+      findings.push({
+        severity: 'critical',
+        title: 'Invoice ausente',
+        copy: 'Sem invoice não há base suficiente para validar descrição, valores e itens.',
+        evidence: 'Cobertura bloqueada na etapa de entrada.',
+        action: 'Solicitar o arquivo antes de seguir.',
+      });
+    }
+
+    if (files.bl) {
+      findings.push({
+        severity: 'ok',
+        title: 'Draft BL disponível',
+        copy: 'Rota, modal e Incoterm podem ser cruzados com a operação.',
+        evidence: 'Bill of Lading capturado e pronto para leitura.',
+        action: 'Validar frete e responsabilidade contratual.',
+      });
+    } else {
+      findings.push({
+        severity: 'critical',
+        title: 'Draft BL pendente',
+        copy: 'A auditoria fica incompleta sem rota, modal e Incoterm.',
+        evidence: 'Documento de transporte ainda não persistido.',
+        action: 'Aguardar ou reenviar o BL.',
+      });
+    }
+
+    if (files.invoice && files.bl) {
+      findings.push({
+        severity: 'watch',
+        title: 'Cruzamento Invoice × BL',
+        copy: 'A auditoria já consegue comparar dados críticos entre fiscal e logística.',
+        evidence: 'Base documental mínima atingida.',
+        action: 'Revisar divergências antes da liberação.',
+      });
+    }
+
+    if (files.packing) {
+      findings.push({
+        severity: 'ok',
+        title: 'Packing List reforça o dossiê',
+        copy: 'Peso, volumes e cubagem ficam mais precisos.',
+        evidence: 'Packing List anexado à sessão.',
+        action: 'Menor risco de inconsistência operacional.',
+      });
+    } else {
+      findings.push({
+        severity: 'watch',
+        title: 'Packing List opcional não enviado',
+        copy: 'A cobertura existe, mas a precisão de volumes ainda pode melhorar.',
+        evidence: 'Sem Packing List na sessão.',
+        action: 'Enviar quando houver volume relevante.',
+      });
+    }
+
+    if (files.erp) {
+      findings.push({
+        severity: 'ok',
+        title: 'ERP/Cadastro mestre reforçado',
+        copy: 'SKU, NCM e descrição ficam mais consistentes.',
+        evidence: 'Cadastro mestre persistido.',
+        action: 'Aumenta a confiança do parecer.',
+      });
+    } else {
+      findings.push({
+        severity: 'watch',
+        title: 'ERP não anexado',
+        copy: 'O cockpit segue operando, mas sem a camada mestre para reforçar o cadastro.',
+        evidence: 'Sem arquivo ERP na sessão.',
+        action: 'Opcional, mas melhora a precisão.',
+      });
+    }
+
+    if (maxed) {
+      findings.push({
+        severity: 'ok',
+        title: 'Cobertura máxima',
+        copy: 'Todas as verificações estão disponíveis e o dossiê já está pronto para análise completa.',
+        evidence: 'Cobertura 100% detectada.',
+        action: 'Executar parecer final.',
+      });
+    }
 
     coverageValue.textContent = `${coverage}%`;
     coverageLabel.textContent = maxed
@@ -499,6 +756,63 @@
       ctaButton.removeAttribute('aria-disabled');
       ctaButton.disabled = false;
     }
+
+    findingList.innerHTML = findings.map((item) => `
+      <article class="finding-item ${item.severity}">
+        <div class="finding-head">
+          <div class="finding-title">${item.title}</div>
+          <div class="finding-severity">${item.severity === 'critical' ? 'crítico' : item.severity === 'watch' ? 'atenção' : 'ok'}</div>
+        </div>
+        <div class="finding-copy">${item.copy}</div>
+        <div class="finding-grid">
+          <div class="finding-box"><strong>Evidência</strong>${item.evidence}</div>
+          <div class="finding-box"><strong>Ação recomendada</strong>${item.action}</div>
+        </div>
+      </article>
+    `).join('');
+
+    reviewState.textContent = ready ? (maxed ? 'Cobertura máxima' : 'Pronto para revisão') : 'Cobertura insuficiente';
+    reviewCopy.textContent = ready
+      ? 'O humano pode aceitar, corrigir ou escalar os achados sem perder o contexto da operação.'
+      : 'A tela ainda depende de mais evidência para liberar a revisão assistida.';
+    reviewEvidence.textContent = maxed
+      ? 'Todas as verificações estão disponíveis. O dossiê entrou em modo completo.'
+      : 'Invoice, BL, Packing List e ERP são cruzados de acordo com a cobertura disponível.';
+
+    const auditEntries = [
+      {
+        tone: files.invoice ? 'ok' : 'watch',
+        title: 'Entrada recebida',
+        detail: files.invoice
+          ? 'Invoice persistida e disponível para cruzamento.'
+          : 'Aguarda Invoice para iniciar a leitura completa.',
+      },
+      {
+        tone: files.invoice && files.bl ? 'ok' : 'watch',
+        title: 'Cruzamento documental',
+        detail: files.invoice && files.bl
+          ? 'Invoice e BL já podem ser comparados.'
+          : 'Base mínima ainda em montagem.',
+      },
+      {
+        tone: ready ? 'ok' : 'watch',
+        title: 'Liberação do cockpit',
+        detail: ready
+          ? 'Cobertura mínima atingida para executar a pré-análise.'
+          : 'Falta evidência para liberar o parecer.',
+      },
+    ];
+
+    auditLog.innerHTML = auditEntries.map((entry) => `
+      <article class="audit-event ${entry.tone}">
+        <div class="audit-dot"></div>
+        <div>
+          <div class="k">Executando</div>
+          <div class="t">${entry.title}</div>
+          <div class="v">${entry.detail}</div>
+        </div>
+      </article>
+    `).join('');
   </script>
 </body>
 </html>
