@@ -27,6 +27,18 @@
 
 **Princípio 4 — progressive disclosure para o dossiê completo.** Um dossiê tem muitos campos; a tela inicial deve mostrar só os apontamentos (o que precisa de atenção), não o dossiê inteiro de uma vez — reduz carga cognitiva do analista.
 
+**Leitura prática do cockpit público:** a experiência precisa evoluir de "subir documento" para "ver base mínima, entender cobertura e tomar decisão". O que ficou documentado como regra de produto:
+1. Invoice e Packing List liberam a jornada.
+2. O quarto documento é opcional e aumenta precisão.
+3. Loading precisa parecer processamento, não espera passiva.
+4. Resultado precisa encerrar a rodada atual.
+5. Achado sem evidência não existe na interface.
+6. Critérios avaliados precisam estar visíveis por eixo.
+7. A próxima ação precisa ser clara.
+8. O backend só aparece como número quando há lastro real.
+9. Dossiês grandes precisam ser resumidos sem perder rastreabilidade.
+10. Qualquer nova análise começa por nova submissão, não por loop automático.
+
 ## 3. Visão de Negócio — onde o produto gera valor real
 
 | Fonte de valor | Como o produto entrega | Como isso vira receita |

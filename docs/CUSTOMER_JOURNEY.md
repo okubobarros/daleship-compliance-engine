@@ -57,6 +57,30 @@ Para a jornada pública do Comex, a navegação precisa respeitar estas regras:
 3. `resultado.html` é o estado final da execução atual; ele precisa exibir leitura executiva, critérios avaliados, achados por severidade e ação recomendada. Não deve existir botão de reexecução que reabra `loading.html` dentro da mesma rodada.
 4. Não existe loop automático `loading -> resultado -> loading` sem uma nova submissão, correção ou reexecução explícita do usuário.
 
+## Evolução UX do cockpit e do relatório
+
+Esta seção consolida a evolução de tela e fluxo que o produto público precisa manter. A lógica não é "mostrar que a IA pensou", e sim "mostrar que o usuário já tem base suficiente para agir com segurança".
+
+| # | Ponto de evolução | Status | O que já foi aplicado |
+|---|---|---|---|
+| 1 | Trava de entrada com base documental mínima | Aplicado | A reconciliação pública só libera com Invoice + Packing List. Referência isolada não basta. |
+| 2 | Quarto documento opcional para reforço analítico | Aplicado parcial | O slot de ERP / documento extra existe como reforço de cobertura e precisão. |
+| 3 | Fim do fallback passivo com mock | Aplicado | `loading.html` não deve fingir execução sem submissão real. |
+| 4 | Loading dinâmico e orientado a progresso | Aplicado parcial | A tela de loading passa a mostrar etapa, mensagem e avanço do processamento. |
+| 5 | Resultado como relatório terminal | Aplicado | `resultado.html` não reabre o loop de execução dentro da mesma rodada. |
+| 6 | Leitura executiva primeiro | Aplicado | O topo do resultado resume cobertura, criticidade e conclusão para decisão rápida. |
+| 7 | Critérios avaliados por eixo | Aplicado | O relatório organiza a análise em critérios claros, com severidade, evidência e ação recomendada. |
+| 8 | Evidência visível por achado | Aplicado | Cada achado mostra a base que o sustentou, sem esconder a origem da leitura. |
+| 9 | Proveniência do backend e do dossiê | Aplicado parcial | `resultado.html` pode consumir resumo real do backend quando há `dossie_id`; sem isso, não inventa número. |
+| 10 | Escala para dossiês grandes e leitura agregada | Em evolução | A UX precisa agrupar itens e destacar exceções críticas para casos com milhares de linhas sem perder rastreabilidade. |
+
+### Regra prática da experiência
+
+- Se faltar documento obrigatório, o sistema bloqueia a próxima ação.
+- Se houver base mínima, a interface mostra progresso, cobertura e próximos passos.
+- Se o relatório final já foi gerado, a experiência termina ali e qualquer nova análise começa por nova submissão.
+- Se houver documento opcional, ele melhora a confiança e a cobertura, mas não substitui a base obrigatória.
+
 ---
 
 ## Job to be Done — tabela consolidada

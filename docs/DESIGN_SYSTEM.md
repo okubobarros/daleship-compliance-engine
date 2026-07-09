@@ -49,6 +49,15 @@ Os 7 layouts ainda mostram mais de uma possibilidade de produto, mas a decisão 
 
 O corte é intencional: a primeira entrega precisa parecer um produto único, não um portfólio de features.
 
+## 3.1. Evolução visual e semântica do fluxo público
+
+Os mockups já sugeriam uma experiência mais ativa do que uma fila estática. Na versão evoluída do app, isso precisa aparecer assim:
+- `simulacao.html` só libera avanço quando a base documental mínima está pronta.
+- O quarto card documental é opcional e deve aparecer como reforço de cobertura, não como requisito.
+- `loading.html` não é um spinner decorativo; é uma etapa de processamento com progresso e mensagens de estado.
+- `resultado.html` é relatório terminal, com leitura executiva, critérios avaliados e evidências visíveis.
+- O CTA de reexecução não pertence ao resultado final da mesma rodada; nova análise começa em nova submissão.
+
 ## 4. Conceitos novos que os layouts introduzem
 Estado do motor (frente 1 — construída em 07/07/2026):
 - ✅ **Verificação Invoice × BL (Incoterm + frete)** — a jornada principal (§3) que a landing anuncia.

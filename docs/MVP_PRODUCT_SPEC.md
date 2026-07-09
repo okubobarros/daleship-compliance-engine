@@ -98,6 +98,24 @@ CTI pode permanecer como módulo interno/extra, mas não deve disputar a home, a
 - A navegação pública não deve usar mock como fallback nem repetir o mesmo ciclo sem uma nova submissão ou reexecução explícita.
 - A reconciliação pública só fica liberada quando Invoice e Packing List foram anexados; referência isolada não é suficiente para seguir.
 - A tela de resultado precisa se comportar como relatório final: cobertura, criticidade, critérios avaliados, achados e próxima ação. Sem CTA de reexecução na mesma rodada.
+- O quarto documento é opcional e existe para elevar a precisão, não para bloquear a jornada quando ausente.
+
+## 8.1. Evolução UX aplicada no produto público
+
+Este bloco registra a leitura prática do que já foi aplicado no app e o que ainda precisa evoluir.
+
+| # | Evolução | Situação |
+|---|---|---|
+| 1 | Trava por Invoice + Packing List | Aplicada |
+| 2 | Documento opcional de reforço (ERP / extra) | Parcial |
+| 3 | Loading sem mock passivo | Aplicada |
+| 4 | Loading com progresso e mensagens | Parcial |
+| 5 | Resultado terminal sem loop de reexecução | Aplicada |
+| 6 | Leitura executiva no topo do relatório | Aplicada |
+| 7 | Critérios avaliados com evidência e severidade | Aplicada |
+| 8 | Próxima ação clara para o usuário | Aplicada |
+| 9 | Proveniência real do backend quando houver `dossie_id` | Parcial |
+| 10 | Escala para dossiers grandes com agrupamento e priorização | Em evolução |
 
 ## 9. O que fica para depois
 
