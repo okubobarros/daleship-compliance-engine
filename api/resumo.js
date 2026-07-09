@@ -33,6 +33,7 @@ function buscarResumo(apiBase, dossieId, token) {
 }
 
 module.exports = async (req, res) => {
+  console.log("api/resumo iniciado");
   // Handler inteiro blindado: NENHUMA exceção deve escapar como 500 sem corpo JSON —
   // sempre uma resposta explicável (fail-closed, nunca silencioso).
   try {
