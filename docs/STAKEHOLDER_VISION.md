@@ -29,7 +29,7 @@
 
 **Leitura prática do cockpit público:** a experiência precisa evoluir de "subir documento" para "ver base mínima, entender cobertura e tomar decisão". O que ficou documentado como regra de produto:
 1. Invoice e Packing List liberam a jornada.
-2. O quarto documento é opcional e aumenta precisão.
+2. O quarto documento é opcional e aumenta precisão. Ex.: ERP / cadastro mestre.
 3. Loading precisa parecer processamento, não espera passiva.
 4. Resultado precisa encerrar a rodada atual.
 5. Achado sem evidência não existe na interface.

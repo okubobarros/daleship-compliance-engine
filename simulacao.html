@@ -316,6 +316,14 @@
             <small>BL, AWB ou CRT. O motor usa esse arquivo na reconciliação com a invoice.</small>
             <input id="transport" type="file" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls" style="margin-top:10px;" />
           </div>
+          <div class="upload">
+            <div class="upload-head">
+              <strong>ERP / cadastro mestre</strong>
+              <span class="upload-chip" id="erp-chip">Opcional</span>
+            </div>
+            <small>SKU, NCM, descrição ou exportação do ERP para reforçar o cruzamento e a precisão.</small>
+            <input id="erp" type="file" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.csv,.xml" style="margin-top:10px;" />
+          </div>
 
           <div class="doc-list" id="selected-files" aria-live="polite"></div>
           <div class="session-note" id="session-note">Nenhuma sessão anterior detectada. Você pode iniciar do zero ou continuar a partir do fluxo da homepage.</div>
@@ -344,6 +352,7 @@
     const invoice = document.getElementById('invoice');
     const packing = document.getElementById('packing');
     const transport = document.getElementById('transport');
+    const erp = document.getElementById('erp');
     const selected = document.getElementById('selected-files');
     const sessionNote = document.getElementById('session-note');
     const flowWarning = document.getElementById('flow-warning');
@@ -360,18 +369,21 @@
     const invoiceChip = document.getElementById('invoice-chip');
     const packingChip = document.getElementById('packing-chip');
     const transportChip = document.getElementById('transport-chip');
+    const erpChip = document.getElementById('erp-chip');
     const intake = JSON.parse(sessionStorage.getItem('daleship.intake') || 'null');
 
     function getReadiness(state) {
       const invoiceReady = Boolean(state.files.invoice);
       const packingReady = Boolean(state.files.packing);
       const transportReady = Boolean(state.files.transport);
+      const erpReady = Boolean(state.files.erp);
       const baseCoverage = (invoiceReady ? 40 : 0) + (packingReady ? 30 : 0);
-      const coverage = baseCoverage + (transportReady ? 30 : 0);
+      const coverage = baseCoverage + (transportReady ? 20 : 0) + (erpReady ? 10 : 0);
       return {
         invoiceReady,
         packingReady,
         transportReady,
+        erpReady,
         coverage,
         canProceed: invoiceReady && packingReady,
       };
@@ -387,6 +399,7 @@
           invoice: invoice.files[0]?.name || null,
           packing: packing.files[0]?.name || null,
           transport: transport.files[0]?.name || null,
+          erp: erp.files[0]?.name || null,
         },
         stage: 'preparacao',
         status: 'pronta_para_execucao',
@@ -402,7 +415,7 @@
 
     function renderGate(state) {
       const readiness = getReadiness(state);
-      const { invoiceReady, packingReady, transportReady, coverage, canProceed } = readiness;
+      const { invoiceReady, packingReady, transportReady, erpReady, coverage, canProceed } = readiness;
       const locked = !canProceed;
 
       gateScore.textContent = `${coverage}%`;
@@ -427,6 +440,9 @@
       pillPacking.classList.toggle('watch', !packingReady);
       pillTransport.classList.toggle('ready', transportReady);
       pillTransport.classList.toggle('watch', !transportReady);
+      erpChip.classList.toggle('ready', erpReady);
+      erpChip.classList.toggle('watch', !erpReady);
+      erpChip.textContent = erpReady ? 'Anexado' : 'Opcional';
 
       invoiceChip.classList.toggle('ready', invoiceReady);
       invoiceChip.classList.toggle('watch', !invoiceReady);
@@ -482,6 +498,7 @@
         ['Invoice', invoice.files[0]],
         ['Packing List', packing.files[0]],
         ['Transporte', transport.files[0]],
+        ['ERP', erp.files[0]],
       ].filter(([, file]) => file);
 
       selected.innerHTML = files.length
@@ -496,7 +513,7 @@
       renderGate(buildProcessState());
     }
 
-    [invoice, packing, transport].forEach((input) => input.addEventListener('change', renderFiles));
+    [invoice, packing, transport, erp].forEach((input) => input.addEventListener('change', renderFiles));
     renderFiles();
 
     form.addEventListener('submit', (event) => {

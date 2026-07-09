@@ -210,12 +210,12 @@
 
       <div class="footer">
         <span>Sem números inventados. Esta etapa existe para manter o contexto da operação.</span>
-        <span><a href="/resultado.html">Abrir resultado</a></span>
+        <span><a href="/simulacao.html">Voltar à simulação</a></span>
       </div>
 
       <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
-        <a class="btn primary" href="/resultado.html">Ir para governança</a>
         <a class="btn secondary" href="/simulacao.html">Voltar à operação</a>
+        <span style="display:inline-flex; align-items:center; color:#6b7280; font-size:13px; padding:12px 4px;">O resultado abre automaticamente quando a execução termina.</span>
       </div>
     </section>
   </div>
@@ -235,6 +235,7 @@
     let current = 0;
     const hasRequest = Boolean(executionRequest);
     const ready = Boolean(source?.files?.invoice && source?.files?.packing);
+    const erpReady = Boolean(source?.files?.erp);
     const feedEntries = [];
 
     function appendFeed(kind, title, detail) {
@@ -266,6 +267,7 @@
             ['Invoice', source.files?.invoice || source.files?.bl || 'não anexada'],
             ['Packing List', source.files?.packing || 'não anexada'],
             ['Transporte', source.files?.transport || source.files?.bl || 'não anexado'],
+            ['ERP', source.files?.erp || 'não anexado'],
           ].map(([label, value]) => `<div><strong>${label}</strong><br><span style="color:#6b7280;">${value}</span></div>`).join('')
         : '<div><strong>Sem operação ativa</strong><br><span style="color:#6b7280;">Volte para a simulação e envie os documentos antes de iniciar.</span></div>';
       sessionSource.textContent = source
@@ -298,6 +300,7 @@
         ['Invoice', source.files?.invoice || source.files?.bl || 'não anexada'],
         ['Packing List', source.files?.packing || 'não anexada'],
         ['Transporte', source.files?.transport || source.files?.bl || 'não anexado'],
+        ['ERP', source.files?.erp || 'não anexado'],
       ].map(([label, value]) => `<div><strong>${label}</strong><br><span style="color:#6b7280;">${value}</span></div>`).join('');
       sessionSource.textContent = source.files
         ? `Sessão ativa carregada com ${Object.values(source.files).filter(Boolean).length} documentos persistidos.`
@@ -309,6 +312,9 @@
       appendFeed(source.files?.packing ? 'ok' : 'watch', 'Base documental', source.files?.packing
         ? 'Packing List confirmado como suporte de volumes.'
         : 'Packing List ausente; a cobertura mínima não fecha.');
+      appendFeed(erpReady ? 'ok' : 'watch', 'ERP opcional', erpReady
+        ? 'Cadastro mestre disponível para reforçar o cruzamento.'
+        : 'ERP ausente; a leitura segue com a base obrigatória.');
       appendFeed(ready ? 'ok' : 'watch', 'Cruzamento documental', ready
         ? 'A base mínima está pronta para avançar para o cockpit.'
         : 'O cruzamento não pode avançar sem Invoice e Packing List.');

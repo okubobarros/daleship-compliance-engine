@@ -98,7 +98,7 @@ CTI pode permanecer como módulo interno/extra, mas não deve disputar a home, a
 - A navegação pública não deve usar mock como fallback nem repetir o mesmo ciclo sem uma nova submissão ou reexecução explícita.
 - A reconciliação pública só fica liberada quando Invoice e Packing List foram anexados; referência isolada não é suficiente para seguir.
 - A tela de resultado precisa se comportar como relatório final: cobertura, criticidade, critérios avaliados, achados e próxima ação. Sem CTA de reexecução na mesma rodada.
-- O quarto documento é opcional e existe para elevar a precisão, não para bloquear a jornada quando ausente.
+- O quarto documento é opcional e existe para elevar a precisão, não para bloquear a jornada quando ausente. Ex.: ERP / cadastro mestre.
 
 ## 8.1. Evolução UX aplicada no produto público
 

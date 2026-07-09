@@ -53,7 +53,7 @@ O corte é intencional: a primeira entrega precisa parecer um produto único, n�
 
 Os mockups já sugeriam uma experiência mais ativa do que uma fila estática. Na versão evoluída do app, isso precisa aparecer assim:
 - `simulacao.html` só libera avanço quando a base documental mínima está pronta.
-- O quarto card documental é opcional e deve aparecer como reforço de cobertura, não como requisito.
+- O quarto card documental é opcional e deve aparecer como reforço de cobertura, não como requisito. Ex.: ERP / cadastro mestre.
 - `loading.html` não é um spinner decorativo; é uma etapa de processamento com progresso e mensagens de estado.
 - `resultado.html` é relatório terminal, com leitura executiva, critérios avaliados e evidências visíveis.
 - O CTA de reexecução não pertence ao resultado final da mesma rodada; nova análise começa em nova submissão.

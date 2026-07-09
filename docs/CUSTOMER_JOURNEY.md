@@ -64,7 +64,7 @@ Esta seção consolida a evolução de tela e fluxo que o produto público preci
 | # | Ponto de evolução | Status | O que já foi aplicado |
 |---|---|---|---|
 | 1 | Trava de entrada com base documental mínima | Aplicado | A reconciliação pública só libera com Invoice + Packing List. Referência isolada não basta. |
-| 2 | Quarto documento opcional para reforço analítico | Aplicado parcial | O slot de ERP / documento extra existe como reforço de cobertura e precisão. |
+| 2 | Quarto documento opcional para reforço analítico | Aplicado parcial | O slot de ERP / cadastro mestre existe como reforço de cobertura e precisão. |
 | 3 | Fim do fallback passivo com mock | Aplicado | `loading.html` não deve fingir execução sem submissão real. |
 | 4 | Loading dinâmico e orientado a progresso | Aplicado parcial | A tela de loading passa a mostrar etapa, mensagem e avanço do processamento. |
 | 5 | Resultado como relatório terminal | Aplicado | `resultado.html` não reabre o loop de execução dentro da mesma rodada. |
