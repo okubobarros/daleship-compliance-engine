@@ -295,7 +295,44 @@
       return `${ncm.total || 0} item(ns)`;
     }
 
-    function renderKpiGrid(resumo) {
+    function buildPreviewResumo(source) {
+      const files = source?.files || {};
+      const fileCount = Object.values(files).filter(Boolean).length;
+      const hasTransport = Boolean(files.transport || files.bl);
+      const coverage = Number(source?.coverage ?? (fileCount === 0 ? 0 : fileCount === 1 ? 40 : fileCount === 2 ? 70 : fileCount === 3 ? 85 : 100));
+      const scoreIndice = hasTransport ? (fileCount >= 3 ? 0 : 18) : 45;
+      const scoreRotulo = scoreIndice >= 70 ? 'Alto' : scoreIndice >= 40 ? 'Médio' : 'Baixo';
+      const scoreCor = scoreIndice >= 70 ? '#E05252' : scoreIndice >= 40 ? '#F97316' : '#16A34A';
+      const pendencias = hasTransport ? 0 : 1;
+
+      return {
+        versao_api: 'preview-local',
+        gerado_em: new Date().toISOString(),
+        tempo_processamento_ms: 0,
+        dossie_id: null,
+        referencia: source?.reference || 'Operação local',
+        estado: pendencias ? 'concluido_com_excecoes' : 'concluido',
+        indice_confianca: coverage,
+        score_risco: {
+          indice: scoreIndice,
+          rotulo: scoreRotulo,
+          cor: scoreCor,
+          contagem: { critico: 0, atencao: pendencias, info: 0 },
+          total: pendencias,
+        },
+        excecoes: {
+          ncm_confianca_baixa: 0,
+          coerencia_nao_avaliada: pendencias,
+          apontamentos_criticos: 0,
+        },
+        mensagem: hasTransport
+          ? 'Prévia local pronta para conferência. A consolidação real aparece quando o dossiê backend estiver disponível.'
+          : 'Prévia local com documento de transporte ausente. A consolidação real ainda não foi acionada.',
+        ncm: { alta: 0, baixa: 0, total: fileCount },
+      };
+    }
+
+    function renderKpiGrid(resumo, previewMode = false) {
       const score = resumo.score_risco || {};
       const exc = resumo.excecoes || {};
       const ncm = resumo.ncm || {};
@@ -348,6 +385,7 @@
       `).join('');
       resumoCard.style.display = 'block';
       const audit = [
+        previewMode ? 'Prévia local da sessão' : null,
         resumo.versao_api ? `API ${resumo.versao_api}` : null,
         resumo.gerado_em ? `gerado em ${new Date(resumo.gerado_em).toLocaleString('pt-BR')}` : null,
         resumo.tempo_processamento_ms != null ? `${resumo.tempo_processamento_ms} ms` : null,
@@ -381,7 +419,37 @@
     // é montada dinamicamente sem ela (evita a possibilidade de mostrar o número sozinho).
     (function () {
       const dossieId = new URLSearchParams(location.search).get('dossie_id');
-      if (!dossieId) return;
+      if (!dossieId) {
+        if (source) {
+          const preview = buildPreviewResumo(source);
+          title.textContent = preview.referencia;
+          subtitle.textContent = 'Prévia local da sessão · ' + nomeEstado(preview.estado);
+          coverage.textContent = `Cobertura local: ${preview.indice_confianca}% com ${preview.ncm.total} documento(s) na sessão.`;
+          const metaCampos = [
+            ['Sessão', 'prévia local'],
+            ['Estado', nomeEstado(preview.estado)],
+            ['API', preview.versao_api],
+            ['Processado', '0 ms'],
+            ['Geração', new Date(preview.gerado_em).toLocaleString('pt-BR')],
+            ['Arquivos', preview.ncm.total],
+            ['Pendências', preview.excecoes.coerencia_nao_avaliada],
+            ['Risco', preview.score_risco.indice],
+          ];
+          meta.innerHTML = metaCampos.map(([label, value]) => `<div><strong>${label}</strong>${value}</div>`).join('');
+          renderKpiGrid(preview, true);
+          document.getElementById('conf-ring').style.background =
+            `conic-gradient(${preview.score_risco.cor} ${(preview.indice_confianca / 100 * 360).toFixed(1)}deg, #eef0f3 0deg)`;
+          document.getElementById('conf-pct').textContent = `${preview.indice_confianca}%`;
+          document.getElementById('conf-pct').style.color = preview.score_risco.cor;
+          document.getElementById('conf-badge').style.display = preview.excecoes.coerencia_nao_avaliada ? 'block' : 'none';
+          document.getElementById('conf-badge').textContent = preview.excecoes.coerencia_nao_avaliada
+            ? 'Prévia local sem documento de transporte - revisão recomendada'
+            : '';
+          document.getElementById('conf-msg').textContent = preview.mensagem;
+          document.getElementById('confianca-card').style.display = 'block';
+        }
+        return;
+      }
       fetch(`/api/resumo?dossie_id=${encodeURIComponent(dossieId)}`)
         .then((r) => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
         .then((resumo) => {
