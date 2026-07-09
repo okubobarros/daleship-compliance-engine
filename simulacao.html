@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pré-registro | Despachante de Bolso</title>
+  <title>Simulação guiada | Despachante de Bolso</title>
   <meta name="theme-color" content="#f3f4f6" />
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
@@ -138,16 +138,20 @@
         <img src="/logo.png" alt="Despachante de Bolso" />
         <div>
           <div class="brand-title">Despachante de Bolso</div>
-          <div class="brand-sub">Inteligência aduaneira para importação</div>
+          <div class="brand-sub">Entrada documental para auditoria</div>
         </div>
       </a>
       <a class="btn btn-secondary" href="/">Voltar à home</a>
     </header>
 
     <section class="panel">
-      <div class="eyebrow">Pré-registro</div>
-      <h1>Inicie a ingestão da operação</h1>
-      <p class="lead">Informe a referência, descreva a operação e anexe os documentos. Esta tela captura a entrada do processo sem inventar resultado antes da reconciliação.</p>
+      <div class="eyebrow">Simulação guiada</div>
+      <h1>Prepare a operação para a auditoria pré-embarque</h1>
+      <p class="lead">Este é o módulo secundário do produto: você registra a operação, anexa os documentos disponíveis e segue para a reconciliação sem pular para o resultado antes da hora.</p>
+      <div style="margin-top:14px; display:inline-flex; align-items:center; gap:8px; padding:7px 12px; border-radius:999px; background:rgba(79,70,229,.08); border:1px solid rgba(79,70,229,.18); color:#4338ca; font-size:12px; font-weight:700;">
+        <span style="width:7px; height:7px; border-radius:50%; background:#2563EB; display:inline-block;"></span>
+        Jornada secundária de apoio à auditoria principal
+      </div>
 
       <div class="journey" aria-label="Jornada do usuário">
           <div class="journey-step active">
@@ -188,8 +192,8 @@
           </div>
 
           <div class="actions">
-            <button class="btn btn-primary" type="submit">Enviar para reconciliação</button>
-            <a class="btn btn-secondary" href="/">Cancelar</a>
+            <button class="btn btn-primary" type="submit">Salvar e seguir para reconciliação</button>
+            <a class="btn btn-secondary" href="/">Voltar à home</a>
           </div>
         </form>
 
@@ -214,7 +218,7 @@
           </div>
 
           <div class="doc-list" id="selected-files" aria-live="polite"></div>
-          <div class="session-note" id="session-note">Nenhuma sessão anterior detectada. Você pode iniciar do zero ou continuar a partir do wizard da homepage.</div>
+          <div class="session-note" id="session-note">Nenhuma sessão anterior detectada. Você pode iniciar do zero ou continuar a partir do fluxo da homepage.</div>
         </aside>
       </div>
 
@@ -238,7 +242,7 @@
 
       <div class="footer">
         <span>Sem números fabricados. A tela só registra a operação.</span>
-        <span><a href="/loading.html">Ver etapa seguinte</a></span>
+        <span><a href="/loading.html">Ver a reconciliação</a></span>
       </div>
     </section>
   </div>
