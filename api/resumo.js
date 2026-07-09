@@ -17,19 +17,13 @@ const https = require("https");
 function buscarResumo(apiBase, dossieId, token) {
   return new Promise((resolve, reject) => {
     const url = new URL(`${apiBase}/dossies/${encodeURIComponent(dossieId)}/resumo`);
-    console.log("api/resumo upstream URL", url.toString());
     const req = https.request(
       url,
       { method: "GET", headers: { Authorization: `Bearer ${token}` } },
       (upstream) => {
         let data = "";
         upstream.on("data", (chunk) => { data += chunk; });
-        upstream.on("end", () => {
-          console.log("api/resumo upstream status", upstream.statusCode);
-          console.log("api/resumo upstream headers", JSON.stringify(upstream.headers || {}));
-          console.log("api/resumo upstream body", data.slice(0, 500));
-          resolve({ status: upstream.statusCode, body: data });
-        });
+        upstream.on("end", () => resolve({ status: upstream.statusCode, body: data }));
       }
     );
     req.on("error", reject);
@@ -39,7 +33,6 @@ function buscarResumo(apiBase, dossieId, token) {
 }
 
 module.exports = async (req, res) => {
-  console.log("api/resumo iniciado");
   // Handler inteiro blindado: NENHUMA exceção deve escapar como 500 sem corpo JSON —
   // sempre uma resposta explicável (fail-closed, nunca silencioso).
   try {
