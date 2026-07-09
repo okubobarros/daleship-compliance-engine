@@ -44,6 +44,155 @@
     .eyebrow { font-size:12px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:#4f46e5; }
     h1 { margin:10px 0 0; font-size:clamp(34px, 4vw, 52px); line-height:.98; letter-spacing:-.05em; }
     .lead { margin-top:14px; color:#4b5563; line-height:1.7; max-width:72ch; }
+    .coverage-shell {
+      margin-top:24px;
+      border:1px solid #eceef1;
+      border-radius:24px;
+      background:#fff;
+      padding:22px;
+      box-shadow:0 18px 42px rgba(17,24,39,.06);
+    }
+    .coverage-head {
+      display:flex;
+      justify-content:space-between;
+      gap:18px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+    }
+    .coverage-title { font-size:11px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:#4f46e5; }
+    .coverage-value { margin-top:8px; font-size:44px; font-weight:800; letter-spacing:-.05em; line-height:1; color:#111827; }
+    .coverage-label { margin-top:6px; color:#4b5563; line-height:1.6; max-width:54ch; font-size:14px; }
+    .coverage-state {
+      min-width:220px;
+      padding:14px 16px;
+      border-radius:18px;
+      border:1px solid #eceef1;
+      background:#fafbfc;
+    }
+    .coverage-state strong { display:block; font-size:12px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:#6b7280; }
+    .coverage-state span { display:block; margin-top:8px; font-size:18px; font-weight:700; color:#111827; }
+    .coverage-track {
+      margin-top:16px;
+      height:14px;
+      border-radius:999px;
+      background:#eef0f3;
+      overflow:hidden;
+    }
+    .coverage-fill {
+      width:0%;
+      height:100%;
+      border-radius:inherit;
+      background:linear-gradient(90deg,#2563EB,#6D28D9);
+      box-shadow:0 0 18px rgba(37,99,235,.24);
+      transition:width .45s ease, background .35s ease;
+    }
+    .coverage-fill.ready {
+      background:linear-gradient(90deg,#fbbf24,#f97316);
+      box-shadow:0 0 22px rgba(251,191,36,.28);
+    }
+    .coverage-fill.max {
+      background:linear-gradient(90deg,#16A34A,#22c55e);
+      box-shadow:0 0 22px rgba(34,197,94,.24);
+    }
+    .coverage-note {
+      margin-top:12px;
+      color:#6b7280;
+      font-size:13px;
+      line-height:1.6;
+    }
+    .doc-grid {
+      margin-top:18px;
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:12px;
+    }
+    .doc-card {
+      border:1px solid #eceef1;
+      border-radius:18px;
+      padding:18px;
+      background:#fff;
+      box-shadow:0 10px 24px rgba(17,24,39,.04);
+    }
+    .doc-card.ready { border-color:rgba(22,163,74,.22); background:rgba(22,163,74,.03); }
+    .doc-card.warn { border-color:rgba(249,115,22,.22); background:rgba(249,115,22,.03); }
+    .doc-card.locked { border-style:dashed; }
+    .doc-top { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+    .doc-name { font-size:15px; font-weight:700; color:#111827; }
+    .doc-status {
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color:#6b7280;
+      border:1px solid #eceef1;
+      border-radius:999px;
+      padding:5px 8px;
+      background:#fff;
+    }
+    .doc-card.ready .doc-status { color:#166534; border-color:rgba(22,163,74,.22); background:rgba(22,163,74,.08); }
+    .doc-card.warn .doc-status { color:#9a3412; border-color:rgba(249,115,22,.22); background:rgba(249,115,22,.08); }
+    .doc-meta { margin-top:12px; color:#4b5563; font-size:13px; line-height:1.55; }
+    .doc-impact { margin-top:14px; font-size:12px; font-weight:700; color:#2563EB; }
+    .doc-impact.max { color:#16A34A; }
+    .unlock-panel {
+      margin-top:24px;
+      border:1px solid #eceef1;
+      border-radius:22px;
+      padding:22px;
+      background:linear-gradient(180deg,#fff,#fafbfc);
+      box-shadow:0 12px 32px rgba(17,24,39,.05);
+    }
+    .unlock-title { font-size:11px; font-weight:800; letter-spacing:.16em; color:#4f46e5; text-transform:uppercase; }
+    .unlock-state { margin-top:10px; font-size:24px; font-weight:800; letter-spacing:-.03em; color:#111827; }
+    .unlock-copy { margin-top:8px; color:#4b5563; line-height:1.65; }
+    .module-list {
+      margin-top:16px;
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:10px;
+    }
+    .module-item {
+      border:1px solid #eceef1;
+      border-radius:14px;
+      padding:12px 14px;
+      background:#fff;
+      color:#374151;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .module-item span:last-child { font-size:12px; font-weight:700; color:#6b7280; }
+    .module-item.ready span:last-child { color:#166534; }
+    .module-item.max span:last-child { color:#16A34A; }
+    .primary-cta {
+      margin-top:18px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:100%;
+      padding:15px 18px;
+      border-radius:16px;
+      border:none;
+      font:inherit;
+      font-weight:800;
+      letter-spacing:.02em;
+      color:#fff;
+      cursor:pointer;
+      background:linear-gradient(90deg,#fbbf24,#f97316);
+      box-shadow:0 16px 36px rgba(251,191,36,.28);
+      transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+    }
+    .primary-cta:hover { transform:translateY(-1px); box-shadow:0 20px 42px rgba(251,191,36,.34); }
+    .primary-cta.locked {
+      cursor:default;
+      background:linear-gradient(90deg,#cbd5e1,#94a3b8);
+      box-shadow:none;
+    }
+    .primary-cta.max {
+      background:linear-gradient(90deg,#16A34A,#22c55e);
+      box-shadow:0 16px 36px rgba(34,197,94,.24);
+    }
     .journey {
       margin-top:24px;
       display:grid;
@@ -169,86 +318,43 @@
         <h1>Fechamento assistido da operação</h1>
         <p class="lead">Esta tela não inventa números. Ela mostra o estado consolidado da operação, as pendências e o próximo passo para revisão humana ou continuidade do fluxo.</p>
 
-        <div class="journey" aria-label="Jornada do usuário">
-          <div class="journey-step done">
-            <div class="k">Etapa 01</div>
-            <div class="t">Entrada</div>
-            <p>Documento e contexto capturados.</p>
-          </div>
-          <div class="journey-step done">
-            <div class="k">Etapa 02</div>
-            <div class="t">Reconciliação</div>
-            <p>Leitura e cruzamento concluídos.</p>
-          </div>
-          <div class="journey-step active">
-            <div class="k">Etapa 03</div>
-            <div class="t">Governança</div>
-            <p>Resumo pronto para decisão e revisão.</p>
-          </div>
-        </div>
-
-        <div class="grid">
-          <section class="card">
-            <div class="label">Resumo da operação</div>
-            <div id="meta" class="summary"></div>
-            <div id="coverage" style="margin-top:12px; padding:12px 14px; border:1px solid #eceef1; border-radius:14px; background:#fff; color:#4b5563; line-height:1.6; font-size:13px;">Cobertura documental e status aparecem aqui quando a sessão anterior estiver presente.</div>
-            <div class="empty">
-              <strong style="display:block; color:#111827; margin-bottom:6px;">Resultado operacional ainda não consolidado neste shell público.</strong>
-              A análise real acontece no motor da aplicação. Quando o backend estiver conectado, esta área passa a exibir pendências, justificativas e o parecer humano.
-            </div>
-            <div class="actions">
-              <a class="btn primary" href="/simulacao.html">Nova operação</a>
-              <a class="btn secondary" href="/loading.html">Revisar reconciliação</a>
-            </div>
-          </section>
-
-          <section class="card">
-            <div class="label">Governança</div>
-            <div style="margin-top:12px; font-size:24px; font-weight:800; letter-spacing:-.03em;" id="status-title">Aguardando operação</div>
-            <div id="status-subtitle" style="margin-top:6px; color:#6b7280; line-height:1.6;">Sem operação carregada.</div>
-
-            <div style="margin-top:18px; border:1px solid #eceef1; border-radius:18px; padding:18px; background:#fff;">
-              <div class="label">Próximo passo</div>
-              <p style="margin:10px 0 0; color:#4b5563; line-height:1.7;">Envie a operação na etapa anterior para manter a sequência da jornada e siga para a decisão assistida.</p>
-            </div>
-
-            <div class="empty" style="margin-top:18px;">
-              <strong style="display:block; color:#111827; margin-bottom:6px;">Sem mock, sem número inventado.</strong>
-              Esta página serve como state view da operação: referência, documentos, cobertura e status.
-            </div>
-          </section>
-        </div>
-
-        <section class="card" id="resumo-card" style="margin-top:18px; display:none;">
-          <div class="label">Resumo automático da API</div>
-          <div id="dashboard" class="dashboard"></div>
-          <div class="audit-strip" id="audit-strip"></div>
-        </section>
-
-        <section class="card" id="confianca-card" style="margin-top:18px; display:none;">
-          <div class="label">Índice de confiança do dossiê</div>
-          <div style="display:grid; grid-template-columns:auto 1fr; gap:20px; align-items:center; margin-top:12px;">
-            <div style="position:relative; width:104px; height:104px;">
-              <div id="conf-ring" style="position:absolute; inset:0; border-radius:50%;"></div>
-              <div style="position:absolute; inset:14px; border-radius:50%; background:#fafbfc;"></div>
-              <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column;">
-                <span id="conf-pct" style="font-size:22px; font-weight:800; letter-spacing:-.02em;">—</span>
-              </div>
-            </div>
+        <div class="coverage-shell">
+          <div class="coverage-head">
             <div>
-              <p style="margin:0; color:#4b5563; line-height:1.65; font-size:13.5px;">
-                O índice é a porcentagem de itens cuja classificação de NCM o agente confirmou com
-                alta certeza (reordenando por IA + Regras Gerais de Interpretação).
-                <strong style="color:#111827;">Confiança baixa não é erro do sistema:</strong>
-                significa que o agente não conseguiu confirmar aquele item com certeza suficiente —
-                a sugestão continua disponível, mas recomenda-se
-                <strong style="color:#111827;">revisão manual</strong> antes de submeter.
-              </p>
-              <div id="conf-badge" style="display:none; margin-top:12px; padding:9px 14px; border-radius:12px; background:rgba(249,115,22,.10); border:1px solid rgba(249,115,22,.28); color:#9a3d0a; font-size:13px; font-weight:600;"></div>
-              <div id="conf-msg" style="margin-top:10px; color:#6b7280; font-size:12.5px;"></div>
+              <div class="coverage-title">Cobertura da auditoria</div>
+              <div class="coverage-value" id="coverage-value">0%</div>
+              <div class="coverage-label" id="coverage-label">A qualidade da auditoria aumenta conforme novos documentos são enviados.</div>
+            </div>
+            <div class="coverage-state">
+              <strong>Estado do cockpit</strong>
+              <span id="coverage-state">Aguardando documentos</span>
             </div>
           </div>
-        </section>
+          <div class="coverage-track" aria-label="Cobertura documental">
+            <div class="coverage-fill" id="coverage-fill"></div>
+          </div>
+          <div class="coverage-note" id="coverage-note">Invoice e Draft BL destravam a leitura inicial. Packing List e ERP elevam a precisão do parecer.</div>
+        </div>
+
+        <div class="doc-grid" id="doc-grid" aria-label="Documentos da auditoria"></div>
+
+        <div class="grid" style="margin-top:18px;">
+          <section class="card">
+            <div class="label">Módulos liberados</div>
+            <div class="module-list" id="module-list"></div>
+            <div style="margin-top:18px; padding:14px; border:1px solid #eceef1; border-radius:16px; background:#fff; color:#4b5563; line-height:1.7; font-size:13px;" id="audit-summary">
+              A operação ainda não atingiu a cobertura mínima para iniciar o diagnóstico.
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="label">Próxima ação</div>
+            <div style="margin-top:12px; font-size:24px; font-weight:800; letter-spacing:-.03em;" id="next-title">Cobertura insuficiente</div>
+            <div style="margin-top:6px; color:#6b7280; line-height:1.6;" id="next-copy">Adicione mais evidência para liberar a auditoria.</div>
+            <button class="primary-cta locked" id="cta-button" type="button">Executar pré-análise</button>
+            <div style="margin-top:12px; color:#6b7280; font-size:13px; line-height:1.6;" id="cta-help">Cobertura mínima recomendada: 70%.</div>
+          </section>
+        </div>
 
         <div class="foot">
           <span><a href="/">Voltar à home</a></span>
@@ -262,234 +368,137 @@
     const state = JSON.parse(sessionStorage.getItem('daleship.process') || 'null');
     const intake = JSON.parse(sessionStorage.getItem('daleship.intake') || 'null');
     const source = state || intake;
-    const meta = document.getElementById('meta');
-    const title = document.getElementById('status-title');
-    const subtitle = document.getElementById('status-subtitle');
-    const coverage = document.getElementById('coverage');
-    const resumoCard = document.getElementById('resumo-card');
-    const dashboard = document.getElementById('dashboard');
-    const auditStrip = document.getElementById('audit-strip');
+    const coverageValue = document.getElementById('coverage-value');
+    const coverageLabel = document.getElementById('coverage-label');
+    const coverageState = document.getElementById('coverage-state');
+    const coverageFill = document.getElementById('coverage-fill');
+    const coverageNote = document.getElementById('coverage-note');
+    const docGrid = document.getElementById('doc-grid');
+    const moduleList = document.getElementById('module-list');
+    const auditSummary = document.getElementById('audit-summary');
+    const nextTitle = document.getElementById('next-title');
+    const nextCopy = document.getElementById('next-copy');
+    const ctaButton = document.getElementById('cta-button');
+    const ctaHelp = document.getElementById('cta-help');
 
-    function corRisco(indice) {
-      return indice >= 70 ? '#E05252' : indice >= 40 ? '#F97316' : '#16A34A';
-    }
+    const files = source?.files || {};
+    const fileCount = Object.values(files).filter(Boolean).length;
+    const coverage = Number(source?.coverage ?? (fileCount === 0 ? 0 : fileCount === 1 ? 30 : fileCount === 2 ? 70 : 100));
+    const ready = coverage >= 70;
+    const maxed = coverage >= 100;
 
-    function nomeEstado(estado) {
-      return {
-        recebido: 'Recebido',
-        extraindo: 'Extraindo',
-        regras_documentais_ok: 'Regras documentais OK',
-        classificando_ncm: 'Classificando NCM',
-        consolidando: 'Consolidando',
-        concluido: 'Concluído',
-        concluido_com_excecoes: 'Concluído com exceções',
-      }[estado] || estado || '—';
-    }
+    const documents = [
+      {
+        key: 'invoice',
+        name: 'Invoice Comercial',
+        status: files.invoice ? 'Recebida' : 'Aguardando',
+        detail: files.invoice ? 'Descrição validada. Valores identificados. Itens estruturados.' : 'Base para descrição, valores e itens.',
+        impact: '+30% cobertura',
+        tone: files.invoice ? 'ready' : 'locked',
+      },
+      {
+        key: 'bl',
+        name: 'Draft Bill of Lading',
+        status: files.bl ? 'Recebido' : 'Aguardando',
+        detail: files.bl ? 'Modal identificado. Incoterm encontrado. Rota validada.' : 'Valida rota, modal e Incoterm.',
+        impact: '+25% cobertura',
+        tone: files.bl ? 'warn' : 'locked',
+      },
+      {
+        key: 'packing',
+        name: 'Packing List',
+        status: files.packing ? 'Recebida' : 'Opcional',
+        detail: files.packing ? 'Peso, volumes e cubagem mais precisos.' : 'Melhora precisão de peso, volumes e cubagem.',
+        impact: files.packing ? '+20% cobertura' : '+20% opcional',
+        tone: files.packing ? 'ready' : 'locked',
+      },
+      {
+        key: 'erp',
+        name: 'ERP',
+        status: files.erp ? 'Recebido' : 'Opcional',
+        detail: files.erp ? 'Cadastro mestre, SKU, NCM e descrição atualizados.' : 'Melhora cadastro mestre, SKU, NCM e descrição.',
+        impact: files.erp ? '+25% cobertura' : '+25% opcional',
+        tone: files.erp ? 'ready' : 'locked',
+      },
+    ];
 
-    function fmtPct(valor) {
-      return valor == null ? '—' : `${valor}%`;
-    }
+    const modules = [
+      ['Fiscal', files.invoice ? 'Invoice' : 'Pendente', files.invoice ? 'ready' : ''],
+      ['Logística', files.bl ? 'Draft BL' : 'Pendente', files.bl ? 'ready' : ''],
+      ['Volumes', files.packing ? 'Packing' : 'Opcional', files.packing ? 'ready' : ''],
+      ['Cadastro', files.erp ? 'ERP' : 'Opcional', files.erp ? 'ready' : ''],
+    ];
 
-    function fmtQuantidade(ncm) {
-      if (!ncm) return '—';
-      return `${ncm.total || 0} item(ns)`;
-    }
+    coverageValue.textContent = `${coverage}%`;
+    coverageLabel.textContent = maxed
+      ? 'Todas as verificações estarão disponíveis.'
+      : ready
+        ? 'A qualidade da auditoria já permite iniciar a execução.'
+        : 'A qualidade da auditoria aumenta conforme novos documentos são enviados.';
+    coverageState.textContent = maxed
+      ? 'Cobertura máxima'
+      : ready
+        ? 'Auditoria pronta'
+        : 'Aguardando documentos';
+    coverageFill.style.width = `${coverage}%`;
+    coverageFill.classList.toggle('ready', ready && !maxed);
+    coverageFill.classList.toggle('max', maxed);
+    coverageNote.textContent = maxed
+      ? 'Cobertura máxima atingida. Todas as verificações e cruzamentos já podem ser exibidos.'
+      : ready
+        ? 'Cobertura mínima atingida. A auditoria já pode iniciar.'
+        : 'Invoice e Draft BL destravam a leitura inicial. Packing List e ERP elevam a precisão do parecer.';
 
-    function buildPreviewResumo(source) {
-      const files = source?.files || {};
-      const fileCount = Object.values(files).filter(Boolean).length;
-      const hasTransport = Boolean(files.transport || files.bl);
-      const coverage = Number(source?.coverage ?? (fileCount === 0 ? 0 : fileCount === 1 ? 40 : fileCount === 2 ? 70 : fileCount === 3 ? 85 : 100));
-      const scoreIndice = hasTransport ? (fileCount >= 3 ? 0 : 18) : 45;
-      const scoreRotulo = scoreIndice >= 70 ? 'Alto' : scoreIndice >= 40 ? 'Médio' : 'Baixo';
-      const scoreCor = scoreIndice >= 70 ? '#E05252' : scoreIndice >= 40 ? '#F97316' : '#16A34A';
-      const pendencias = hasTransport ? 0 : 1;
-
-      return {
-        versao_api: 'preview-local',
-        gerado_em: new Date().toISOString(),
-        tempo_processamento_ms: 0,
-        dossie_id: null,
-        referencia: source?.reference || 'Operação local',
-        estado: pendencias ? 'concluido_com_excecoes' : 'concluido',
-        indice_confianca: coverage,
-        score_risco: {
-          indice: scoreIndice,
-          rotulo: scoreRotulo,
-          cor: scoreCor,
-          contagem: { critico: 0, atencao: pendencias, info: 0 },
-          total: pendencias,
-        },
-        excecoes: {
-          ncm_confianca_baixa: 0,
-          coerencia_nao_avaliada: pendencias,
-          apontamentos_criticos: 0,
-        },
-        mensagem: hasTransport
-          ? 'Prévia local pronta para conferência. A consolidação real aparece quando o dossiê backend estiver disponível.'
-          : 'Prévia local com documento de transporte ausente. A consolidação real ainda não foi acionada.',
-        ncm: { alta: 0, baixa: 0, total: fileCount },
-      };
-    }
-
-    function renderKpiGrid(resumo, previewMode = false) {
-      const score = resumo.score_risco || {};
-      const exc = resumo.excecoes || {};
-      const ncm = resumo.ncm || {};
-      const riscoCor = score.cor || corRisco(score.indice || 0);
-      dashboard.innerHTML = [
-        {
-          label: 'Índice de confiança',
-          value: fmtPct(resumo.indice_confianca),
-          sub: `NCM alta: ${ncm.alta || 0} · baixa: ${ncm.baixa || 0}`,
-          meta: resumo.gerado_em ? `Gerado em ${new Date(resumo.gerado_em).toLocaleString('pt-BR')}` : '',
-          accent: resumo.indice_confianca == null ? '#94a3b8' : (resumo.indice_confianca >= 70 ? '#16A34A' : resumo.indice_confianca >= 40 ? '#F97316' : '#E05252'),
-          width: resumo.indice_confianca == null ? 0 : resumo.indice_confianca,
-        },
-        {
-          label: 'Score de risco',
-          value: score.indice == null ? '—' : `${score.indice}`,
-          sub: score.rotulo || '—',
-          meta: score.total != null ? `${score.total} apontamento(s)` : 'Sem apontamentos',
-          accent: riscoCor,
-          width: score.indice == null ? 0 : score.indice,
-        },
-        {
-          label: 'Quantidade de NCM',
-          value: ncm.total == null ? '—' : `${ncm.total}`,
-          sub: `${ncm.alta || 0} alta / ${ncm.baixa || 0} baixa`,
-          meta: fmtQuantidade(ncm),
-          accent: '#2563EB',
-          width: 100,
-        },
-        {
-          label: 'Exceções',
-          value: exc.ncm_confianca_baixa || exc.coerencia_nao_avaliada || exc.apontamentos_criticos ? 'Ativas' : 'Nenhuma',
-          sub: `${exc.ncm_confianca_baixa || 0} baixa · ${exc.coerencia_nao_avaliada || 0} coerência · ${exc.apontamentos_criticos || 0} críticos`,
-          meta: resumo.estado ? nomeEstado(resumo.estado) : '—',
-          accent: '#7C3AED',
-          width: (exc.ncm_confianca_baixa || exc.coerencia_nao_avaliada || exc.apontamentos_criticos) ? 100 : 0,
-        },
-      ].map((item) => `
-        <article class="kpi">
+    docGrid.innerHTML = documents.map((doc) => `
+      <article class="doc-card ${doc.tone}">
+        <div class="doc-top">
           <div>
-            <div class="label">${item.label}</div>
-            <div class="value" style="color:${item.accent};">${item.value}</div>
-            <div class="sub">${item.sub}</div>
+            <div class="doc-name">${doc.name}</div>
+            <div class="doc-meta">${doc.detail}</div>
           </div>
-          <div>
-            <div class="meta">${item.meta}</div>
-            <div class="kpi-accent"><span style="width:${item.width}%; background:${item.accent};"></span></div>
-          </div>
-        </article>
-      `).join('');
-      resumoCard.style.display = 'block';
-      const audit = [
-        previewMode ? 'Prévia local da sessão' : null,
-        resumo.versao_api ? `API ${resumo.versao_api}` : null,
-        resumo.gerado_em ? `gerado em ${new Date(resumo.gerado_em).toLocaleString('pt-BR')}` : null,
-        resumo.tempo_processamento_ms != null ? `${resumo.tempo_processamento_ms} ms` : null,
-      ].filter(Boolean);
-      auditStrip.textContent = audit.length ? audit.join(' · ') : '';
-    }
+          <div class="doc-status">${doc.status}</div>
+        </div>
+        <div class="doc-impact ${maxed ? 'max' : ''}">${doc.impact}</div>
+      </article>
+    `).join('');
 
-    if (source) {
-      title.textContent = source.reference || 'Processo recebido';
-      subtitle.textContent = [source.origin, source.destination].filter(Boolean).join(' · ') || 'Entrada registrada na sessão local.';
-      const docCount = source.files ? Object.values(source.files).filter(Boolean).length : 0;
-      coverage.textContent = source.files
-        ? `Cobertura documental: ${docCount} documento(s) persistidos na sessão.`
-        : 'Cobertura documental: sem documentos persistidos na sessão.';
-      meta.innerHTML = [
-        ['Referência', source.reference || '—'],
-        ['Origem', source.origin || '—'],
-        ['Destino', source.destination || '—'],
-        ['Invoice', source.files?.invoice || source.files?.bl || 'não anexada'],
-        ['Packing List', source.files?.packing || 'não anexada'],
-        ['Transporte', source.files?.transport || source.files?.bl || 'não anexado'],
-      ].map(([label, value]) => `<div><strong>${label}</strong>${value}</div>`).join('');
-    } else {
-      meta.innerHTML = '<div><strong>Entrada</strong> nenhuma operação carregada</div><div><strong>Arquivo</strong> use a etapa anterior para registrar documentos</div>';
-      coverage.textContent = 'Cobertura documental: nenhuma sessão encontrada.';
-    }
+    moduleList.innerHTML = modules.map(([label, status, tone]) => `
+      <div class="module-item ${tone || ''}">
+        <span>${label}</span>
+        <span>${status}</span>
+      </div>
+    `).join('');
 
-    // Índice de confiança — só aparece quando ?dossie_id= aponta para um dossiê REAL e
-    // consolidado. Chama /api/resumo (proxy Vercel; o Bearer token nunca chega ao browser).
-    // A explicação de "confiança baixa" já está fixa no HTML acima do percentual — nunca
-    // é montada dinamicamente sem ela (evita a possibilidade de mostrar o número sozinho).
-    (function () {
-      const dossieId = new URLSearchParams(location.search).get('dossie_id');
-      if (!dossieId) {
-        if (source) {
-          const preview = buildPreviewResumo(source);
-          title.textContent = preview.referencia;
-          subtitle.textContent = 'Prévia local da sessão · ' + nomeEstado(preview.estado);
-          coverage.textContent = `Cobertura local: ${preview.indice_confianca}% com ${preview.ncm.total} documento(s) na sessão.`;
-          const metaCampos = [
-            ['Sessão', 'prévia local'],
-            ['Estado', nomeEstado(preview.estado)],
-            ['API', preview.versao_api],
-            ['Processado', '0 ms'],
-            ['Geração', new Date(preview.gerado_em).toLocaleString('pt-BR')],
-            ['Arquivos', preview.ncm.total],
-            ['Pendências', preview.excecoes.coerencia_nao_avaliada],
-            ['Risco', preview.score_risco.indice],
-          ];
-          meta.innerHTML = metaCampos.map(([label, value]) => `<div><strong>${label}</strong>${value}</div>`).join('');
-          renderKpiGrid(preview, true);
-          document.getElementById('conf-ring').style.background =
-            `conic-gradient(${preview.score_risco.cor} ${(preview.indice_confianca / 100 * 360).toFixed(1)}deg, #eef0f3 0deg)`;
-          document.getElementById('conf-pct').textContent = `${preview.indice_confianca}%`;
-          document.getElementById('conf-pct').style.color = preview.score_risco.cor;
-          document.getElementById('conf-badge').style.display = preview.excecoes.coerencia_nao_avaliada ? 'block' : 'none';
-          document.getElementById('conf-badge').textContent = preview.excecoes.coerencia_nao_avaliada
-            ? 'Prévia local sem documento de transporte - revisão recomendada'
-            : '';
-          document.getElementById('conf-msg').textContent = preview.mensagem;
-          document.getElementById('confianca-card').style.display = 'block';
-        }
-        return;
+    auditSummary.textContent = ready
+      ? 'Cobertura suficiente para iniciar a auditoria com leitura, cruzamento e revisão humana.'
+      : 'A operação ainda não atingiu a cobertura mínima para iniciar o diagnóstico.';
+
+    nextTitle.textContent = maxed ? 'Cobertura máxima' : ready ? 'Auditoria pronta' : 'Cobertura insuficiente';
+    nextCopy.textContent = maxed
+      ? 'Todas as verificações estarão disponíveis. A barra está no máximo e o cockpit está pronto para análise completa.'
+      : ready
+        ? 'Cobertura mínima atingida. O CTA premium fica liberado para executar a pré-análise.'
+        : 'Adicione mais evidência para liberar a auditoria.';
+
+    ctaButton.textContent = ready ? 'Executar pré-análise' : 'Adicionar documentos';
+    ctaButton.classList.toggle('locked', !ready);
+    ctaButton.classList.toggle('max', maxed);
+    ctaHelp.textContent = ready
+      ? (maxed ? 'Cobertura máxima atingida. Agora todas as verificações podem ser exibidas.' : 'Cobertura mínima atingida. A auditoria já pode iniciar.')
+      : 'Cobertura mínima recomendada: 70%.';
+    ctaButton.onclick = () => {
+      if (ready) {
+        location.href = '/loading.html';
       }
-      fetch(`/api/resumo?dossie_id=${encodeURIComponent(dossieId)}`)
-        .then((r) => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
-        .then((resumo) => {
-          if (resumo.referencia) {
-            title.textContent = resumo.referencia;
-          }
-          subtitle.textContent = [nomeEstado(resumo.estado), resumo.score_risco?.rotulo ? `risco ${resumo.score_risco.rotulo}` : null].filter(Boolean).join(' · ');
-          if (resumo.ncm) {
-            coverage.textContent = `Cobertura NCM: ${resumo.ncm.alta || 0} alta, ${resumo.ncm.baixa || 0} baixa, total ${resumo.ncm.total || 0}.`;
-          }
-          const metaCampos = [
-            ['Dossiê', resumo.dossie_id || '—'],
-            ['Estado', nomeEstado(resumo.estado)],
-            ['API', resumo.versao_api || '—'],
-            ['Processado', resumo.tempo_processamento_ms != null ? `${resumo.tempo_processamento_ms} ms` : '—'],
-            ['Geração', resumo.gerado_em ? new Date(resumo.gerado_em).toLocaleString('pt-BR') : '—'],
-            ['NCM alta', resumo.ncm?.alta ?? '—'],
-            ['NCM baixa', resumo.ncm?.baixa ?? '—'],
-            ['Apontamentos', resumo.score_risco?.total ?? '—'],
-          ];
-          meta.innerHTML = metaCampos.map(([label, value]) => `<div><strong>${label}</strong>${value}</div>`).join('');
-          renderKpiGrid(resumo);
-          const p = resumo.indice_confianca;
-          const pct = (p == null) ? 0 : p;
-          const cor = pct >= 70 ? '#16A34A' : pct >= 40 ? '#F97316' : '#E05252';
-          document.getElementById('conf-ring').style.background =
-            `conic-gradient(${cor} ${(pct / 100 * 360).toFixed(1)}deg, #eef0f3 0deg)`;
-          document.getElementById('conf-pct').textContent = (p == null) ? '—' : p + '%';
-          document.getElementById('conf-pct').style.color = cor;
-          const baixa = (resumo.excecoes && resumo.excecoes.ncm_confianca_baixa) || 0;
-          const badge = document.getElementById('conf-badge');
-          if (baixa > 0) {
-            badge.style.display = 'block';
-            badge.textContent = `${baixa} item(ns) com confiança baixa — revisão manual recomendada`;
-          }
-          if (resumo.mensagem) document.getElementById('conf-msg').textContent = resumo.mensagem;
-          document.getElementById('confianca-card').style.display = 'block';
-        })
-        .catch(() => { /* sem dossiê consolidado ainda — seção fica oculta, sem inventar número */ });
-    })();
+    };
+
+    if (!ready) {
+      ctaButton.setAttribute('aria-disabled', 'true');
+      ctaButton.disabled = true;
+    } else {
+      ctaButton.removeAttribute('aria-disabled');
+      ctaButton.disabled = false;
+    }
   </script>
 </body>
 </html>

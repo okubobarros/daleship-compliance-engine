@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Despachante de Bolso</title>
-  <meta name="description" content="Compliance engine embedded para comércio exterior: ingestão documental, reconciliação de dados, governança humana e trilha auditável antes do registro." />
+  <meta name="description" content="Auditoria pré-embarque para comércio exterior: cobertura documental, validação de dados, governança humana e trilha auditável antes do registro." />
   <meta name="theme-color" content="#0A0F1E" />
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
@@ -536,7 +536,7 @@
         <img src="/logo.png" alt="Despachante de Bolso" />
         <div>
           <div class="title">Despachante de Bolso</div>
-          <div class="sub">Compliance engine embedded para operações de comex</div>
+          <div class="sub">Auditoria pré-embarque para operações de comex</div>
         </div>
       </a>
       <nav class="links" aria-label="Navegação principal">
@@ -560,7 +560,7 @@
             <span>EMBEDDED COMPLIANCE · ANÁLISE EM MINUTOS</span>
           </div>
           <h1>Conferência documental e governança humana antes que o erro vire <span class="accent">custo, atraso e penalidade.</span></h1>
-          <p class="lead">Suba Invoice, Draft BL, Packing List e contexto da operação. O engine extrai campos críticos, reconcilia documentos, aplica regras de compliance e encaminha pendências para revisão humana com evidência.</p>
+          <p class="lead">O produto cruza Invoice, Draft BL, Packing List e contexto da operação. Ele extrai campos críticos, compara documentos, aplica regras de compliance e encaminha pendências para revisão humana com evidência.</p>
 
           <div class="cta-row">
             <button class="btn btn-primary" type="button" onclick="location.href='/simulacao.html'">
@@ -692,141 +692,84 @@
       </div>
     </section>
 
-    <section class="wizard" id="wizard">
-      <div class="wizard-top">
-        <div>
-          <div class="wizard-badge"><i data-lucide="sparkles" style="width:14px;height:14px;"></i> Evolution Wizard</div>
-          <div class="wizard-title">A cobertura sobe conforme a operação ganha evidência.</div>
-          <p class="wizard-copy">Cada arquivo libera uma camada do engine: ingestão, normalização, reconciliação, regra de compliance e revisão humana. O CTA só acende quando existe base para avançar com responsabilidade.</p>
-        </div>
-        <div style="min-width:180px; text-align:right;">
-          <div class="section-label" style="font-size:10px;">Etapa atual</div>
-          <div style="margin-top:8px; font-size:34px; font-weight:700; letter-spacing:-.04em; color:#fff;"><span id="wizard-percent">0</span>%</div>
-          <div style="margin-top:4px; color:#9aa4ba; font-size:13px;">de cobertura documental</div>
-        </div>
-      </div>
+    <section class="section" id="snapshot">
+      <div class="section-label">Inteligência operacional</div>
+      <h2 style="max-width:24ch;">A cobertura da auditoria cresce conforme a operação ganha evidência.</h2>
+      <p class="section-copy">A homepage demonstra o que o produto enxerga antes de executar: cobertura, sinais críticos e o ganho operacional que a auditoria traz quando os documentos certos entram.</p>
 
-      <div class="wizard-layout">
-        <div>
-          <div class="stage-rail">
-            <div class="stage-pill active" id="stage-context">
-              <div class="stage-k">Etapa 01</div>
-              <div class="stage-title">Contexto</div>
-              <div class="stage-sub">Operação, origem, destino e política.</div>
-            </div>
-            <div class="stage-pill" id="stage-docs">
-              <div class="stage-k">Etapa 02</div>
-              <div class="stage-title">Documentos</div>
-              <div class="stage-sub">Invoice, BL, Packing List e anexos.</div>
-            </div>
-            <div class="stage-pill" id="stage-llm">
-              <div class="stage-k">Etapa 03</div>
-              <div class="stage-title">Diagnóstico IA</div>
-              <div class="stage-sub">Extração, regras e raciocínio assistido.</div>
-            </div>
-            <div class="stage-pill" id="stage-cockpit">
-              <div class="stage-k">Etapa 04</div>
-              <div class="stage-title">Cockpit</div>
-              <div class="stage-sub">Pronto para decisão e trilha.</div>
-            </div>
-          </div>
-
-          <div class="wizard-card">
-            <div class="section-label">01. Ingestão documental</div>
-            <div class="section-copy" style="max-width:none;">Suba os arquivos que você já tem. O fluxo responde ao que entrou de verdade e adapta a cobertura conforme a base melhora.</div>
-
-            <div class="wizard-grid" style="margin-top:16px;">
-              <div class="upload-box" data-role="invoice">
-                <div class="upload-head">
-                  <div>
-                    <div class="req">Obrigatório</div>
-                    <div class="t">Invoice Comercial</div>
-                  </div>
-                  <div class="file-chip wait" id="chip-invoice">Aguardando</div>
-                </div>
-                <div class="upload-help">Base para descrição, valores e itens. Sem ela, a reconciliação fica parcial.</div>
-                <div class="upload-row">
-                  <input type="file" id="input-invoice" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls" />
-                </div>
-              </div>
-
-              <div class="upload-box" data-role="bl">
-                <div class="upload-head">
-                  <div>
-                    <div class="req">Obrigatório</div>
-                    <div class="t">Draft Bill of Lading</div>
-                  </div>
-                  <div class="file-chip wait" id="chip-bl">Aguardando</div>
-                </div>
-                <div class="upload-help">Permite validar rota, modal, Incoterm e divergência logística.</div>
-                <div class="upload-row">
-                  <input type="file" id="input-bl" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls" />
-                </div>
-              </div>
-
-              <div class="upload-box" data-role="packing">
-                <div class="upload-head">
-                  <div>
-                    <div class="req">Opcional</div>
-                    <div class="t">Packing List</div>
-                  </div>
-                  <div class="file-chip" id="chip-packing">Opcional</div>
-                </div>
-                <div class="upload-help">Aumenta a precisão em volumes, embalagens e pesos líquidos.</div>
-                <div class="upload-row">
-                  <input type="file" id="input-packing" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls" />
-                </div>
-              </div>
-
-              <div class="upload-box" data-role="erp">
-                <div class="upload-head">
-                  <div>
-                    <div class="req">Opcional</div>
-                    <div class="t">ERP / Cadastro de Itens</div>
-                  </div>
-                  <div class="file-chip" id="chip-erp">Opcional</div>
-                </div>
-                <div class="upload-help">Refina nomenclatura, SKU e integridade do cadastro mestre.</div>
-                <div class="upload-row">
-                  <input type="file" id="input-erp" accept=".csv,.xlsx,.xls,.xml" />
-                </div>
-              </div>
-            </div>
-
-            <div class="summary-strip">
-              <div class="box"><strong style="color:#fff;">Documentos aceitos</strong><br><span id="summary-docs">0 de 4</span></div>
-              <div class="box"><strong style="color:#fff;">Cobertura</strong><br><span id="summary-confidence">0%</span></div>
-              <div class="box"><strong style="color:#fff;">Próxima ação</strong><br><span id="summary-next">Enviar o primeiro documento</span></div>
-            </div>
-          </div>
-        </div>
-
-        <aside>
-          <div class="confidence-card">
-            <div class="confidence-head">
-              <div>
-                <div class="confidence-title">Confiabilidade do engine</div>
-                <div style="margin-top:10px; font-size:14px; color:#9aa4ba;">A cobertura aumenta com cada arquivo relevante e com o cruzamento entre fontes.</div>
-              </div>
-              <div class="confidence-score"><span id="confidence-score">0</span>%</div>
-            </div>
-            <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
-            <div class="confidence-msg" id="confidence-msg">Aguardando invoice e BL para iniciar o cruzamento preventivo.</div>
-            <div class="diagnostic">
-              <div><strong style="color:#fff;">Sinais de entrada</strong><br><span id="signal-1">Invoice ausente</span></div>
-              <div><strong style="color:#fff;">Estado de reconciliação</strong><br><span id="signal-2">Aguardando BL</span></div>
-            </div>
-          </div>
-
-          <div class="wizard-cta locked" id="wizard-cta">
+      <div style="margin-top:30px; display:grid; grid-template-columns:1.15fr .85fr; gap:18px;">
+        <div style="border:1px solid #1e2740; border-radius:22px; padding:24px; background:rgba(255,255,255,.02);">
+          <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:18px; flex-wrap:wrap;">
             <div>
-              <div class="status" id="cta-status">Bloqueado</div>
-              <div class="label" id="cta-label">Analisar documentos</div>
-              <div class="sub" id="cta-sub">Adicione Invoice e Draft BL para liberar o motor de reconciliação.</div>
+              <div style="font-size:10.5px; font-weight:600; letter-spacing:.14em; color:#6b7590; text-transform:uppercase;">Cobertura da auditoria</div>
+              <div style="margin-top:8px; font-size:42px; line-height:1; font-weight:700; letter-spacing:-.04em; color:#fff;">65%</div>
+              <div style="margin-top:6px; font-size:13px; color:#9aa4ba; line-height:1.55; max-width:38ch;">A qualidade da auditoria aumenta conforme novos documentos são enviados.</div>
             </div>
-            <button class="btn btn-primary" type="button" id="wizard-button" onclick="location.href='/simulacao.html'">Adicionar arquivos</button>
+            <div style="min-width:170px; text-align:right;">
+              <div style="font-size:10px; font-weight:700; letter-spacing:.14em; color:#9cc0ff; text-transform:uppercase;">Estado</div>
+              <div style="margin-top:8px; font-size:20px; font-weight:700; color:#fff;">Auditoria em preparação</div>
+              <div style="margin-top:4px; color:#9aa4ba; font-size:12px;">CTA premium libera em 70%</div>
+            </div>
           </div>
-        </aside>
+          <div style="margin-top:18px; height:12px; border-radius:999px; background:#182033; overflow:hidden;">
+            <div style="width:65%; height:100%; border-radius:inherit; background:linear-gradient(90deg,#2563EB,#6D28D9); box-shadow:0 0 18px rgba(37,99,235,.3);"></div>
+          </div>
+          <div style="margin-top:18px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px;">
+            <div style="border:1px solid #232c44; border-radius:18px; padding:16px; background:rgba(255,255,255,.02);">
+              <div style="font-size:10px; font-weight:700; letter-spacing:.12em; color:#6b7590; text-transform:uppercase;">Invoice Comercial</div>
+              <div style="margin-top:8px; font-size:18px; font-weight:700; color:#fff;">Recebida</div>
+              <div style="margin-top:6px; font-size:13px; line-height:1.55; color:#9aa4ba;">Descrição validada. Valores identificados. Itens estruturados.</div>
+              <div style="margin-top:12px; font-size:12px; font-weight:700; color:#86efac;">+30% cobertura</div>
+            </div>
+            <div style="border:1px solid #232c44; border-radius:18px; padding:16px; background:rgba(255,255,255,.02);">
+              <div style="font-size:10px; font-weight:700; letter-spacing:.12em; color:#6b7590; text-transform:uppercase;">Draft BL</div>
+              <div style="margin-top:8px; font-size:18px; font-weight:700; color:#fff;">Recebido</div>
+              <div style="margin-top:6px; font-size:13px; line-height:1.55; color:#9aa4ba;">Modal identificado. Incoterm encontrado. Rota validada.</div>
+              <div style="margin-top:12px; font-size:12px; font-weight:700; color:#fbbf24;">+25% cobertura</div>
+            </div>
+            <div style="border:1px solid #232c44; border-radius:18px; padding:16px; background:rgba(255,255,255,.02);">
+              <div style="font-size:10px; font-weight:700; letter-spacing:.12em; color:#6b7590; text-transform:uppercase;">Packing List</div>
+              <div style="margin-top:8px; font-size:18px; font-weight:700; color:#fff;">Opcional</div>
+              <div style="margin-top:6px; font-size:13px; line-height:1.55; color:#9aa4ba;">Melhora a precisão de peso, volumes e cubagem.</div>
+              <div style="margin-top:12px; font-size:12px; font-weight:700; color:#93b4fb;">+20% cobertura</div>
+            </div>
+            <div style="border:1px solid #232c44; border-radius:18px; padding:16px; background:rgba(255,255,255,.02);">
+              <div style="font-size:10px; font-weight:700; letter-spacing:.12em; color:#6b7590; text-transform:uppercase;">ERP</div>
+              <div style="margin-top:8px; font-size:18px; font-weight:700; color:#fff;">Opcional</div>
+              <div style="margin-top:6px; font-size:13px; line-height:1.55; color:#9aa4ba;">Melhora cadastro mestre, SKU, NCM e descrição.</div>
+              <div style="margin-top:12px; font-size:12px; font-weight:700; color:#86efac;">+25% cobertura</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="border:1px solid #1e2740; border-radius:22px; padding:24px; background:rgba(255,255,255,.02);">
+          <div style="font-size:10.5px; font-weight:600; letter-spacing:.14em; color:#6b7590; text-transform:uppercase;">Capacidades liberadas</div>
+          <div style="margin-top:12px; display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; padding:12px 14px; border-radius:14px; border:1px solid #232c44; background:rgba(255,255,255,.02);">
+              <span style="font-size:13px; color:#dbe1ee; font-weight:500;">Fiscal</span>
+              <span style="font-size:12px; font-weight:700; color:#86efac;">Invoice</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; padding:12px 14px; border-radius:14px; border:1px solid #232c44; background:rgba(255,255,255,.02);">
+              <span style="font-size:13px; color:#dbe1ee; font-weight:500;">Logística</span>
+              <span style="font-size:12px; font-weight:700; color:#fbbf24;">Draft BL</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; padding:12px 14px; border-radius:14px; border:1px solid #232c44; background:rgba(255,255,255,.02);">
+              <span style="font-size:13px; color:#dbe1ee; font-weight:500;">Volumes</span>
+              <span style="font-size:12px; font-weight:700; color:#93b4fb;">Packing</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; padding:12px 14px; border-radius:14px; border:1px solid #232c44; background:rgba(255,255,255,.02);">
+              <span style="font-size:13px; color:#dbe1ee; font-weight:500;">Cadastro</span>
+              <span style="font-size:12px; font-weight:700; color:#86efac;">ERP</span>
+            </div>
+          </div>
+
+          <div style="margin-top:18px; border:1px solid rgba(249,191,36,.28); background:rgba(249,191,36,.08); border-radius:18px; padding:18px;">
+            <div style="font-size:10px; font-weight:700; letter-spacing:.14em; color:#fbbf24; text-transform:uppercase;">Execução liberada</div>
+            <div style="margin-top:8px; font-size:18px; font-weight:700; color:#fff;">A auditoria já pode iniciar.</div>
+            <div style="margin-top:10px; font-size:13px; line-height:1.6; color:#ffe7c2;">Cobertura mínima atingida. Execute a pré-análise quando quiser avançar para o diagnóstico.</div>
+            <button class="btn btn-primary" type="button" style="margin-top:16px; width:100%; background:linear-gradient(90deg,#fbbf24,#f97316); box-shadow:0 12px 28px rgba(251,191,36,.24);" onclick="location.href='/simulacao.html'">Executar pré-análise</button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -841,7 +784,7 @@
 
     <section id="problema" class="section">
       <div class="section-label">Problema operacional</div>
-      <h2>O que o engine resolve antes do registro?</h2>
+      <h2>O que o produto resolve antes do registro?</h2>
       <p class="section-copy">O problema não é só um campo errado. É a cadeia inteira: ingestão manual, divergência entre documentos, pendência sem dono, decisão sem justificativa e custo acumulando antes da liberação.</p>
 
       <div class="metrics">
@@ -877,7 +820,7 @@
         <div class="step">
           <div class="num">01</div>
           <div class="k">Passo 01</div>
-          <div class="t">Ingestão documental</div>
+          <div class="t">Preparação documental</div>
           <p>Invoice, BL, Packing List, anexos e cadastro interno entram no processo sem exigir padronização prévia.</p>
         </div>
         <div class="step">
@@ -899,7 +842,7 @@
       <div class="section-label">Blocos de controle</div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:end;">
         <h2 style="max-width:18ch;">Features por controle operacional-regulatório</h2>
-        <p class="section-copy" style="margin:0;">Cada card abaixo representa um bloco do engine. Não é automação genérica: é um sistema de ingestão, reconcilição, regra, workflow e auditoria.</p>
+        <p class="section-copy" style="margin:0;">Cada card abaixo representa um bloco da auditoria. Não é automação genérica: é um sistema de validação, reconciliação, regra e governança.</p>
       </div>
 
       <div class="validations">
@@ -940,13 +883,13 @@
 
     <section id="arquitetura" class="section">
       <div class="section-label">Arquitetura</div>
-      <h2 style="max-width:18ch;">Engine + workflow + evidência</h2>
-      <p class="section-copy">Por baixo da interface há ingestão, regras, agentes, orquestração e trilha auditável para prevenir erro antes do registro.</p>
+      <h2 style="max-width:18ch;">Cobertura + decisão + evidência</h2>
+      <p class="section-copy">Por baixo da interface há validação, regras, contexto e trilha auditável para prevenir erro antes do registro.</p>
 
       <div class="stack-grid">
         <div class="stack-item">
           <div class="icon"><i data-lucide="scan-text" style="width:20px;height:20px;color:#93b4fb;"></i></div>
-          <div><div class="k">Layer</div><div class="t">Ingestão documental</div></div>
+          <div><div class="k">Layer</div><div class="t">Preparação documental</div></div>
         </div>
         <div class="stack-item">
           <div class="icon"><i data-lucide="braces" style="width:20px;height:20px;color:#93b4fb;"></i></div>
@@ -958,7 +901,7 @@
         </div>
         <div class="stack-item">
           <div class="icon alt"><i data-lucide="shield-check" style="width:20px;height:20px;color:#b794f6;"></i></div>
-          <div><div class="k">Layer</div><div class="t">Rules engine de compliance</div></div>
+          <div><div class="k">Layer</div><div class="t">Regras de compliance</div></div>
         </div>
         <div class="stack-item">
           <div class="icon alt"><i data-lucide="gauge" style="width:20px;height:20px;color:#b794f6;"></i></div>
@@ -1007,7 +950,7 @@
       <div class="cta-box" id="cta-final">
         <div class="k">CTA final</div>
         <h2>Valide a operação antes que o erro vire custo.</h2>
-        <p>Execute a pré-análise, envie os documentos e veja em minutos onde a reconciliação quebra, o que precisa de humano e o que pode avançar.</p>
+        <p>Execute a pré-análise e veja em minutos onde a reconciliação quebra, o que precisa de humano e o que pode avançar.</p>
         <div class="cta-actions">
           <button class="btn btn-primary" type="button" onclick="location.href='/simulacao.html'">Executar pré-análise</button>
           <button class="btn btn-secondary" type="button" onclick="location.href='/simulacao.html'">Entrar na plataforma</button>
@@ -1025,7 +968,7 @@
     <div class="footer-inner">
       <div class="footer-brand">
         <div class="footer-logo" style="overflow:hidden;"><img src="/logo.png" alt=""></div>
-        <span class="footer-text">Despachante de Bolso · Compliance engine embedded</span>
+        <span class="footer-text">Despachante de Bolso · Auditoria documental embutida</span>
       </div>
       <span class="footer-copy">© 2026 · Pré-análise documental, reconciliação e governança humana.</span>
     </div>
@@ -1035,7 +978,7 @@
     <div class="bar">
       <div class="trial-text">
         <span class="trial-badge">Trial</span>
-      <span class="trial-copy">Suba seus documentos e descubra a cobertura antes de avançar.</span>
+      <span class="trial-copy">Veja a cobertura antes de avançar.</span>
       </div>
       <button class="btn btn-primary" type="button" onclick="location.href='/simulacao.html'">Validar operação</button>
     </div>
@@ -1046,159 +989,6 @@
       window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
       setTimeout(() => window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } }), 300);
     }
-
-    const wizardStorageKey = 'daleship.intake';
-    const files = {
-      invoice: false,
-      bl: false,
-      packing: false,
-      erp: false,
-    };
-    const fileNames = {
-      invoice: null,
-      bl: null,
-      packing: null,
-      erp: null,
-    };
-
-    const els = {
-      percent: document.getElementById('wizard-percent'),
-      confidence: document.getElementById('confidence-score'),
-      fill: document.getElementById('progress-fill'),
-      msg: document.getElementById('confidence-msg'),
-      docs: document.getElementById('summary-docs'),
-      next: document.getElementById('summary-next'),
-      confidenceSummary: document.getElementById('summary-confidence'),
-      sig1: document.getElementById('signal-1'),
-      sig2: document.getElementById('signal-2'),
-      cta: document.getElementById('wizard-cta'),
-      ctaStatus: document.getElementById('cta-status'),
-      ctaLabel: document.getElementById('cta-label'),
-      ctaSub: document.getElementById('cta-sub'),
-      ctaButton: document.getElementById('wizard-button'),
-      stageContext: document.getElementById('stage-context'),
-      stageDocs: document.getElementById('stage-docs'),
-      stageLLM: document.getElementById('stage-llm'),
-      stageCockpit: document.getElementById('stage-cockpit'),
-      chipInvoice: document.getElementById('chip-invoice'),
-      chipBL: document.getElementById('chip-bl'),
-      chipPacking: document.getElementById('chip-packing'),
-      chipERP: document.getElementById('chip-erp'),
-      boxInvoice: document.querySelector('[data-role="invoice"]'),
-      boxBL: document.querySelector('[data-role="bl"]'),
-      boxPacking: document.querySelector('[data-role="packing"]'),
-      boxERP: document.querySelector('[data-role="erp"]'),
-    };
-
-    const required = ['invoice', 'bl'];
-
-    function bindFile(id, key, chip, box, labelOn, labelOff, optional = false) {
-      const input = document.getElementById(id);
-      input.addEventListener('change', () => {
-        files[key] = Boolean(input.files && input.files[0]);
-        fileNames[key] = files[key] ? input.files[0].name : null;
-        chip.textContent = files[key] ? input.files[0].name : labelOff;
-        chip.className = `file-chip ${files[key] ? 'ok' : optional ? '' : 'wait'}`;
-        box.classList.toggle('focused', files[key]);
-        updateWizard();
-      });
-    }
-
-    bindFile('input-invoice', 'invoice', els.chipInvoice, els.boxInvoice, 'Invoice carregada', 'Aguardando');
-    bindFile('input-bl', 'bl', els.chipBL, els.boxBL, 'BL carregado', 'Aguardando');
-    bindFile('input-packing', 'packing', els.chipPacking, els.boxPacking, 'Packing carregado', 'Opcional', true);
-    bindFile('input-erp', 'erp', els.chipERP, els.boxERP, 'ERP carregado', 'Opcional', true);
-
-    function updateWizard() {
-      const docCount = Object.values(files).filter(Boolean).length;
-      const hasRequired = required.every((k) => files[k]);
-      const percent = hasRequired ? (docCount === 2 ? 70 : docCount === 3 ? 85 : 100) : (files.invoice ? 40 : 0);
-      const confidence = percent;
-      const ready = confidence >= 85;
-
-      els.percent.textContent = percent;
-      els.confidence.textContent = confidence;
-      els.confidenceSummary.textContent = `${confidence}%`;
-      els.fill.style.width = `${confidence}%`;
-      els.fill.classList.toggle('ready', ready);
-      els.docs.textContent = `${docCount} de 4`;
-
-      if (!files.invoice && !files.bl) {
-        els.msg.textContent = 'Aguardando invoice e BL para iniciar o cruzamento preventivo.';
-        els.sig1.textContent = 'Invoice ausente';
-        els.sig2.textContent = 'Aguardando BL';
-        els.next.textContent = 'Enviar o primeiro documento';
-      } else if (files.invoice && !files.bl) {
-        els.msg.textContent = 'Invoice recebida. Falta o BL para validar rota, modal e Incoterm.';
-        els.sig1.textContent = 'Invoice carregada';
-        els.sig2.textContent = 'BL ausente';
-        els.next.textContent = 'Suba o Draft BL';
-      } else if (files.invoice && files.bl && !files.packing && !files.erp) {
-        els.msg.textContent = 'Base suficiente para cruzar documentos essenciais. Packing List e ERP aumentam precisão.';
-        els.sig1.textContent = 'Invoice + BL presentes';
-        els.sig2.textContent = 'Cruzamento possível';
-        els.next.textContent = 'Opcional: Packing List / ERP';
-      } else if (files.invoice && files.bl && (files.packing || files.erp)) {
-        els.msg.textContent = 'Cruzamento reforçado com documentação adicional. A leitura fica mais confiável.';
-        els.sig1.textContent = 'Base ampliada';
-        els.sig2.textContent = 'Cruzamento reforçado';
-        els.next.textContent = 'Liberar diagnóstico';
-      }
-
-      els.stageContext.classList.toggle('done', confidence > 0);
-      els.stageDocs.classList.toggle('active', confidence >= 40 && confidence < 85);
-      els.stageDocs.classList.toggle('done', confidence >= 85);
-      els.stageLLM.classList.toggle('active', confidence >= 70 && confidence < 100);
-      els.stageLLM.classList.toggle('done', confidence >= 100);
-      els.stageCockpit.classList.toggle('active', confidence >= 100);
-      els.stageCockpit.classList.toggle('done', confidence >= 100);
-
-      els.cta.classList.toggle('locked', !ready);
-      els.cta.classList.toggle('ready', ready);
-      els.ctaStatus.textContent = ready ? 'Liberado' : 'Bloqueado';
-      els.ctaLabel.textContent = ready ? 'Abrir processamento' : 'Adicionar documentos';
-      els.ctaSub.textContent = ready
-        ? 'A operação já tem base para cruzar fontes e seguir para a próxima etapa.'
-        : 'Adicione Invoice e Draft BL para liberar o motor de cruzamento.';
-      els.ctaButton.textContent = ready ? 'Abrir diagnóstico' : 'Adicionar arquivos';
-      els.ctaButton.onclick = () => {
-        if (ready) {
-          sessionStorage.setItem(wizardStorageKey, JSON.stringify({
-            reference: 'Operação inicial',
-            origin: 'Conferência pública',
-            destination: 'Motor de análise',
-            summary: 'Fluxo capturado na homepage',
-            files: {
-              invoice: fileNames.invoice,
-              bl: fileNames.bl,
-              packing: fileNames.packing,
-              erp: fileNames.erp,
-            },
-            coverage: confidence,
-            stage: confidence >= 100 ? 'cockpit' : confidence >= 85 ? 'diagnostico' : 'documentos',
-            startedAt: new Date().toISOString(),
-          }));
-        }
-        location.href = ready ? '/loading.html' : '/simulacao.html';
-      };
-      sessionStorage.setItem(wizardStorageKey, JSON.stringify({
-        reference: 'Operação inicial',
-        origin: 'Conferência pública',
-        destination: ready ? 'Loading' : 'Coleta documental',
-        summary: 'Fluxo capturado na homepage',
-        files: {
-          invoice: fileNames.invoice,
-          bl: fileNames.bl,
-          packing: fileNames.packing,
-          erp: fileNames.erp,
-        },
-        coverage: confidence,
-        stage: confidence >= 100 ? 'cockpit' : confidence >= 85 ? 'diagnostico' : confidence >= 40 ? 'documentos' : 'contexto',
-        updatedAt: new Date().toISOString(),
-      }));
-    }
-
-    updateWizard();
   </script>
 </body>
 </html>
