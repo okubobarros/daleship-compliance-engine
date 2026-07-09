@@ -91,6 +91,50 @@
       padding:12px 14px;
     }
     .summary strong { display:block; font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:#6b7280; margin-bottom:6px; }
+    .dashboard {
+      margin-top:18px;
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0, 1fr));
+      gap:12px;
+    }
+    .kpi {
+      background:#fff;
+      border:1px solid #eceef1;
+      border-radius:18px;
+      padding:16px;
+      min-height:118px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      box-shadow:0 10px 24px rgba(17,24,39,.04);
+    }
+    .kpi .label { color:#6b7280; }
+    .kpi .value { margin-top:8px; font-size:30px; font-weight:800; letter-spacing:-.04em; line-height:1; }
+    .kpi .sub { margin-top:8px; font-size:13px; line-height:1.5; color:#4b5563; }
+    .kpi .meta { margin-top:10px; font-size:12px; color:#6b7280; line-height:1.5; }
+    .kpi-accent {
+      width:100%;
+      height:4px;
+      border-radius:999px;
+      background:#eef0f3;
+      overflow:hidden;
+      margin-top:14px;
+    }
+    .kpi-accent > span {
+      display:block;
+      height:100%;
+      border-radius:inherit;
+    }
+    .audit-strip {
+      margin-top:14px;
+      padding:12px 14px;
+      border:1px solid #eceef1;
+      border-radius:14px;
+      background:#fff;
+      color:#4b5563;
+      line-height:1.6;
+      font-size:13px;
+    }
     .foot { margin-top:18px; display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; color:#6b7280; font-size:13px; }
     .rail-note {
       margin-top:auto;
@@ -175,6 +219,12 @@
           </section>
         </div>
 
+        <section class="card" id="resumo-card" style="margin-top:18px; display:none;">
+          <div class="label">Resumo automático da API</div>
+          <div id="dashboard" class="dashboard"></div>
+          <div class="audit-strip" id="audit-strip"></div>
+        </section>
+
         <section class="card" id="confianca-card" style="margin-top:18px; display:none;">
           <div class="label">Índice de confiança do dossiê</div>
           <div style="display:grid; grid-template-columns:auto 1fr; gap:20px; align-items:center; margin-top:12px;">
@@ -216,6 +266,94 @@
     const title = document.getElementById('status-title');
     const subtitle = document.getElementById('status-subtitle');
     const coverage = document.getElementById('coverage');
+    const resumoCard = document.getElementById('resumo-card');
+    const dashboard = document.getElementById('dashboard');
+    const auditStrip = document.getElementById('audit-strip');
+
+    function corRisco(indice) {
+      return indice >= 70 ? '#E05252' : indice >= 40 ? '#F97316' : '#16A34A';
+    }
+
+    function nomeEstado(estado) {
+      return {
+        recebido: 'Recebido',
+        extraindo: 'Extraindo',
+        regras_documentais_ok: 'Regras documentais OK',
+        classificando_ncm: 'Classificando NCM',
+        consolidando: 'Consolidando',
+        concluido: 'Concluído',
+        concluido_com_excecoes: 'Concluído com exceções',
+      }[estado] || estado || '—';
+    }
+
+    function fmtPct(valor) {
+      return valor == null ? '—' : `${valor}%`;
+    }
+
+    function fmtQuantidade(ncm) {
+      if (!ncm) return '—';
+      return `${ncm.total || 0} item(ns)`;
+    }
+
+    function renderKpiGrid(resumo) {
+      const score = resumo.score_risco || {};
+      const exc = resumo.excecoes || {};
+      const ncm = resumo.ncm || {};
+      const riscoCor = score.cor || corRisco(score.indice || 0);
+      dashboard.innerHTML = [
+        {
+          label: 'Índice de confiança',
+          value: fmtPct(resumo.indice_confianca),
+          sub: `NCM alta: ${ncm.alta || 0} · baixa: ${ncm.baixa || 0}`,
+          meta: resumo.gerado_em ? `Gerado em ${new Date(resumo.gerado_em).toLocaleString('pt-BR')}` : '',
+          accent: resumo.indice_confianca == null ? '#94a3b8' : (resumo.indice_confianca >= 70 ? '#16A34A' : resumo.indice_confianca >= 40 ? '#F97316' : '#E05252'),
+          width: resumo.indice_confianca == null ? 0 : resumo.indice_confianca,
+        },
+        {
+          label: 'Score de risco',
+          value: score.indice == null ? '—' : `${score.indice}`,
+          sub: score.rotulo || '—',
+          meta: score.total != null ? `${score.total} apontamento(s)` : 'Sem apontamentos',
+          accent: riscoCor,
+          width: score.indice == null ? 0 : score.indice,
+        },
+        {
+          label: 'Quantidade de NCM',
+          value: ncm.total == null ? '—' : `${ncm.total}`,
+          sub: `${ncm.alta || 0} alta / ${ncm.baixa || 0} baixa`,
+          meta: fmtQuantidade(ncm),
+          accent: '#2563EB',
+          width: 100,
+        },
+        {
+          label: 'Exceções',
+          value: exc.ncm_confianca_baixa || exc.coerencia_nao_avaliada || exc.apontamentos_criticos ? 'Ativas' : 'Nenhuma',
+          sub: `${exc.ncm_confianca_baixa || 0} baixa · ${exc.coerencia_nao_avaliada || 0} coerência · ${exc.apontamentos_criticos || 0} críticos`,
+          meta: resumo.estado ? nomeEstado(resumo.estado) : '—',
+          accent: '#7C3AED',
+          width: (exc.ncm_confianca_baixa || exc.coerencia_nao_avaliada || exc.apontamentos_criticos) ? 100 : 0,
+        },
+      ].map((item) => `
+        <article class="kpi">
+          <div>
+            <div class="label">${item.label}</div>
+            <div class="value" style="color:${item.accent};">${item.value}</div>
+            <div class="sub">${item.sub}</div>
+          </div>
+          <div>
+            <div class="meta">${item.meta}</div>
+            <div class="kpi-accent"><span style="width:${item.width}%; background:${item.accent};"></span></div>
+          </div>
+        </article>
+      `).join('');
+      resumoCard.style.display = 'block';
+      const audit = [
+        resumo.versao_api ? `API ${resumo.versao_api}` : null,
+        resumo.gerado_em ? `gerado em ${new Date(resumo.gerado_em).toLocaleString('pt-BR')}` : null,
+        resumo.tempo_processamento_ms != null ? `${resumo.tempo_processamento_ms} ms` : null,
+      ].filter(Boolean);
+      auditStrip.textContent = audit.length ? audit.join(' · ') : '';
+    }
 
     if (source) {
       title.textContent = source.reference || 'Processo recebido';
@@ -247,6 +385,25 @@
       fetch(`/api/resumo?dossie_id=${encodeURIComponent(dossieId)}`)
         .then((r) => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
         .then((resumo) => {
+          if (resumo.referencia) {
+            title.textContent = resumo.referencia;
+          }
+          subtitle.textContent = [nomeEstado(resumo.estado), resumo.score_risco?.rotulo ? `risco ${resumo.score_risco.rotulo}` : null].filter(Boolean).join(' · ');
+          if (resumo.ncm) {
+            coverage.textContent = `Cobertura NCM: ${resumo.ncm.alta || 0} alta, ${resumo.ncm.baixa || 0} baixa, total ${resumo.ncm.total || 0}.`;
+          }
+          const metaCampos = [
+            ['Dossiê', resumo.dossie_id || '—'],
+            ['Estado', nomeEstado(resumo.estado)],
+            ['API', resumo.versao_api || '—'],
+            ['Processado', resumo.tempo_processamento_ms != null ? `${resumo.tempo_processamento_ms} ms` : '—'],
+            ['Geração', resumo.gerado_em ? new Date(resumo.gerado_em).toLocaleString('pt-BR') : '—'],
+            ['NCM alta', resumo.ncm?.alta ?? '—'],
+            ['NCM baixa', resumo.ncm?.baixa ?? '—'],
+            ['Apontamentos', resumo.score_risco?.total ?? '—'],
+          ];
+          meta.innerHTML = metaCampos.map(([label, value]) => `<div><strong>${label}</strong>${value}</div>`).join('');
+          renderKpiGrid(resumo);
           const p = resumo.indice_confianca;
           const pct = (p == null) ? 0 : p;
           const cor = pct >= 70 ? '#16A34A' : pct >= 40 ? '#F97316' : '#E05252';

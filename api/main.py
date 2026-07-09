@@ -10,6 +10,8 @@ Segurança:
 """
 import os
 import uuid
+from datetime import datetime, timezone
+from time import perf_counter
 
 import psycopg2
 import psycopg2.extras
@@ -18,6 +20,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 DATABASE_URL = os.environ["DATABASE_URL"]
 API_TOKEN = os.environ.get("API_TOKEN", "").strip()
+VERSAO_API = "0.1.0"
 # Origens de CORS por env var (lista separada por vírgula) — setar no Render/Vercel sem editar
 # código a cada mudança de domínio. Default: o domínio de produção.
 ALLOWED_ORIGINS = [o.strip() for o in os.environ.get(
@@ -42,6 +45,7 @@ def saude():
 
 @app.get("/dossies/{dossie_id}/resumo", dependencies=[Depends(_auth)])
 def resumo_dossie(dossie_id: str):
+    inicio = perf_counter()
     try:
         uuid.UUID(dossie_id)
     except ValueError:
@@ -59,7 +63,11 @@ def resumo_dossie(dossie_id: str):
     total, alta = ncm.get("total") or 0, ncm.get("alta") or 0
     # Índice de confiança = % de itens com sugestão de NCM de confiança ALTA (reordenada por LLM+RGI).
     indice = round(alta / total * 100) if total else None
+    processamento_ms = round((perf_counter() - inicio) * 1000)
     return {
+        "versao_api": VERSAO_API,
+        "gerado_em": datetime.now(timezone.utc).isoformat(),
+        "tempo_processamento_ms": processamento_ms,
         "dossie_id": dossie_id,
         "referencia": row["referencia"],
         "estado": row["estado_pipeline"],
