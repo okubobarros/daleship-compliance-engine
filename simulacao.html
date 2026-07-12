@@ -281,11 +281,17 @@
             <label for="summary">Descrição da mercadoria</label>
             <textarea id="summary" name="summary" placeholder="Descreva o produto, a família fiscal e o contexto da operação."></textarea>
           </div>
+          <div class="field">
+            <label for="contexto-cliente">Contexto do cliente <span style="font-weight:400; color:#9aa1ab;">(opcional)</span></label>
+            <textarea id="contexto-cliente" name="contexto_cliente" placeholder="Ex.: este importador sempre usa o porto de Santos para esta NCM; ou &quot;apenas conferir impostos, ignorar catálogo interno&quot;."></textarea>
+            <div class="hint">Quanto mais contexto do seu ERP e da sua operação, mais preciso o parecer do agente.</div>
+          </div>
 
           <div class="actions">
             <button class="btn btn-primary locked" id="submit-button" type="submit" disabled>Salvar e seguir para reconciliação</button>
             <a class="btn btn-secondary" href="/">Voltar à home</a>
           </div>
+          <div class="error-box" id="submit-error" style="display:none; margin-top:14px; padding:12px 14px; border:1px solid rgba(224,82,82,.24); border-radius:14px; background:rgba(224,82,82,.05); color:#9a3412; font-size:13px; line-height:1.55;"></div>
         </form>
 
         <aside class="card">
@@ -349,6 +355,24 @@
   </div>
 
   <script>
+    // URL pública da API (Render) — não é segredo, só o endereço do serviço.
+    const API_BASE = window.__API_BASE__ || 'https://daleship-compliance-engine.onrender.com';
+
+    function sessaoAtual() {
+      try {
+        const sessao = JSON.parse(localStorage.getItem('daleship.sessao') || 'null');
+        if (sessao && sessao.token && sessao.expira_em && sessao.expira_em > Date.now() / 1000) {
+          return sessao;
+        }
+      } catch { /* sessão corrompida — trata como ausente */ }
+      return null;
+    }
+
+    const sessao = sessaoAtual();
+    if (!sessao) {
+      location.href = '/login.html?next=' + encodeURIComponent('/simulacao.html');
+    }
+
     const invoice = document.getElementById('invoice');
     const packing = document.getElementById('packing');
     const transport = document.getElementById('transport');
@@ -395,6 +419,7 @@
         origin: document.getElementById('origin').value.trim(),
         destination: document.getElementById('destination').value.trim(),
         summary: document.getElementById('summary').value.trim(),
+        contextoCliente: document.getElementById('contexto-cliente').value.trim(),
         files: {
           invoice: invoice.files[0]?.name || null,
           packing: packing.files[0]?.name || null,
@@ -472,7 +497,9 @@
           : 'Cobertura mínima liberada. O fluxo pode seguir para a reconciliação.');
     }
 
-    function requestExecution(event) {
+const submitError = document.getElementById('submit-error');
+
+    async function requestExecution(event) {
       if (event) event.preventDefault();
       const state = buildProcessState();
       if (!state.ready) {
@@ -480,17 +507,51 @@
         flowWarning.style.display = 'block';
         return false;
       }
+      const sessaoAgora = sessaoAtual();
+      if (!sessaoAgora) {
+        location.href = '/login.html?next=' + encodeURIComponent('/simulacao.html');
+        return false;
+      }
 
       renderGate(state);
-      const request = {
-        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-        requestedAt: new Date().toISOString(),
-        entryPoint: 'simulacao',
-      };
-      sessionStorage.setItem('daleship.process', JSON.stringify(state));
-      sessionStorage.setItem('daleship.execution_request', JSON.stringify(request));
-      location.href = '/loading.html';
-      return true;
+      submitError.style.display = 'none';
+      submitButton.disabled = true;
+      submitButton.textContent = 'Enviando documentos...';
+
+      const dados = new FormData();
+      dados.set('referencia', state.reference || `SIM-${Date.now()}`);
+      if (state.contextoCliente) dados.set('contexto_cliente', state.contextoCliente);
+      dados.set('invoice', invoice.files[0]);
+      if (packing.files[0]) dados.set('packing_list', packing.files[0]);
+      if (transport.files[0]) dados.set('documento_transporte', transport.files[0]);
+      if (erp.files[0]) dados.set('erp_catalogo', erp.files[0]);
+
+      try {
+        const resposta = await fetch(`${API_BASE}/dossies`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${sessaoAgora.token}` },
+          body: dados,
+        });
+        if (resposta.status === 401) {
+          localStorage.removeItem('daleship.sessao');
+          location.href = '/login.html?next=' + encodeURIComponent('/simulacao.html');
+          return false;
+        }
+        if (!resposta.ok) {
+          const corpo = await resposta.json().catch(() => ({}));
+          throw new Error(corpo.detail || 'Não foi possível enviar os documentos.');
+        }
+        const { dossie_id } = await resposta.json();
+        sessionStorage.setItem('daleship.dossie_id', dossie_id);
+        location.href = `/loading.html?dossie_id=${encodeURIComponent(dossie_id)}`;
+        return true;
+      } catch (erro) {
+        submitError.textContent = erro.message || 'Falha ao enviar os documentos. Tente novamente.';
+        submitError.style.display = 'block';
+        submitButton.disabled = false;
+        submitButton.textContent = 'Salvar e seguir para reconciliação';
+        return false;
+      }
     }
 
     function renderFiles() {

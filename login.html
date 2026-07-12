@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Entrar | Despachante de Bolso</title>
+  <meta name="theme-color" content="#f3f4f6" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Poppins', system-ui, sans-serif;
+      background:
+        radial-gradient(1000px 420px at 18% 0%, rgba(37,99,235,.08), transparent 55%),
+        radial-gradient(900px 360px at 84% 8%, rgba(249,115,22,.10), transparent 48%),
+        #f3f4f6;
+      color:#111827;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    a { color: inherit; text-decoration:none; }
+    .wrap { width:100%; max-width:420px; padding:24px; }
+    .brand { display:flex; align-items:center; gap:12px; justify-content:center; margin-bottom:20px; }
+    .brand img { width:44px; height:44px; border-radius:14px; border:1px solid #eceef1; background:#fff; box-shadow:0 10px 24px rgba(17,24,39,.06); object-fit:contain; }
+    .brand-title { font-size:16px; font-weight:700; line-height:1.1; }
+    .brand-sub { font-size:11px; color:#6b7280; margin-top:2px; }
+    .panel {
+      background:#fff;
+      border:1px solid #eceef1;
+      border-radius:28px;
+      padding:32px 28px;
+      box-shadow:0 24px 60px rgba(17,24,39,.08);
+    }
+    .eyebrow { font-size:12px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:#4f46e5; text-align:center; }
+    h1 { margin:10px 0 0; font-size:26px; line-height:1.15; letter-spacing:-.03em; text-align:center; }
+    .lead { margin-top:10px; color:#6b7280; line-height:1.6; font-size:13px; text-align:center; }
+    .field { display:flex; flex-direction:column; gap:8px; margin-top:18px; }
+    .field label { font-size:12px; font-weight:700; color:#374151; }
+    .field input {
+      width:100%;
+      border:1px solid #e5e7eb;
+      border-radius:14px;
+      padding:13px 14px;
+      font: inherit;
+      color:#111827;
+      background:#fff;
+      outline:none;
+    }
+    .field input:focus { border-color:#2563EB; box-shadow:0 0 0 3px rgba(37,99,235,.12); }
+    .btn {
+      margin-top:22px;
+      width:100%;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding:14px 18px;
+      border-radius:14px;
+      font-weight:700;
+      border:none;
+      cursor:pointer;
+      font: inherit;
+      background:linear-gradient(90deg,#2563EB,#6D28D9);
+      color:#fff;
+      box-shadow:0 16px 34px rgba(37,99,235,.22);
+    }
+    .btn:disabled { opacity:.6; cursor:not-allowed; box-shadow:none; }
+    .error {
+      margin-top:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(224,82,82,.24);
+      background:rgba(224,82,82,.05);
+      color:#9a3412;
+      font-size:13px;
+      line-height:1.55;
+      display:none;
+    }
+    .error.show { display:block; }
+    .hint { margin-top:18px; text-align:center; color:#9aa1ab; font-size:12px; line-height:1.6; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <img src="/logo.png" alt="Despachante de Bolso" />
+      <div>
+        <div class="brand-title">Despachante de Bolso</div>
+        <div class="brand-sub">ComexPilot</div>
+      </div>
+    </div>
+    <section class="panel">
+      <div class="eyebrow">Acesso da trading</div>
+      <h1>Entrar para simular uma operação</h1>
+      <p class="lead">Login necessário para que o agente reconheça seu cadastro ERP e suas correções anteriores entre visitas.</p>
+
+      <form id="login-form">
+        <div class="field">
+          <label for="email">E-mail</label>
+          <input id="email" name="email" type="email" autocomplete="username" required />
+        </div>
+        <div class="field">
+          <label for="senha">Senha</label>
+          <input id="senha" name="senha" type="password" autocomplete="current-password" required />
+        </div>
+        <button class="btn" id="submit-button" type="submit">Entrar</button>
+        <div class="error" id="login-error"></div>
+      </form>
+      <p class="hint">Ainda não tem conta? <a href="/registro.html" style="color:#2563EB; font-weight:700;">Criar conta</a></p>
+    </section>
+  </div>
+
+  <script>
+    // Projeto Supabase (URL + chave publicável) — valores públicos, seguros no cliente (mesmo
+    // padrão já usado no site Vercel para o índice de confiança).
+    const SUPABASE_URL = window.__SUPABASE_URL__ || 'https://upxhykukiafksgrgpwcu.supabase.co';
+    const SUPABASE_ANON_KEY = window.__SUPABASE_ANON_KEY__ || 'sb_publishable_N_-t9y2RqTT5q9NvGekzhA_76Ndbi84';
+
+    const form = document.getElementById('login-form');
+    const submitButton = document.getElementById('submit-button');
+    const errorBox = document.getElementById('login-error');
+
+    function proximaPagina() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('next') || '/simulacao.html';
+    }
+
+    function sessaoValida() {
+      try {
+        const sessao = JSON.parse(localStorage.getItem('daleship.sessao') || 'null');
+        return Boolean(sessao && sessao.token && sessao.expira_em && sessao.expira_em > Date.now() / 1000);
+      } catch {
+        return false;
+      }
+    }
+
+    if (sessaoValida()) {
+      location.href = proximaPagina();
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      errorBox.classList.remove('show');
+      submitButton.disabled = true;
+      submitButton.textContent = 'Entrando...';
+      try {
+        const resposta = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY },
+          body: JSON.stringify({
+            email: document.getElementById('email').value.trim(),
+            password: document.getElementById('senha').value,
+          }),
+        });
+        const corpo = await resposta.json().catch(() => ({}));
+        if (!resposta.ok) {
+          throw new Error(corpo.error_description || corpo.msg || 'E-mail ou senha inválidos.');
+        }
+        // Normaliza a resposta do Supabase Auth para o mesmo formato que simulacao.html/
+        // loading.html/resultado.html já esperam em localStorage.
+        const sessao = {
+          token: corpo.access_token,
+          cliente_id: corpo.user?.id,
+          expira_em: Math.floor(Date.now() / 1000) + (corpo.expires_in || 3600),
+        };
+        localStorage.setItem('daleship.sessao', JSON.stringify(sessao));
+        location.href = proximaPagina();
+      } catch (erro) {
+        errorBox.textContent = erro.message || 'Não foi possível entrar. Tente novamente.';
+        errorBox.classList.add('show');
+        submitButton.disabled = false;
+        submitButton.textContent = 'Entrar';
+      }
+    });
+  </script>
+</body>
+</html>

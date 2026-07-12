@@ -221,9 +221,21 @@
   </div>
 
   <script>
-    const state = JSON.parse(sessionStorage.getItem('daleship.process') || 'null');
-    const executionRequest = JSON.parse(sessionStorage.getItem('daleship.execution_request') || 'null');
-    const source = state;
+    function sessaoAtual() {
+      try {
+        const sessao = JSON.parse(localStorage.getItem('daleship.sessao') || 'null');
+        if (sessao && sessao.token && sessao.expira_em && sessao.expira_em > Date.now() / 1000) {
+          return sessao;
+        }
+      } catch { /* sessão corrompida — trata como ausente */ }
+      return null;
+    }
+
+    if (!sessaoAtual()) {
+      location.href = '/login.html?next=' + encodeURIComponent(location.pathname + location.search);
+    }
+
+    const dossieId = new URLSearchParams(window.location.search).get('dossie_id');
     const title = document.getElementById('process-title');
     const subtitle = document.getElementById('process-subtitle');
     const summary = document.getElementById('summary');
@@ -232,130 +244,88 @@
     const sessionSource = document.getElementById('session-source');
     const steps = [document.getElementById('step-1'), document.getElementById('step-2'), document.getElementById('step-3')];
     const statusFeed = document.getElementById('status-feed');
-    let current = 0;
-    const hasRequest = Boolean(executionRequest);
-    const ready = Boolean(source?.files?.invoice && source?.files?.packing);
-    const erpReady = Boolean(source?.files?.erp);
-    const feedEntries = [];
 
-    function appendFeed(kind, title, detail) {
-      feedEntries.push({ kind, title, detail });
-      statusFeed.innerHTML = feedEntries.map((entry) => `
-        <article class="feed-item ${entry.kind}">
+    // Ordem real da máquina de estados (app/orquestracao.py) — percentual aproximado por
+    // estado alcançado, nunca por tempo decorrido.
+    const ESTADOS = ['recebido', 'extraindo', 'regras_documentais_ok', 'classificando_ncm',
+                     'consolidando', 'concluido'];
+    const TERMINAIS = new Set(['concluido', 'concluido_com_excecoes']);
+
+    function percentualDoEstado(estado) {
+      if (TERMINAIS.has(estado)) return 100;
+      const i = ESTADOS.indexOf(estado);
+      return i >= 0 ? Math.round((i / (ESTADOS.length - 1)) * 100) : 0;
+    }
+
+    function renderEventos(eventos) {
+      statusFeed.innerHTML = eventos.map((ev, idx) => {
+        const isUltimo = idx === eventos.length - 1;
+        const kind = isUltimo ? 'watch' : 'ok';
+        const quando = new Date(ev.criado_em).toLocaleTimeString('pt-BR', { hour12: false });
+        return `
+        <article class="feed-item ${kind}">
           <span class="feed-dot"></span>
           <div>
-            <div class="k">EXECUÇÃO</div>
-            <div class="t">${entry.title}</div>
-            <div class="v">${entry.detail}</div>
+            <div class="k">${quando}</div>
+            <div class="t">${ev.narrativa}</div>
           </div>
-        </article>
-      `).join('');
+        </article>`;
+      }).join('');
     }
 
-    function renderIdleState() {
-      title.textContent = source?.reference || 'Reconciliação bloqueada';
-      subtitle.textContent = source
-        ? ready
-          ? 'A operação foi salva, mas ainda não existe um pedido explícito para rodar a pré-análise.'
-          : 'Invoice e Packing List são obrigatórios para liberar a execução.'
-        : 'Nenhuma operação foi encaminhada para o motor.';
-      summary.innerHTML = source
-        ? [
-            ['Referência', source.reference || '—'],
-            ['Origem', source.origin || '—'],
-            ['Destino', source.destination || '—'],
-            ['Invoice', source.files?.invoice || source.files?.bl || 'não anexada'],
-            ['Packing List', source.files?.packing || 'não anexada'],
-            ['Transporte', source.files?.transport || source.files?.bl || 'não anexado'],
-            ['ERP', source.files?.erp || 'não anexado'],
-          ].map(([label, value]) => `<div><strong>${label}</strong><br><span style="color:#6b7280;">${value}</span></div>`).join('')
-        : '<div><strong>Sem operação ativa</strong><br><span style="color:#6b7280;">Volte para a simulação e envie os documentos antes de iniciar.</span></div>';
-      sessionSource.textContent = source
-        ? (ready
-          ? 'Operação salva, aguardando pedido explícito de execução.'
-          : 'Operação salva, mas sem base mínima para iniciar. Invoice e Packing List destravam a reconciliação.')
-        : 'Nenhuma sessão capturada. Volte para a etapa anterior para iniciar o fluxo.';
-      bar.style.width = '0%';
-      percent.textContent = '0%';
-      steps.forEach((el) => {
-        el.classList.remove('active', 'done');
-      });
-      statusFeed.innerHTML = '';
-      appendFeed('watch', ready ? 'Aguardando disparo' : 'Fluxo bloqueado', ready
-        ? 'A base documental está pronta, mas ainda falta o clique explícito para iniciar.'
-        : 'A referência sozinha não libera a reconciliação. Anexe Invoice e Packing List.');
-      document.title = 'Reconciliação bloqueada | Despachante de Bolso';
-    }
-
-    if (hasRequest && source) {
-      title.textContent = source.reference || 'Processo sem referência';
-      subtitle.textContent = ready
-        ? ([source.origin, source.destination].filter(Boolean).join(' · ') || 'Operação registrada na sessão local.')
-        : 'A execução foi solicitada sem a base mínima; a tela ficará em modo bloqueado.';
-      summary.innerHTML = [
-        ['Referência', source.reference || '—'],
-        ['Origem', source.origin || '—'],
-        ['Destino', source.destination || '—'],
-        ['Mercadoria', source.summary || '—'],
-        ['Invoice', source.files?.invoice || source.files?.bl || 'não anexada'],
-        ['Packing List', source.files?.packing || 'não anexada'],
-        ['Transporte', source.files?.transport || source.files?.bl || 'não anexado'],
-        ['ERP', source.files?.erp || 'não anexado'],
-      ].map(([label, value]) => `<div><strong>${label}</strong><br><span style="color:#6b7280;">${value}</span></div>`).join('');
-      sessionSource.textContent = source.files
-        ? `Sessão ativa carregada com ${Object.values(source.files).filter(Boolean).length} documentos persistidos.`
-        : 'Sessão ativa sem documentos persistidos.';
-      statusFeed.innerHTML = '';
-      appendFeed('ok', 'Entrada recebida', source.files?.invoice
-        ? 'Invoice reconhecida e liberada para leitura.'
-        : 'Invoice ausente; a leitura fica incompleta.');
-      appendFeed(source.files?.packing ? 'ok' : 'watch', 'Base documental', source.files?.packing
-        ? 'Packing List confirmado como suporte de volumes.'
-        : 'Packing List ausente; a cobertura mínima não fecha.');
-      appendFeed(erpReady ? 'ok' : 'watch', 'ERP opcional', erpReady
-        ? 'Cadastro mestre disponível para reforçar o cruzamento.'
-        : 'ERP ausente; a leitura segue com a base obrigatória.');
-      appendFeed(ready ? 'ok' : 'watch', 'Cruzamento documental', ready
-        ? 'A base mínima está pronta para avançar para o cockpit.'
-        : 'O cruzamento não pode avançar sem Invoice e Packing List.');
+    if (!dossieId) {
+      title.textContent = 'Nenhuma operação em andamento';
+      subtitle.textContent = 'Volte para a simulação e envie os documentos para iniciar a reconciliação.';
+      summary.innerHTML = '<div><strong>Sem operação ativa</strong><br><span style="color:#6b7280;">Nenhum dossiê foi informado nesta página.</span></div>';
+      sessionSource.textContent = 'Sem dossiê — volte para a etapa anterior.';
     } else {
-      renderIdleState();
-    }
+      title.textContent = `Dossiê ${dossieId.slice(0, 8)}…`;
+      sessionSource.textContent = 'Acompanhando o processamento real da operação.';
 
-    const milestones = [
-      { value: 18, kind: 'ok', title: 'Invoice lida', detail: 'Campos fiscais e valores começaram a ser estruturados.' },
-      { value: 42, kind: 'ok', title: 'Packing List confirmada', detail: 'Volumes e cubagem entraram no cruzamento.' },
-      { value: 68, kind: 'ok', title: 'Regras aplicadas', detail: 'Exceções, sinais e consistência estão sendo validados.' },
-      { value: 100, kind: 'ok', title: 'Cockpit liberado', detail: 'A pré-análise terminou e o resultado pode abrir.' },
-    ];
+      let concluiu = false;
+      async function poll() {
+        if (concluiu) return;
+        try {
+          const [respEstado, respEventos] = await Promise.all([
+            fetch(`/api/estado?dossie_id=${encodeURIComponent(dossieId)}`),
+            fetch(`/api/eventos?dossie_id=${encodeURIComponent(dossieId)}`),
+          ]);
+          if (respEstado.status === 401 || respEventos.status === 401) {
+            localStorage.removeItem('daleship.sessao');
+            location.href = '/login.html?next=' + encodeURIComponent(location.pathname + location.search);
+            return;
+          }
+          if (!respEstado.ok) throw new Error('estado indisponível');
+          const estadoPayload = await respEstado.json();
+          const eventosPayload = respEventos.ok ? await respEventos.json() : { eventos: [] };
 
-    function tick() {
-      const target = hasRequest && source && ready ? 100 : 0;
-      current = Math.min(current + 12, target);
-      bar.style.width = `${current}%`;
-      percent.textContent = `${current}%`;
-      steps.forEach((el, index) => {
-        el.classList.toggle('active', current >= (index + 1) * 30 && current < (index + 2) * 30);
-        el.classList.toggle('done', current >= (index + 1) * 30);
-      });
-      while (milestones.length && current >= milestones[0].value) {
-        const next = milestones.shift();
-        appendFeed(next.kind, next.title, next.detail);
+          const pct = percentualDoEstado(estadoPayload.estado_pipeline);
+          bar.style.width = `${pct}%`;
+          percent.textContent = `${pct}%`;
+          subtitle.textContent = `Estado atual: ${estadoPayload.estado_pipeline}`;
+          steps.forEach((el, index) => {
+            const limiar = (index + 1) * 30;
+            el.classList.toggle('active', pct >= limiar - 30 && pct < limiar);
+            el.classList.toggle('done', pct >= limiar);
+          });
+          renderEventos(eventosPayload.eventos || []);
+          summary.innerHTML = (eventosPayload.eventos || []).slice(-1).map((ev) =>
+            `<div><strong>Último evento</strong><br><span style="color:#6b7280;">${ev.narrativa}</span></div>`
+          ).join('') || '<div><strong>Aguardando o primeiro evento...</strong></div>';
+
+          if (TERMINAIS.has(estadoPayload.estado_pipeline)) {
+            concluiu = true;
+            window.setTimeout(() => {
+              location.href = `/resultado.html?dossie_id=${encodeURIComponent(dossieId)}`;
+            }, 800);
+            return;
+          }
+        } catch (erro) {
+          sessionSource.textContent = 'Não foi possível consultar o andamento agora. Tentando novamente...';
+        }
+        window.setTimeout(poll, 1500);
       }
-      if (current < target) {
-        window.setTimeout(tick, 500);
-      } else if (hasRequest && source && ready) {
-        sessionStorage.removeItem('daleship.execution_request');
-        const nextState = { ...source, stage: 'resultado', status: 'executado', executedAt: new Date().toISOString() };
-        sessionStorage.setItem('daleship.process', JSON.stringify(nextState));
-        window.setTimeout(() => {
-          location.href = '/resultado.html';
-        }, 700);
-      }
-    }
-
-    if (hasRequest && source && ready) {
-      tick();
+      poll();
     }
   </script>
 </body>

@@ -660,11 +660,11 @@
               <div class="review-state" id="review-state">Pronto para revisão</div>
               <div class="review-copy" id="review-copy">A tela consolida cobertura, achados e evidência para o humano decidir o próximo passo.</div>
               <div class="review-actions">
-                <button class="primary-action" type="button">Aceitar</button>
-                <button class="warn-action" type="button">Corrigir</button>
-                <button class="ghost-action" type="button">Escalar</button>
-                <button class="ghost-action" type="button">Travar avanço</button>
+                <button class="primary-action" type="button" id="btn-aceitar-tudo" disabled>Aceitar todos</button>
+                <button class="ghost-action" type="button" id="btn-escalar" disabled>Escalar</button>
+                <button class="ghost-action" type="button" id="btn-travar" disabled>Travar avanço</button>
               </div>
+              <div class="hint" id="review-hint" style="margin-top:8px; font-size:12px; color:#9aa1ab;"></div>
               <div style="margin-top:16px; padding:14px; border-radius:16px; background:#fff; border:1px solid #eceef1;">
                 <div class="label">Evidência principal</div>
                 <div style="margin-top:8px; color:#4b5563; line-height:1.65; font-size:13px;" id="review-evidence">Invoice, Packing List, transporte e ERP são cruzados de acordo com a cobertura disponível.</div>
@@ -687,7 +687,26 @@
   </div>
 
   <script>
-    const state = JSON.parse(sessionStorage.getItem('daleship.process') || 'null');
+    // URL pública da API (Render) — não é segredo. As ações de revisão (Aceitar/Corrigir/
+    // Escalar/Travar) chamam o Render DIRETO, autenticadas pela sessão do usuário (não pelo
+    // API_TOKEN de serviço que os proxies /api/* usam) — mesmo padrão de simulacao.html.
+    const API_BASE = window.__API_BASE__ || 'https://daleship-compliance-engine.onrender.com';
+
+    function sessaoAtual() {
+      try {
+        const sessao = JSON.parse(localStorage.getItem('daleship.sessao') || 'null');
+        if (sessao && sessao.token && sessao.expira_em && sessao.expira_em > Date.now() / 1000) {
+          return sessao;
+        }
+      } catch { /* sessão corrompida — trata como ausente */ }
+      return null;
+    }
+
+    const dossieId = new URLSearchParams(window.location.search).get('dossie_id');
+    // Fallback local (sem dossie_id) só existe para o modo de pré-visualização legado — o fluxo
+    // real (simulacao.html -> loading.html) sempre chega aqui com ?dossie_id=, e nesse caso a
+    // ÚNICA fonte de achados é a API (ver renderResultadoReal mais abaixo), nunca sessionStorage.
+    const state = dossieId ? null : JSON.parse(sessionStorage.getItem('daleship.process') || 'null');
     const source = state;
     const coverageValue = document.getElementById('coverage-value');
     const coverageLabel = document.getElementById('coverage-label');
@@ -710,9 +729,9 @@
     const reviewCopy = document.getElementById('review-copy');
     const reviewEvidence = document.getElementById('review-evidence');
     const auditLog = document.getElementById('audit-log');
-    const dossieId = new URLSearchParams(window.location.search).get('dossie_id');
     let remoteSummary = null;
 
+    if (!dossieId) {
     const files = {
       invoice: source?.files?.invoice || null,
       packing: source?.files?.packing || null,
@@ -963,12 +982,9 @@
     executiveCopy.textContent = ready
       ? 'A operação está pronta para revisão humana. Os critérios abaixo mostram o que foi validado, o que ainda exige atenção e o que permanece opcional, mesmo em lotes grandes com milhares de linhas.'
       : 'A tela não pede uma nova pré-análise; ela consolida o que foi possível validar e sinaliza o que falta para uma leitura confiável.';
-    sourceSummary.textContent = dossieId
-      ? (remoteSummary
-        ? `Fonte remota consolidada para dossiê ${dossieId}.`
-        : `Dossiê ${dossieId} ainda pode ser consultado pelo backend consolidado.`
-      )
-      : 'Resultado gerado a partir da sessão local da simulação.';
+    // dossieId é sempre falsy aqui dentro (guardado por `if (!dossieId)`) — modo real fica em
+    // renderResultadoReal(), fora deste bloco de pré-visualização local.
+    sourceSummary.textContent = 'Resultado gerado a partir da sessão local da simulação.';
 
     criteriaGrid.innerHTML = criteria.map((item) => `
       <article class="criteria-card ${item.severity}">
@@ -1059,26 +1075,232 @@
         </div>
       </article>
     `).join('');
+    } // fim do modo de pré-visualização local (sem dossie_id)
+
+    // ---- Modo real: única fonte de achados é a API, nunca sessionStorage ----
+    const SEVERIDADE_CSS = { critico: 'critical', atencao: 'watch', info: 'ok' };
+    const SEVERIDADE_LABEL = { critico: 'crítico', atencao: 'atenção', info: 'ok' };
+
+    function cardApontamentoReal(ap) {
+      const cssSeveridade = SEVERIDADE_CSS[ap.severidade] || 'ok';
+      const confiancaBadge = (ap.confianca_pct != null || ap.confianca_rotulo)
+        ? `<div class="finding-severity" style="background:rgba(109,40,217,.08); color:#6D28D9; border-color:rgba(109,40,217,.24);">
+             ${ap.confianca_pct != null ? `${ap.confianca_pct}% confiança` : (ap.confianca_rotulo === 'revisao_necessaria' ? 'revisão necessária' : ap.confianca_rotulo)}
+           </div>`
+        : '';
+      const citacao = ap.norma_identificador
+        ? `<div class="finding-box"><strong>Fonte normativa</strong>${ap.norma_identificador}${ap.norma_fonte_url ? ` · <a href="${ap.norma_fonte_url}" target="_blank" rel="noopener">ver fonte</a>` : ''}</div>`
+        : '';
+      const impacto = ap.impacto_financeiro_texto
+        ? `<div class="finding-box"><strong>Impacto</strong>${ap.impacto_financeiro_texto}</div>`
+        : '';
+      const jaRevisado = ap.status === 'validado' || ap.status === 'corrigido';
+      const acoes = jaRevisado
+        ? `<div style="margin-top:12px; font-size:12px; font-weight:700; color:${ap.status === 'validado' ? '#166534' : '#9a3412'};">
+             ${ap.status === 'validado' ? '✓ Aceito pelo analista' : '✎ Corrigido pelo analista'}
+           </div>`
+        : `<div class="finding-actions" style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+             <button type="button" class="btn-aceitar-achado" data-apontamento-id="${ap.id}"
+                     style="border:none; cursor:pointer; font:inherit; font-size:12.5px; font-weight:700; color:#166534; background:rgba(22,163,74,.1); padding:8px 14px; border-radius:10px;">Aceitar</button>
+             <button type="button" class="btn-corrigir-achado" data-apontamento-id="${ap.id}"
+                     style="border:none; cursor:pointer; font:inherit; font-size:12.5px; font-weight:700; color:#9a3412; background:rgba(249,115,22,.1); padding:8px 14px; border-radius:10px;">Corrigir</button>
+           </div>
+           <div class="corrigir-form" data-apontamento-id="${ap.id}" style="display:none; margin-top:10px; padding:12px; border:1px solid #eceef1; border-radius:12px; background:#fafbfc;">
+             <textarea class="corrigir-valor" placeholder="Valor corrigido" style="width:100%; min-height:52px; font:inherit; font-size:12.5px; border:1px solid #e5e7eb; border-radius:8px; padding:8px;"></textarea>
+             <textarea class="corrigir-justificativa" placeholder="Justificativa (opcional)" style="width:100%; min-height:40px; margin-top:6px; font:inherit; font-size:12.5px; border:1px solid #e5e7eb; border-radius:8px; padding:8px;"></textarea>
+             <button type="button" class="btn-enviar-correcao" data-apontamento-id="${ap.id}"
+                     style="margin-top:8px; border:none; cursor:pointer; font:inherit; font-size:12.5px; font-weight:700; color:#fff; background:#2563EB; padding:8px 14px; border-radius:10px;">Enviar correção</button>
+           </div>`;
+      return `
+      <article class="finding-item ${cssSeveridade}">
+        <div class="finding-head">
+          <div class="finding-title">${ap.descricao}</div>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <div class="finding-severity">${SEVERIDADE_LABEL[ap.severidade] || ap.severidade}</div>
+            ${confiancaBadge}
+          </div>
+        </div>
+        ${ap.por_que_importa ? `<div class="finding-copy">${ap.por_que_importa}</div>` : ''}
+        <div class="finding-grid">
+          ${ap.evidencia ? `<div class="finding-box"><strong>Evidência</strong>${ap.evidencia}</div>` : ''}
+          ${ap.acao_recomendada ? `<div class="finding-box"><strong>Ação recomendada</strong>${ap.acao_recomendada}</div>` : ''}
+          ${citacao}
+          ${impacto}
+        </div>
+        ${acoes}
+      </article>`;
+    }
+
+    function exigirLogin() {
+      location.href = '/login.html?next=' + encodeURIComponent(location.pathname + location.search);
+    }
+
+    async function chamarApi(caminho, corpo) {
+      const sessao = sessaoAtual();
+      if (!sessao) { exigirLogin(); throw new Error('sem sessão'); }
+      const resposta = await fetch(`${API_BASE}${caminho}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sessao.token}` },
+        body: JSON.stringify(corpo),
+      });
+      if (resposta.status === 401) {
+        localStorage.removeItem('daleship.sessao');
+        exigirLogin();
+        throw new Error('sessão expirada');
+      }
+      if (!resposta.ok) {
+        const c = await resposta.json().catch(() => ({}));
+        throw new Error(c.detail || 'Falha ao registrar a decisão.');
+      }
+      return resposta.json();
+    }
+
+    function configurarAcoesRevisao(id) {
+      const sessao = sessaoAtual();
+      const habilitado = Boolean(sessao);
+      ['btn-aceitar-tudo', 'btn-escalar', 'btn-travar'].forEach((elId) => {
+        document.getElementById(elId).disabled = !habilitado;
+      });
+      document.getElementById('review-hint').textContent = habilitado
+        ? ''
+        : 'Entre com sua conta para aceitar, corrigir ou escalar achados.';
+
+      document.getElementById('btn-aceitar-tudo').onclick = async () => {
+        try {
+          await chamarApi(`/dossies/${encodeURIComponent(id)}/decisao`, { decisao: 'aceitar_tudo' });
+          await renderResultadoReal(id);
+        } catch (e) { alert(e.message); }
+      };
+      document.getElementById('btn-escalar').onclick = async () => {
+        const nota = prompt('Motivo da escalação (opcional):') || null;
+        try {
+          await chamarApi(`/dossies/${encodeURIComponent(id)}/decisao`, { decisao: 'escalar', nota });
+          await renderResultadoReal(id);
+        } catch (e) { alert(e.message); }
+      };
+      document.getElementById('btn-travar').onclick = async () => {
+        const nota = prompt('Motivo do travamento (opcional):') || null;
+        try {
+          await chamarApi(`/dossies/${encodeURIComponent(id)}/decisao`, { decisao: 'travar', nota });
+          await renderResultadoReal(id);
+        } catch (e) { alert(e.message); }
+      };
+
+      // Delegação: os cards de achado são reconstruídos a cada render, então os listeners vivem
+      // no container pai (findingList), não em cada botão individual.
+      findingList.onclick = async (event) => {
+        const aceitarBtn = event.target.closest('.btn-aceitar-achado');
+        const corrigirBtn = event.target.closest('.btn-corrigir-achado');
+        const enviarBtn = event.target.closest('.btn-enviar-correcao');
+        if (aceitarBtn) {
+          try {
+            await chamarApi(`/dossies/${encodeURIComponent(id)}/apontamentos/${aceitarBtn.dataset.apontamentoId}/revisao`,
+              { aceito: true });
+            await renderResultadoReal(id);
+          } catch (e) { alert(e.message); }
+          return;
+        }
+        if (corrigirBtn) {
+          const form = findingList.querySelector(`.corrigir-form[data-apontamento-id="${corrigirBtn.dataset.apontamentoId}"]`);
+          if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
+          return;
+        }
+        if (enviarBtn) {
+          const form = enviarBtn.closest('.corrigir-form');
+          const valor = form.querySelector('.corrigir-valor').value.trim();
+          const justificativa = form.querySelector('.corrigir-justificativa').value.trim();
+          if (!valor) { alert('Informe o valor corrigido.'); return; }
+          try {
+            await chamarApi(`/dossies/${encodeURIComponent(id)}/apontamentos/${enviarBtn.dataset.apontamentoId}/revisao`,
+              { aceito: false, valor_corrigido: valor, justificativa: justificativa || null });
+            await renderResultadoReal(id);
+          } catch (e) { alert(e.message); }
+        }
+      };
+    }
+
+    async function renderResultadoReal(id) {
+      executiveTitle.textContent = 'Consultando o dossiê...';
+      executiveCopy.textContent = 'Buscando o resultado consolidado no backend.';
+      try {
+        const [respResumo, respApontamentos, respEventos] = await Promise.all([
+          fetch(`/api/resumo?dossie_id=${encodeURIComponent(id)}`),
+          fetch(`/api/apontamentos?dossie_id=${encodeURIComponent(id)}`),
+          fetch(`/api/eventos?dossie_id=${encodeURIComponent(id)}`),
+        ]);
+
+        if (respResumo.status === 409) {
+          executiveTitle.textContent = 'Dossiê ainda em processamento';
+          executiveCopy.textContent = 'Este dossiê ainda não foi consolidado — volte para a tela de reconciliação.';
+          sourceSummary.textContent = `Dossiê ${id} pendente de consolidação.`;
+          return;
+        }
+        if (!respResumo.ok) throw new Error('resumo indisponível');
+        const resumo = await respResumo.json();
+        remoteSummary = resumo;
+
+        // score_risco é um objeto estruturado (score_risco.calcular(): {indice, rotulo, cor,
+        // contagem}), não um número solto — ler os campos certos em vez de um typeof ingênuo.
+        const risco = resumo.score_risco || {};
+        if (typeof resumo.indice_confianca === 'number') coverageSummary.textContent = `${resumo.indice_confianca}%`;
+        if (typeof risco.indice === 'number') riskSummary.textContent = `${risco.indice}/100 (${risco.rotulo || ''})`;
+        executiveTitle.textContent = resumo.mensagem?.slice(0, 72) || 'Parecer consolidado';
+        executiveCopy.textContent = resumo.mensagem || 'Consulte os achados abaixo para o detalhe da análise.';
+        sourceSummary.textContent = `Resumo consolidado pelo backend para ${resumo.referencia || id}.`;
+
+        // Painéis do topo (cobertura documental e próxima ação) eram fabricados a partir de
+        // sessionStorage — em modo real refletem o estado real do dossiê, sem inventar % de
+        // cobertura por documento (a API não expõe isso; mostrar só o que é real).
+        const estadoReal = resumo.estado || 'concluido';
+        const excecoes = resumo.excecoes || {};
+        const temExcecoes = (excecoes.ncm_confianca_baixa || 0) > 0 || (excecoes.coerencia_nao_avaliada || 0) > 0
+          || (excecoes.apontamentos_criticos || 0) > 0;
+        coverageValue.textContent = typeof resumo.indice_confianca === 'number' ? `${resumo.indice_confianca}%` : '—';
+        coverageLabel.textContent = 'Índice de confiança calculado pelo backend a partir da classificação de NCM.';
+        coverageState.textContent = temExcecoes ? 'Pronto, com exceções' : 'Pronto para revisão';
+        coverageFill.style.width = typeof resumo.indice_confianca === 'number' ? `${resumo.indice_confianca}%` : '0%';
+        coverageFill.classList.toggle('max', !temExcecoes);
+        coverageFill.classList.toggle('ready', temExcecoes);
+        coverageNote.textContent = resumo.mensagem || 'Consolidado pelo backend.';
+        nextTitle.textContent = temExcecoes ? 'Exceções aguardando revisão' : 'Pronto para revisão humana';
+        nextCopy.textContent = resumo.mensagem || 'Revise os achados abaixo antes de prosseguir.';
+        moduleList.innerHTML = '';
+        criteriaGrid.innerHTML = '';
+        auditSummary.textContent = temExcecoes
+          ? 'Há exceções pendentes — revise os achados críticos/atenção antes de liberar a operação.'
+          : 'Sem exceções pendentes nesta rodada.';
+
+        const apontamentosPayload = respApontamentos.ok ? await respApontamentos.json() : { apontamentos: [] };
+        const apontamentos = (apontamentosPayload.apontamentos || []).slice().sort((a, b) => {
+          const ordem = { critico: 0, atencao: 1, info: 2 };
+          return (ordem[a.severidade] ?? 3) - (ordem[b.severidade] ?? 3);
+        });
+        findingList.innerHTML = apontamentos.length
+          ? apontamentos.map(cardApontamentoReal).join('')
+          : '<div class="finding-box">Nenhum achado registrado para este dossiê ainda.</div>';
+        configurarAcoesRevisao(id);
+
+        reviewState.textContent = 'Pronto para revisão';
+        reviewCopy.textContent = 'O humano pode aceitar, corrigir ou escalar os achados sem perder o contexto da operação.';
+        reviewEvidence.textContent = `${apontamentos.length} achado(s) — ordenados por severidade, cada um com evidência e citação ao lado quando existir.`;
+
+        const eventosPayload = respEventos.ok ? await respEventos.json() : { eventos: [] };
+        auditLog.innerHTML = (eventosPayload.eventos || []).map((ev) => `
+          <article class="audit-event ok">
+            <div class="audit-dot"></div>
+            <div>
+              <div class="k">${new Date(ev.criado_em).toLocaleString('pt-BR')}</div>
+              <div class="t">${ev.narrativa}</div>
+            </div>
+          </article>
+        `).join('');
+      } catch (erro) {
+        sourceSummary.textContent = `Backend indisponível para ${id} — tente recarregar a página.`;
+      }
+    }
 
     if (dossieId) {
-      fetch(`/api/resumo?dossie_id=${encodeURIComponent(dossieId)}`)
-        .then((response) => (response.ok ? response.json() : null))
-        .then((payload) => {
-          if (!payload) return;
-          remoteSummary = payload;
-          if (typeof payload.indice_confianca === 'number') {
-            coverageSummary.textContent = `${payload.indice_confianca}%`;
-          }
-          if (typeof payload.score_risco === 'number') {
-            riskSummary.textContent = `${payload.score_risco}/100`;
-          }
-          executiveTitle.textContent = payload.mensagem?.slice(0, 72) || executiveTitle.textContent;
-          executiveCopy.textContent = payload.mensagem || executiveCopy.textContent;
-          sourceSummary.textContent = `Resumo consolidado pelo backend para ${payload.referencia || dossieId}.`;
-        })
-        .catch(() => {
-          sourceSummary.textContent = `Backend consolidado indisponível para ${dossieId}; exibindo a leitura local.`;
-        });
+      renderResultadoReal(dossieId);
     }
   </script>
 </body>
