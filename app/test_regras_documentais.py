@@ -41,12 +41,13 @@ def main() -> None:
     assert next(a for a in ach if a["codigo"] == "FREIGHT_RULE")["severidade"] == "atencao"
     print("OK regras_documentais — FOB + Prepaid é incompatível")
 
-    # 3) Tudo presente e coerente -> nenhum RISCO e nenhum 'não avaliado' (nada faltando)
-    ach = rd.avaliar({"invoice": {"incoterm": "CIF", "condicao_frete": "Freight Prepaid"},
+    # 3) Tudo presente e coerente (incl. país de origem) -> nenhum RISCO e nenhum 'não avaliado'
+    ach = rd.avaliar({"invoice": {"incoterm": "CIF", "condicao_frete": "Freight Prepaid",
+                                  "pais_origem": "China"},
                       "documento_transporte": {"incoterm": "CIF"}})
     assert ach == [], f"esperado silêncio quando tudo presente e coerente, veio {ach}"
     # FOB + Collect com os dois Incoterms presentes -> coerente, silêncio
-    assert rd.avaliar({"invoice": {"incoterm": "FOB"},
+    assert rd.avaliar({"invoice": {"incoterm": "FOB", "pais_origem": "Vietnã"},
                        "documento_transporte": {"incoterm": "FOB", "condicao_frete": "Freight Collect"}}) == []
     print("OK regras_documentais — tudo presente e coerente = silêncio (sem risco, sem 'não avaliado')")
 
@@ -70,6 +71,22 @@ def main() -> None:
     na = next(a for a in ach if a["codigo"] == "COERENCIA_NAO_AVALIADA")
     assert "frete" in na["descricao"]  # o que faltou foi a condição de frete
     print("OK regras_documentais — risco e 'não avaliado' coexistem quando cabe")
+
+    # 6) País de origem ausente -> PAIS_ORIGEM_AUSENTE (info, visibilidade — não é risco)
+    ach = rd.avaliar({"invoice": {"incoterm": "CIF", "condicao_frete": "Freight Prepaid"},
+                      "documento_transporte": {"incoterm": "CIF"}})
+    assert _riscos(ach) == [], "país de origem ausente não pode virar risco falso"
+    po = next(a for a in ach if a["codigo"] == "PAIS_ORIGEM_AUSENTE")
+    assert po["severidade"] == "info"
+    assert po["evidencia"] and po["por_que_importa"] and po["acao_recomendada"]
+    # presente em qualquer um dos dois documentos -> não dispara
+    assert "PAIS_ORIGEM_AUSENTE" not in _codigos(rd.avaliar(
+        {"invoice": {"incoterm": "CIF", "condicao_frete": "Freight Prepaid", "pais_origem": "China"},
+         "documento_transporte": {"incoterm": "CIF"}}))
+    assert "PAIS_ORIGEM_AUSENTE" not in _codigos(rd.avaliar(
+        {"invoice": {"incoterm": "CIF", "condicao_frete": "Freight Prepaid"},
+         "documento_transporte": {"incoterm": "CIF", "pais_origem": "China"}}))
+    print("OK regras_documentais — país de origem ausente é 'info' (visibilidade), presente em qualquer lado silencia")
 
 
 if __name__ == "__main__":

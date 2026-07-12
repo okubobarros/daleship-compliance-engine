@@ -22,13 +22,16 @@ def _dict_cur(conn):
 
 # --- Dossiês ---
 
-def criar_dossie(cliente_id: str, referencia: str) -> str:
+def criar_dossie(cliente_id: str, referencia: str, contexto_cliente: str | None = None) -> str:
+    """contexto_cliente é o texto livre do campo "Contexto do cliente" (mockup
+    estado-vazio.html) — guardado em dados_extraidos (sem migration nova) para o
+    Reconciliation Agent poder lê-lo depois (ex.: "apenas conferir impostos, ignorar catálogo")."""
     dossie_id = str(uuid.uuid4())
     with conectar() as conn, conn.cursor() as cur:
         cur.execute(
             "INSERT INTO dossies (id, cliente_id, referencia, dados_extraidos, status) "
             "VALUES (%s, %s, %s, %s, 'em_analise')",
-            (dossie_id, cliente_id, referencia, json.dumps({})),
+            (dossie_id, cliente_id, referencia, json.dumps({"contexto_cliente": contexto_cliente})),
         )
         cur.execute(
             "INSERT INTO log_auditoria (dossie_id, evento, detalhe) VALUES (%s, %s, %s)",
@@ -36,6 +39,20 @@ def criar_dossie(cliente_id: str, referencia: str) -> str:
         )
         conn.commit()
     return dossie_id
+
+
+def cliente_id_do_dossie(dossie_id: str) -> str | None:
+    with conectar() as conn, conn.cursor() as cur:
+        cur.execute("SELECT cliente_id FROM dossies WHERE id=%s", (dossie_id,))
+        r = cur.fetchone()
+        return str(r[0]) if r else None
+
+
+def contexto_cliente_do_dossie(dossie_id: str) -> str | None:
+    with conectar() as conn, conn.cursor() as cur:
+        cur.execute("SELECT dados_extraidos->>'contexto_cliente' FROM dossies WHERE id=%s", (dossie_id,))
+        r = cur.fetchone()
+        return r[0] if r else None
 
 
 def listar_dossies(cliente_id: str) -> list[dict]:
@@ -107,17 +124,24 @@ def confirmar_tipo_transporte(doc_id: str, dossie_id: str, novo_tipo: str, autor
 def inserir_apontamento(dossie_id: str, tipo: str, severidade: str, orgao: str,
                         descricao: str, norma_id: str | None,
                         evidencia: str | None = None, por_que_importa: str | None = None,
-                        acao_recomendada: str | None = None) -> str:
+                        acao_recomendada: str | None = None, codigo: str | None = None,
+                        confianca_rotulo: str | None = None, confianca_pct: float | None = None,
+                        impacto_financeiro_texto: str | None = None) -> str:
     """Insere um apontamento. Os campos de decisão (evidencia/por_que_importa/acao_recomendada)
-    são opcionais: preenchidos por regras que seguem o formato do Cockpit, NULL nos demais."""
+    e os de identidade/confiança (codigo/confianca_rotulo/confianca_pct/impacto_financeiro_texto,
+    migration 0009) são todos opcionais: preenchidos por regras que seguem o formato do Cockpit,
+    NULL nos demais — confianca_pct só deve vir de uma medida real (ex.: sim_top1 do rerank de
+    NCM), nunca um número inventado (CLAUDE.md §4)."""
     ap_id = str(uuid.uuid4())
     with conectar() as conn, conn.cursor() as cur:
         cur.execute(
             "INSERT INTO apontamentos (id, dossie_id, tipo, severidade, orgao, descricao, "
-            "norma_citada_id, evidencia, por_que_importa, acao_recomendada, status) "
-            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'pendente')",
+            "norma_citada_id, evidencia, por_que_importa, acao_recomendada, codigo, "
+            "confianca_rotulo, confianca_pct, impacto_financeiro_texto, status) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'pendente')",
             (ap_id, dossie_id, tipo, severidade, orgao, descricao, norma_id,
-             evidencia, por_que_importa, acao_recomendada),
+             evidencia, por_que_importa, acao_recomendada, codigo,
+             confianca_rotulo, confianca_pct, impacto_financeiro_texto),
         )
         conn.commit()
     return ap_id
@@ -154,6 +178,35 @@ def registrar_revisao(apontamento_id: str, dossie_id: str, aceito: bool,
             (dossie_id, "apontamento_revisado",
              json.dumps({"apontamento_id": apontamento_id, "status": novo_status,
                          "valor_corrigido": valor_corrigido, "justificativa": justificativa, "autor": autor})),
+        )
+        conn.commit()
+
+
+def obter_apontamento(apontamento_id: str) -> dict | None:
+    with conectar() as conn, _dict_cur(conn) as cur:
+        cur.execute("SELECT * FROM apontamentos WHERE id = %s", (apontamento_id,))
+        return cur.fetchone()
+
+
+def decidir_dossie(dossie_id: str, decisao: str, nota: str | None, autor: str) -> None:
+    """Ações de nível DOSSIÊ acionadas pelo painel "Parecer do Cockpit" (botões antes
+    decorativos): 'aceitar_tudo' aceita todos os apontamentos ainda pendentes (1 clique cada,
+    via registrar_revisao) e conclui a revisão; 'escalar'/'travar' mudam o status do dossiê e
+    registram o motivo em log_auditoria — nunca some sem deixar rastro (CLAUDE.md §4)."""
+    if decisao == "aceitar_tudo":
+        pendentes = [a for a in listar_apontamentos(dossie_id) if a["status"] == "pendente"]
+        for ap in pendentes:
+            registrar_revisao(ap["id"], dossie_id, True, ap["descricao"], None, nota, autor)
+        atualizar_status(dossie_id, "concluido")
+        return
+    novo_status = {"escalar": "escalado", "travar": "travado"}.get(decisao)
+    if not novo_status:
+        raise ValueError(f"decisão desconhecida: {decisao}")
+    atualizar_status(dossie_id, novo_status)
+    with conectar() as conn, conn.cursor() as cur:
+        cur.execute(
+            "INSERT INTO log_auditoria (dossie_id, evento, detalhe) VALUES (%s, %s, %s)",
+            (dossie_id, f"dossie_{novo_status}", json.dumps({"nota": nota, "autor": autor})),
         )
         conn.commit()
 

@@ -16,6 +16,7 @@ Uso:
 """
 from __future__ import annotations
 
+import json
 import os
 import sys
 import threading
@@ -29,6 +30,11 @@ import rag
 from config import DATABASE_URL
 
 N_PARALELO = int(os.environ.get("NCM_WORKER_PARALELO", "3"))
+# A cada quantos itens classificados (por dossiê) grava um evento de progresso em log_auditoria.
+# Existe para que o "log de raciocínio" da UI continue vivo durante lotes grandes (cenário de
+# 2.000-2.700 itens) sem inundar a auditoria com um evento por item — telemetria proporcional ao
+# volume, não silêncio até o fim nem ruído item a item.
+NCM_PROGRESSO_A_CADA = int(os.environ.get("NCM_PROGRESSO_A_CADA", "25"))
 
 
 def enfileirar(dossie_id: str, itens: list[dict]) -> int:
@@ -58,10 +64,36 @@ def _claim_one(conn) -> dict | None:
             "UPDATE dossie_item_status SET status='processando', atualizado_em=now() "
             "WHERE id = (SELECT id FROM dossie_item_status WHERE status='pendente' "
             "            ORDER BY criado_em FOR UPDATE SKIP LOCKED LIMIT 1) "
-            "RETURNING id, descricao")
+            "RETURNING id, dossie_id, descricao")
         row = cur.fetchone()
         conn.commit()
         return dict(row) if row else None
+
+
+def _contagem_dossie(conn, dossie_id: str) -> dict[str, int]:
+    with conn.cursor() as cur:
+        cur.execute("SELECT status, count(*) FROM dossie_item_status WHERE dossie_id=%s "
+                   "GROUP BY status", (dossie_id,))
+        por_status = {s: n for s, n in cur.fetchall()}
+    total = sum(por_status.values())
+    concluidos = sum(n for s, n in por_status.items() if s not in ("pendente", "processando"))
+    return {"total": total, "concluidos": concluidos, **por_status}
+
+
+def _log_progresso(conn, dossie_id: str, forcar: bool = False) -> None:
+    """Grava classificacao_ncm_progresso em log_auditoria a cada NCM_PROGRESSO_A_CADA itens
+    concluídos (ou sempre que forcar=True, ex.: ao esvaziar a fila deste dossiê) — telemetria
+    real do que o agente está fazendo, não decorativa (CLAUDE.md — log de raciocínio)."""
+    c = _contagem_dossie(conn, dossie_id)
+    concluidos, total = c["concluidos"], c["total"]
+    if not forcar and (concluidos == 0 or concluidos % NCM_PROGRESSO_A_CADA != 0):
+        return
+    detalhe = {"concluidos": concluidos, "total": total,
+              "alta": c.get("concluido", 0), "baixa": c.get("concluido_confianca_baixa", 0)}
+    with conn.cursor() as cur:
+        cur.execute("INSERT INTO log_auditoria (dossie_id, evento, detalhe) VALUES (%s, %s, %s)",
+                   (dossie_id, "classificacao_ncm_progresso", json.dumps(detalhe)))
+        conn.commit()
 
 
 def _gravar(conn, item_pk: str, res: dict) -> str:
@@ -110,6 +142,9 @@ def processar(n_paralelo: int = N_PARALELO, max_itens: int | None = None) -> dic
                     processados[0] += 1
                     stats[status] += 1
                     stats[f"provedor::{res.get('provedor')}"] += 1
+                c = _contagem_dossie(conn, item["dossie_id"])
+                fila_esvaziada = c["concluidos"] >= c["total"]
+                _log_progresso(conn, item["dossie_id"], forcar=fila_esvaziada)
         finally:
             conn.close()
 

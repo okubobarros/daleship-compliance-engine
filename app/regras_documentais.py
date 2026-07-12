@@ -100,6 +100,23 @@ def avaliar(campos_por_papel: dict[str, dict]) -> list[dict]:
                                 "frete para permitir a checagem.",
         })
 
+    # 0b) País de origem ausente — checagem de completude (não de coerência entre documentos):
+    # sem esse dado a exigência de anuência (sanidade animal/vegetal, acordo comercial) e a
+    # alíquota de II por origem ficam indeterminadas. Emitido sempre que ausente em ambos os
+    # documentos (não é comparação, é constatação de lacuna — por isso não depende dos dois lados).
+    pais_origem = inv.get("pais_origem") or transp.get("pais_origem")
+    if not pais_origem:
+        achados.append({
+            "codigo": "PAIS_ORIGEM_AUSENTE", "tipo": "documental", "severidade": "info",
+            "orgao": "-",
+            "descricao": "País de origem não informado na Invoice nem no documento de transporte.",
+            "evidencia": "país de origem: ausente em ambos os documentos",
+            "por_que_importa": "O país de origem pode mudar a exigência de anuência (ex.: sanidade "
+                               "animal/vegetal) e a alíquota de II por acordo comercial — sem ele, a "
+                               "classificação e a checagem de anuência ficam incompletas.",
+            "acao_recomendada": "Confirme o país de origem com o exportador antes da classificação final.",
+        })
+
     # 1) Incoterm divergente entre a Invoice e o BL — precisa dos dois lados para comparar.
     if inc_inv and inc_bl and inc_inv != inc_bl:
         achados.append({

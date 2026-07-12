@@ -20,8 +20,11 @@ import json
 import psycopg2
 import psycopg2.extras
 
+import aprendizado
 import db
+import erp_catalogo
 import processamento
+import reconciliacao_erp
 import regras_documentais
 import score_risco
 import worker_ncm
@@ -29,7 +32,8 @@ from config import DATABASE_URL
 
 TERMINAIS = {"concluido", "concluido_com_excecoes"}
 # Apontamentos da fase ESTRUTURAL (regenerados a cada run pré-revisão -> idempotência).
-_TIPOS_ESTRUTURAIS = ["divergencia", "documental", "anuencia", "atributos", "regulatorio", "extracao"]
+_TIPOS_ESTRUTURAIS = ["divergencia", "documental", "anuencia", "atributos", "regulatorio",
+                      "extracao", "reconciliacao_erp"]
 
 
 # ---------- estado ----------
@@ -83,15 +87,31 @@ def _fase_extracao(dossie_id: str) -> None:
                            {"aviso": "sem itens na invoice — extração externa pendente"})
 
 
+def _apontamento_com_aprendizado(dossie_id: str, cliente_id: str | None, ach: dict) -> None:
+    """Insere um achado (formato regras_documentais.avaliar()/reconciliacao_erp.comparar()) e,
+    quando há `codigo` + `cliente_id`, anexa ao por_que_importa a correção anterior mais recente
+    para o mesmo cliente+tipo de achado (app/aprendizado.py — loop de aprendizado mínimo, CLAUDE.md
+    §8). Sem correção anterior, não anexa nada (silêncio, nunca uma suposição)."""
+    por_que_importa = ach.get("por_que_importa")
+    codigo = ach.get("codigo")
+    if cliente_id and codigo:
+        sugestao = aprendizado.sugestao_texto(aprendizado.buscar_correcao_anterior(cliente_id, codigo))
+        if sugestao:
+            por_que_importa = f"{por_que_importa} {sugestao}" if por_que_importa else sugestao
+    db.inserir_apontamento(dossie_id, ach["tipo"], ach["severidade"], ach["orgao"],
+                           ach["descricao"], None, ach.get("evidencia"),
+                           por_que_importa, ach.get("acao_recomendada"), codigo=codigo)
+
+
 def _fase_regras(dossie_id: str) -> None:
     """Regras estruturais: coerência Invoice×BL (regras_documentais) + flags regulatórios +
-    conciliação Invoice×Packing List quando houver. Idempotente (delete+reinsert)."""
+    conciliação Invoice×Packing List + Reconciliation Agent (ERP) quando houver. Idempotente
+    (delete+reinsert)."""
     _limpar_apontamentos(dossie_id, _TIPOS_ESTRUTURAIS)
     itens = _itens_invoice(dossie_id)
+    cliente_id = db.cliente_id_do_dossie(dossie_id)
     for ach in regras_documentais.avaliar(_campos_por_papel(dossie_id)):
-        db.inserir_apontamento(dossie_id, ach["tipo"], ach["severidade"], ach["orgao"],
-                               ach["descricao"], None, ach.get("evidencia"),
-                               ach.get("por_que_importa"), ach.get("acao_recomendada"))
+        _apontamento_com_aprendizado(dossie_id, cliente_id, ach)
     processamento._flags_regulatorios(dossie_id, itens)
     # conciliação item a item se a invoice e o packing list tiverem itens
     docs = _docs(dossie_id)
@@ -101,6 +121,12 @@ def _fase_regras(dossie_id: str) -> None:
         for div in processamento.conciliar_itens(itens, itens_pk):
             db.inserir_apontamento(dossie_id, "divergencia", div["severidade"], "RFB",
                                    div["descricao"], None)
+    # Reconciliation Agent (Nível 1/2 em cascata — Nível 3 é a própria coerência documental
+    # acima, que já roda sempre). Retorna o nível alcançado p/ _fase_consolidar poder capar
+    # a confiança da classificação quando não houve cruzamento com o catálogo ERP do cliente.
+    contexto_cliente = db.contexto_cliente_do_dossie(dossie_id)
+    if cliente_id:
+        reconciliacao_erp.conciliar(dossie_id, cliente_id, itens, contexto_cliente)
 
 
 def _fase_enfileirar_ncm(dossie_id: str) -> int:
@@ -130,15 +156,33 @@ def _fase_consolidar(dossie_id: str) -> bool:
     _limpar_apontamentos(dossie_id, ["classificacao"])
     if ncm_alta or ncm_baixa:
         sev = "atencao" if ncm_baixa else "info"
+        # Ponderação por contexto (CLAUDE.md §4 — confiança não pode ser maior do que o que foi
+        # de fato cruzado): sem catálogo ERP do cliente, a classificação só foi verificada contra
+        # a base normativa (Nível 2), não contra o cadastro interno (Nível 1) — o rótulo de
+        # confiança do agregado reflete isso, mesmo quando a similaridade individual (sim_top1)
+        # é alta. "revisao_necessaria" = badge amarelo "Review Required" no Cockpit.
+        cliente_id = db.cliente_id_do_dossie(dossie_id)
+        catalogo = erp_catalogo.buscar_por_cliente(cliente_id) if cliente_id else {}
+        contexto_cliente = db.contexto_cliente_do_dossie(dossie_id)
+        nivel = reconciliacao_erp.determinar_nivel(catalogo, contexto_cliente)
+        por_que_importa = ("Itens de confiança baixa não foram reordenados por LLM+RGI (rate limit/"
+                           "provedor) — a sugestão é só por similaridade, a conferir.")
+        if nivel != reconciliacao_erp.NIVEL_1_TRIPLE_MATCH:
+            confianca_rotulo = "revisao_necessaria"
+            por_que_importa += (" Sem catálogo ERP do cliente, a classificação não pôde ser "
+                                "cruzada contra o cadastro interno — confiança limitada ao "
+                                "cruzamento regulatório (Nível 2).")
+        else:
+            confianca_rotulo = "alta" if not ncm_baixa else "media"
         db.inserir_apontamento(
             dossie_id, "classificacao", sev, "RFB",
             f"Classificação de NCM: {ncm_alta} item(ns) com sugestão de confiança alta, "
             f"{ncm_baixa} com confiança BAIXA" + (" — revisão manual recomendada." if ncm_baixa else "."),
             None,
-            evidencia=f"alta={ncm_alta} · baixa={ncm_baixa}",
-            por_que_importa="Itens de confiança baixa não foram reordenados por LLM+RGI (rate limit/"
-                            "provedor) — a sugestão é só por similaridade, a conferir.",
-            acao_recomendada="Revisar manualmente os itens de confiança baixa antes de submeter.")
+            evidencia=f"alta={ncm_alta} · baixa={ncm_baixa} · nível de reconciliação={nivel}",
+            por_que_importa=por_que_importa,
+            acao_recomendada="Revisar manualmente os itens de confiança baixa antes de submeter.",
+            confianca_rotulo=confianca_rotulo)
 
     # exceções agregadas: baixa confiança + coerência não avaliada + críticos
     aps = db.listar_apontamentos(dossie_id)

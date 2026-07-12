@@ -51,7 +51,8 @@ _INSTRUCAO = (
     "comprador/vendedor, condições de pagamento, totais ou observações. "
     "'incoterm' é o termo Incoterms 2020 (EXW/FCA/FAS/FOB/CFR/CIF/CPT/CIP/DAP/DPU/DDP) com o local, "
     "quando houver (ex.: 'FOB Ningbo'). 'condicao_frete' é como o frete aparece no documento "
-    "(ex.: 'Freight Prepaid', 'Freight Collect', 'Frete a pagar')."
+    "(ex.: 'Freight Prepaid', 'Freight Collect', 'Frete a pagar'). 'pais_origem' é o país de "
+    "origem/fabricação da mercadoria (ex.: 'Country of Origin: China', 'Made in Vietnam')."
 )
 
 _SCHEMA = {
@@ -66,6 +67,7 @@ _SCHEMA = {
         "volumes": {"type": "string", "nullable": True},
         "incoterm": {"type": "string", "nullable": True},
         "condicao_frete": {"type": "string", "nullable": True},
+        "pais_origem": {"type": "string", "nullable": True},
         "itens": {
             "type": "array",
             "items": {
@@ -86,7 +88,7 @@ _FORMATO_JSON = (
     'Responda APENAS com JSON válido neste formato (sem markdown, sem comentários): '
     '{"tipo_detectado": str, "tipo_documento_transporte": str|null, "numero_documento": str|null, '
     '"valor_total": str|null, "moeda": str|null, "peso_bruto_kg": str|null, "volumes": str|null, '
-    '"incoterm": str|null, "condicao_frete": str|null, '
+    '"incoterm": str|null, "condicao_frete": str|null, "pais_origem": str|null, '
     '"itens": [{"codigo": str|null, "descricao": str, "ncm": str|null, "quantidade": str|null}]}'
 )
 
@@ -211,6 +213,7 @@ def _normalizar_bruto(bruto: dict) -> dict:
         "volumes": bruto.get("volumes"),
         "incoterm": bruto.get("incoterm"),
         "condicao_frete": bruto.get("condicao_frete"),
+        "pais_origem": bruto.get("pais_origem"),
     }
     itens = []
     for it in bruto.get("itens") or []:

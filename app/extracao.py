@@ -140,4 +140,9 @@ def extrair_campos(texto: str) -> dict:
     m_frete = re.search(r"freight\s*(prepaid|collect)|frete\s*(pago|a\s*pagar|a\s*cobrar)", texto or "", re.I)
     if m_frete:
         campos["condicao_frete"] = m_frete.group(0).strip()
+    m_origem = re.search(
+        r"(?:country\s*of\s*origin|made\s*in|pa[ií]s\s*de\s*origem)\s*[:.]?\s*([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ .'-]{2,40})",
+        texto or "", re.I)
+    if m_origem:
+        campos["pais_origem"] = m_origem.group(1).strip(" .,-")
     return campos
