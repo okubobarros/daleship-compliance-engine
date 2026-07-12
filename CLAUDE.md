@@ -30,7 +30,7 @@ A tese científica original da Fase 1 do PIPE/FAPESP trata roteamento dinâmico 
 
 | Documento | Escopo real | Observação |
 |---|---|---|
-| `docs/STATUS.md` | **Estado real de implementação, atualizado 08/07/2026** | O que está DE FATO construído/no ar hoje (API Render, site Vercel, motor `app/` em Python) — leia PRIMEIRO se a pergunta for "o que já existe", não "o que planejamos" |
+| `docs/STATUS.md` | **Estado real de implementação, atualizado 10/07/2026** | O que está DE FATO construído/no ar hoje (API Render, site Vercel, motor `app/` em Python) — leia PRIMEIRO se a pergunta for "o que já existe", não "o que planejamos" |
 | `docs/ROADMAP.md` | **Ambas as fases, na ordem correta** | Fonte de verdade sobre sequência de PRODUTO — mas a seção de arquitetura da Fase 1 (n8n) está superada, ver `docs/STATUS.md` §5 |
 | `docs/ComexPilot.md` | Fase 1 (Comex) | Levantamento de requisitos bruto do especialista de domínio da trading — fonte primária de fontes normativas a indexar e perguntas de produto já respondidas para a Fase 1, já que não há protótipo anterior a herdar (ver seção 2) |
 | `docs/MCP_SISCOMEX_INTEGRATION.md` | Fase 1 (Comex) | Trata comex como frente ativa, corretamente |
@@ -66,6 +66,11 @@ A tese científica original da Fase 1 do PIPE/FAPESP trata roteamento dinâmico 
 - Integração automática com SISPA (sem API pública conhecida — Fase 2).
 - Dashboard executivo, cobrança automatizada, multi-tenancy enterprise.
 - Qualquer expansão de escopo (nova vertical, novo módulo de upsell) antes de validar a fase atual com um cliente real.
+- Aprendizado fechado a partir de correções humanas (`correcoes`) além de um lookup mínimo —
+  **exceção aprovada em 09/07/2026 pelo dono do produto**: a versão mínima (buscar e sugerir a
+  correção anterior por cliente/código de achado, sem retreinar/fine-tunar nada) passa a ser
+  construída na Fase 1 (`app/aprendizado.py`); fine-tuning ou retraining de embedding a partir de
+  `correcoes` continua fora de escopo (ver `docs/STAKEHOLDER_VISION.md:66`).
 
 ## 9. Convenções de código
 

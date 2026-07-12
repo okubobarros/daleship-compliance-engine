@@ -10,27 +10,59 @@ ligada em `resultado.html` (site Vercel) via `resumo.js` (proxy) — ver §"Como
 abaixo. Ver `docs/STATUS.md` (raiz do repo) para o estado completo do projeto.
 
 ## Arquivos
-- `main.py` — FastAPI (Render). `GET /dossies/{id}/resumo` → `{indice_confianca, score_risco, excecoes, mensagem, ncm}`.
-- `resumo.js` — Vercel Serverless Function (Node.js). Proxy server-side: `resultado.html` chama
-  `/api/resumo?dossie_id=...` same-origin; esta função injeta o `API_TOKEN` (env var do Vercel) e
-  repassa a resposta do Render. O token nunca aparece no browser.
+- `main.py` — FastAPI (Render). Endpoints:
+  - `GET /dossies/{id}/resumo` → `{indice_confianca, score_risco, excecoes, mensagem, ncm}` (existente).
+  - **`POST /dossies`** — multipart (`referencia`, `contexto_cliente` opcional, `invoice`
+    obrigatório, `packing_list`/`documento_transporte`/`erp_catalogo` opcionais), protegido pela
+    sessão do usuário (`Authorization: Bearer <access_token do Supabase Auth>` — `cliente_id` vem
+    do token via introspecção, nunca de um campo enviado pelo cliente). Extrai de verdade
+    (`processamento._extrair_documento`), roda `orquestracao.processar()` síncrono até estacionar
+    em `classificando_ncm`, agenda `BackgroundTasks` para drenar a fila de NCM e consolidar.
+    **Primeiro endpoint que deixa o site público de fato subir documento e chamar o motor real**
+    (antes, 100% mock client-side).
+  - **`POST /dossies/{id}/apontamentos/{apontamento_id}/revisao`** e
+    **`POST /dossies/{id}/decisao`** (novos, 11/07/2026) — os botões "Aceitar"/"Corrigir" (por
+    achado) e "Aceitar todos"/"Escalar"/"Travar avanço" (por dossiê) em `resultado.html`, antes
+    decorativos. Mesma proteção de sessão de `POST /dossies`; isolamento verificado via
+    `db.obter_dossie(dossie_id, cliente_id)` — 404 se o dossiê/achado não pertence a quem chamou.
+  - **`GET /dossies/{id}/estado`**, **`GET /dossies/{id}/eventos`** (narra `log_auditoria` em
+    pt-BR — fonte real do "log de raciocínio", não texto decorativo), **`GET /dossies/{id}/apontamentos`**
+    — protegidos pelo `API_TOKEN` de serviço (mesmo padrão de `/resumo`).
+  - `POST /admin/processar-fila` (existente).
+
+  **Identidade do usuário do site público = Supabase Auth** (login/registro reais, ver
+  `login.html`/`registro.html` na raiz do repo) — decisão de 11/07/2026, substitui a sessão HMAC
+  custom que existiu brevemente entre 10-11/07. `exigir_sessao_cliente` valida o `access_token`
+  por introspecção (`GET {SUPABASE_URL}/auth/v1/user`, sem biblioteca de JWT nova) e usa o
+  `user.id` do Supabase como `cliente_id` — estável entre sessões do mesmo usuário. O login
+  interno da equipe (`app/auth.py`, `APP_USERS`, usado pelo Streamlit) continua existindo à
+  parte, sem relação com a identidade do site público.
+- `resumo.js`, `estado.js`, `eventos.js`, `apontamentos.js` — Vercel Serverless Functions (Node.js),
+  cada uma um clone do padrão: proxy server-side que injeta o `API_TOKEN` (env var do Vercel) e
+  repassa a resposta do Render. O token nunca aparece no browser. `POST /dossies` (upload) **não**
+  passa por um proxy — vai direto do browser para o Render (payload de PDF pode estourar o limite
+  de Serverless Function da Vercel), autenticado pelo token de sessão do usuário, não pelo `API_TOKEN`.
 - `static/indice-confianca.html` — componente standalone original (gauge + explicação fixa), usado
   como referência/demo isolada. A versão em produção está inlined em `resultado.html` (mesmo texto
   fixo de "confiança baixa", mesma técnica de gauge via `conic-gradient`).
 
 ## Variáveis de ambiente (nomes EXATOS lidos no código; nunca hardcode)
-Só o endpoint `/resumo` precisa das 3 primeiras. Se for usar `/admin/processar-fila` (ou rodar o
-worker), precisa também das de LLM/embeddings.
+Só o endpoint `/resumo` precisa das 3 primeiras. Se for usar `/admin/processar-fila`, o worker, ou
+`POST /dossies` (que agora importa `app/processamento.py` de verdade), precisa também das demais.
 | Var (exata) | Obrigatória p/ | Uso |
 |---|---|---|
-| `DATABASE_URL` | /resumo e worker | connection string Postgres (`postgresql://postgres:SENHA@db.<ref>.supabase.co:5432/postgres`) — use a **senha rotacionada**. O código NÃO usa `SUPABASE_SERVICE_ROLE_KEY`. |
-| `API_TOKEN` | /resumo e /admin | Bearer (fail-closed: sem ele → 503) |
-| `ALLOWED_ORIGINS` | /resumo (browser) | origens CORS, separadas por vírgula (default `https://despachantedebolso.com.br`) |
-| `GEMINI_API_KEY` | worker/admin | rerank NCM (é `GEMINI_API_KEY`, não `GOOGLE_API_KEY`) |
+| `DATABASE_URL` | tudo | connection string Postgres (`postgresql://postgres:SENHA@db.<ref>.supabase.co:5432/postgres`) — use a **senha rotacionada**. O código NÃO usa `SUPABASE_SERVICE_ROLE_KEY`. |
+| `API_TOKEN` | /resumo, /admin, /estado, /eventos, /apontamentos | Bearer de SERVIÇO (fail-closed: sem ele → 503) |
+| `NEXT_PUBLIC_SUPABASE_URL` | /dossies, /decisao, /revisao | **novo (11/07/2026).** URL do projeto Supabase (nome herdado de um quickstart Next.js, mantido por convenção — não é segredo). Usado para introspeccionar o `access_token` do Supabase Auth. |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | idem | Chave publicável do Supabase (safe para exposição, inclusive já hardcoded como default em `login.html`/`registro.html`). Fail-closed: sem URL+key configurados → 503. |
+| `MAX_UPLOAD_BYTES` | opcional | tamanho máx. por arquivo em `POST /dossies` (default 15MB) |
+| `ALLOWED_ORIGINS` | /resumo, /dossies (browser) | origens CORS, separadas por vírgula (default `https://despachantedebolso.com.br`) |
+| `GEMINI_API_KEY` | worker/admin/dossies | extração + rerank NCM (é `GEMINI_API_KEY`, não `GOOGLE_API_KEY`) |
 | `GEMINI_MODEL` | opcional | default `gemini-3.5-flash` |
 | `OPENROUTER_API_KEY` | worker/admin | fallback do rerank |
-| `VOYAGE_API_KEY` | worker/admin | embeddings (retrieval k=25) |
+| `VOYAGE_API_KEY` | worker/admin/dossies | embeddings (retrieval k=25) |
 | `NCM_WORKER_PARALELO` | opcional | N do worker (default 3) |
+| `NCM_PROGRESSO_A_CADA` | opcional | a cada quantos itens classificados grava progresso em `log_auditoria` (default 25) |
 
 ## Processar a fila de NCM — SOB DEMANDA (não há worker 24/7)
 `worker_ncm.processar()` **drena a fila até esvaziar e encerra** (não fica em loop de polling). Duas formas:
@@ -45,8 +77,15 @@ worker), precisa também das de LLM/embeddings.
 ## Rodar localmente
 ```
 pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 8000        # a partir de api/
+DATABASE_URL=... API_TOKEN=... NEXT_PUBLIC_SUPABASE_URL=... NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=... \
+  uvicorn main:app --host 0.0.0.0 --port 8000   # a partir de api/
 curl -H "Authorization: Bearer $API_TOKEN" http://localhost:8000/dossies/<uuid>/resumo
+
+# fluxo completo de upload (verificado ao vivo em 11/07/2026 contra o Supabase real): faça login
+# via login.html (ou POST direto ao Supabase Auth, ver login.html) pra pegar um access_token, depois:
+curl -X POST http://localhost:8000/dossies -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+  -F "referencia=teste" -F "invoice=@caminho/para/invoice.xlsx"
+# -> {"dossie_id": "...", "estado": "classificando_ncm"}; poll GET /estado até concluido*
 ```
 Via Docker (mesmo contexto do deploy real — ver Dockerfile): a partir da RAIZ do repo,
 `docker build -f api/Dockerfile -t daleship-api .`
