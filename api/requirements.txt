@@ -2,6 +2,7 @@
 fastapi>=0.139
 uvicorn[standard]>=0.30
 psycopg2-binary>=2.9
+python-multipart>=0.0.9
 # Worker (endpoint /admin/processar-fila importa app/worker_ncm -> rag/rerank/embeddings):
 httpx>=0.27
 python-dotenv>=1.0
