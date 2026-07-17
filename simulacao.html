@@ -348,7 +348,7 @@
 
       <div class="footer">
         <span>Sem números fabricados. A tela só registra a operação.</span>
-        <span><a href="/loading.html" id="start-reconciliation" class="btn btn-secondary locked" aria-disabled="true" tabindex="-1">Ver a reconciliação</a></span>
+        <span><a href="/loading" id="start-reconciliation" class="btn btn-secondary locked" aria-disabled="true" tabindex="-1">Ver a reconciliação</a></span>
       </div>
       <div class="session-note" id="flow-warning" style="display:none; margin-top:14px; border-color:rgba(224,82,82,.24); background:rgba(224,82,82,.05); color:#9a3412;">Anexe Invoice e Packing List para liberar a reconciliação. A referência sozinha não destrava o fluxo.</div>
     </section>
@@ -370,7 +370,7 @@
 
     const sessao = sessaoAtual();
     if (!sessao) {
-      location.href = '/login.html?next=' + encodeURIComponent('/simulacao.html');
+      location.href = '/login?next=' + encodeURIComponent('/simulacao');
     }
 
     const invoice = document.getElementById('invoice');
@@ -509,7 +509,7 @@ const submitError = document.getElementById('submit-error');
       }
       const sessaoAgora = sessaoAtual();
       if (!sessaoAgora) {
-        location.href = '/login.html?next=' + encodeURIComponent('/simulacao.html');
+        location.href = '/login?next=' + encodeURIComponent('/simulacao');
         return false;
       }
 
@@ -534,7 +534,7 @@ const submitError = document.getElementById('submit-error');
         });
         if (resposta.status === 401) {
           localStorage.removeItem('daleship.sessao');
-          location.href = '/login.html?next=' + encodeURIComponent('/simulacao.html');
+          location.href = '/login?next=' + encodeURIComponent('/simulacao');
           return false;
         }
         if (!resposta.ok) {
@@ -543,7 +543,7 @@ const submitError = document.getElementById('submit-error');
         }
         const { dossie_id } = await resposta.json();
         sessionStorage.setItem('daleship.dossie_id', dossie_id);
-        location.href = `/loading.html?dossie_id=${encodeURIComponent(dossie_id)}`;
+        location.href = `/loading?dossie_id=${encodeURIComponent(dossie_id)}`;
         return true;
       } catch (erro) {
         submitError.textContent = erro.message || 'Falha ao enviar os documentos. Tente novamente.';

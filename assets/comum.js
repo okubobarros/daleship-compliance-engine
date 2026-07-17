@@ -23,7 +23,7 @@
     const s = sessao();
     if (!s) {
       const destino = location.pathname + location.search;
-      location.href = '/login.html?next=' + encodeURIComponent(destino);
+      location.href = '/login?next=' + encodeURIComponent(destino);
       throw new Error('sem sessão');
     }
     return s;
@@ -31,7 +31,7 @@
 
   function sair() {
     localStorage.removeItem(CHAVE_SESSAO);
-    location.href = '/login.html';
+    location.href = '/login';
   }
 
   // ---------- API ----------
@@ -91,11 +91,11 @@
 
   // ---------- Shell (sidebar + topbar) ----------
   const ITENS_NAV = [
-    { id: 'cockpit', rotulo: 'Cockpit', icone: 'dashboard', href: '/cockpit.html' },
-    { id: 'classificacao', rotulo: 'Classificação Fiscal', icone: 'find_in_page', href: '/classificacao.html' },
-    { id: 'custeio', rotulo: 'Custeio (VMLD)', icone: 'calculate', href: '/custeio.html' },
-    { id: 'feed', rotulo: 'Feed Normativo', icone: 'newspaper', href: '/feed.html' },
-    { id: 'processos', rotulo: 'Processos', icone: 'rule_settings', href: '/processos.html' },
+    { id: 'cockpit', rotulo: 'Cockpit', icone: 'dashboard', href: '/cockpit' },
+    { id: 'classificacao', rotulo: 'Classificação Fiscal', icone: 'find_in_page', href: '/classificacao' },
+    { id: 'custeio', rotulo: 'Custeio (VMLD)', icone: 'calculate', href: '/custeio' },
+    { id: 'feed', rotulo: 'Feed Normativo', icone: 'newspaper', href: '/feed' },
+    { id: 'processos', rotulo: 'Processos', icone: 'rule_settings', href: '/processos' },
   ];
 
   function montarShell(ativo, opcoes = {}) {
@@ -106,7 +106,7 @@
     alvoSidebar.outerHTML = `
       <aside class="w-64 h-screen border-r border-outline-variant bg-surface-container-low flex-col py-6 hidden md:flex shrink-0">
         <div class="px-6 mb-8">
-          <a href="/cockpit.html" class="flex items-center gap-3">
+          <a href="/cockpit" class="flex items-center gap-3">
             <img src="/logo.png" alt="Despachante de Bolso" class="w-9 h-9 rounded-lg border border-outline-variant bg-white object-contain" />
             <div>
               <h1 class="text-[15px] font-bold text-on-surface leading-tight">Despachante de Bolso</h1>
@@ -122,7 +122,7 @@
                  <span class="material-symbols-outlined">${item.icone}</span><span>${item.rotulo}</span></a>`).join('')}
         </nav>
         <div class="px-3 mt-4">
-          <a href="/simulacao.html" class="w-full py-3 bg-secondary text-white rounded-lg font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity text-sm">
+          <a href="/simulacao" class="w-full py-3 bg-secondary text-white rounded-lg font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity text-sm">
             <span class="material-symbols-outlined text-sm">add</span><span>Nova operação</span>
           </a>
         </div>

@@ -113,7 +113,7 @@
         <button class="btn" id="submit-button" type="submit">Entrar</button>
         <div class="error" id="login-error"></div>
       </form>
-      <p class="hint">Ainda não tem conta? <a href="/registro.html" style="color:#2563EB; font-weight:700;">Criar conta</a></p>
+      <p class="hint">Ainda não tem conta? <a href="/registro" style="color:#2563EB; font-weight:700;">Criar conta</a></p>
     </section>
   </div>
 
@@ -129,7 +129,7 @@
 
     function proximaPagina() {
       const params = new URLSearchParams(window.location.search);
-      return params.get('next') || '/cockpit.html';
+      return params.get('next') || '/cockpit';
     }
 
     function sessaoValida() {
@@ -164,7 +164,7 @@
           throw new Error(corpo.error_description || corpo.msg || 'E-mail ou senha inválidos.');
         }
         // Normaliza a resposta do Supabase Auth para o mesmo formato que simulacao.html/
-        // loading.html/resultado.html já esperam em localStorage.
+        // loading.html/resultado já esperam em localStorage.
         const sessao = {
           token: corpo.access_token,
           cliente_id: corpo.user?.id,

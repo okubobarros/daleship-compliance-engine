@@ -3,6 +3,8 @@
   "framework": null,
   "buildCommand": "",
   "installCommand": "",
+  "cleanUrls": true,
+  "trailingSlash": false,
   "redirects": [
     {
       "source": "/landing.html",
@@ -16,22 +18,22 @@
     },
     {
       "source": "/design/mockups/estado-vazio.html",
-      "destination": "/simulacao.html",
+      "destination": "/simulacao",
       "permanent": false
     },
     {
       "source": "/design/mockups/estados-carregamento.html",
-      "destination": "/loading.html",
+      "destination": "/loading",
       "permanent": false
     },
     {
       "source": "/design/mockups/resumo-importacao.html",
-      "destination": "/resultado.html",
+      "destination": "/resultado",
       "permanent": false
     },
     {
       "source": "/design/mockups/registro.html",
-      "destination": "/simulacao.html",
+      "destination": "/registro",
       "permanent": false
     },
     {
@@ -41,7 +43,7 @@
     },
     {
       "source": "/design/mockups/cockpit-decisao.html",
-      "destination": "/resultado.html",
+      "destination": "/resultado",
       "permanent": false
     }
   ],

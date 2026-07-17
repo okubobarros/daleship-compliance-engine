@@ -152,7 +152,7 @@
           <div class="brand-sub">Inteligência aduaneira para importação</div>
         </div>
       </a>
-      <a class="btn secondary" href="/simulacao.html">Editar operação</a>
+      <a class="btn secondary" href="/simulacao">Editar operação</a>
     </header>
 
     <section class="panel">
@@ -210,11 +210,11 @@
 
       <div class="footer">
         <span>Sem números inventados. Esta etapa existe para manter o contexto da operação.</span>
-        <span><a href="/simulacao.html">Voltar à simulação</a></span>
+        <span><a href="/simulacao">Voltar à simulação</a></span>
       </div>
 
       <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
-        <a class="btn secondary" href="/simulacao.html">Voltar à operação</a>
+        <a class="btn secondary" href="/simulacao">Voltar à operação</a>
         <span style="display:inline-flex; align-items:center; color:#6b7280; font-size:13px; padding:12px 4px;">O resultado abre automaticamente quando a execução termina.</span>
       </div>
     </section>
@@ -232,7 +232,7 @@
     }
 
     if (!sessaoAtual()) {
-      location.href = '/login.html?next=' + encodeURIComponent(location.pathname + location.search);
+      location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search);
     }
 
     const dossieId = new URLSearchParams(window.location.search).get('dossie_id');
@@ -292,7 +292,7 @@
           ]);
           if (respEstado.status === 401 || respEventos.status === 401) {
             localStorage.removeItem('daleship.sessao');
-            location.href = '/login.html?next=' + encodeURIComponent(location.pathname + location.search);
+            location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search);
             return;
           }
           if (!respEstado.ok) throw new Error('estado indisponível');
@@ -316,7 +316,7 @@
           if (TERMINAIS.has(estadoPayload.estado_pipeline)) {
             concluiu = true;
             window.setTimeout(() => {
-              location.href = `/resultado.html?dossie_id=${encodeURIComponent(dossieId)}`;
+              location.href = `/resultado?dossie_id=${encodeURIComponent(dossieId)}`;
             }, 800);
             return;
           }

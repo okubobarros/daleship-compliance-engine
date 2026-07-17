@@ -60,7 +60,7 @@
             </div>
             <p id="radar-texto" class="text-[13px] text-on-surface-variant leading-snug">Coletando DOU, MDIC e Receita Federal…</p>
           </div>
-          <a href="/feed.html" class="text-secondary font-bold text-[11px] uppercase mt-3 flex items-center gap-1">
+          <a href="/feed" class="text-secondary font-bold text-[11px] uppercase mt-3 flex items-center gap-1">
             Abrir feed <span class="material-symbols-outlined text-xs">arrow_forward</span>
           </a>
         </div>
@@ -71,7 +71,7 @@
         <div class="lg:col-span-2 bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col">
           <div class="p-4 border-b border-outline-variant flex justify-between items-center">
             <h2 class="text-lg font-semibold">Operações recentes</h2>
-            <a href="/processos.html" class="text-secondary font-bold text-[12px] uppercase hover:opacity-80">Ver todas</a>
+            <a href="/processos" class="text-secondary font-bold text-[12px] uppercase hover:opacity-80">Ver todas</a>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-[13px]">
@@ -96,21 +96,21 @@
           <div class="bg-white border border-outline-variant rounded-xl p-5 shadow-sm">
             <h2 class="text-lg font-semibold mb-3">Ferramentas</h2>
             <div class="space-y-2">
-              <a href="/classificacao.html" class="flex items-center gap-3 p-3 rounded-lg border border-outline-variant hover:border-secondary hover:bg-surface-container-low transition-colors">
+              <a href="/classificacao" class="flex items-center gap-3 p-3 rounded-lg border border-outline-variant hover:border-secondary hover:bg-surface-container-low transition-colors">
                 <span class="material-symbols-outlined text-secondary">find_in_page</span>
                 <div>
                   <p class="text-[13px] font-bold">Classificação fiscal</p>
                   <p class="text-[11px] text-on-surface-variant">Descrição → NCM sugerido com RGI e confiança</p>
                 </div>
               </a>
-              <a href="/custeio.html" class="flex items-center gap-3 p-3 rounded-lg border border-outline-variant hover:border-secondary hover:bg-surface-container-low transition-colors">
+              <a href="/custeio" class="flex items-center gap-3 p-3 rounded-lg border border-outline-variant hover:border-secondary hover:bg-surface-container-low transition-colors">
                 <span class="material-symbols-outlined text-secondary">calculate</span>
                 <div>
                   <p class="text-[13px] font-bold">Custeio de importação (VMLD)</p>
                   <p class="text-[11px] text-on-surface-variant">CIF + II/IPI/PIS/COFINS/ICMS + AFRMM/Siscomex</p>
                 </div>
               </a>
-              <a href="/simulacao.html" class="flex items-center gap-3 p-3 rounded-lg border border-outline-variant hover:border-secondary hover:bg-surface-container-low transition-colors">
+              <a href="/simulacao" class="flex items-center gap-3 p-3 rounded-lg border border-outline-variant hover:border-secondary hover:bg-surface-container-low transition-colors">
                 <span class="material-symbols-outlined text-secondary">upload_file</span>
                 <div>
                   <p class="text-[13px] font-bold">Auditar documentos</p>
@@ -138,7 +138,7 @@
         <div class="bg-white border border-outline-variant rounded-xl p-5 shadow-sm">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-semibold">Últimas do feed normativo</h2>
-            <a href="/feed.html" class="text-secondary font-bold text-[12px] uppercase hover:opacity-80">Ver feed</a>
+            <a href="/feed" class="text-secondary font-bold text-[12px] uppercase hover:opacity-80">Ver feed</a>
           </div>
           <div id="feed-preview" class="space-y-4">
             <p class="text-[13px] text-on-surface-variant">Carregando notícias reais…</p>
@@ -169,7 +169,7 @@
   function estadoVazioOperacoes() {
     return `<tr><td colspan="5" class="px-4 py-10 text-center text-on-surface-variant">
       Nenhuma operação ainda.
-      <a href="/simulacao.html" class="text-secondary font-bold hover:underline">Comece auditando uma operação</a>.
+      <a href="/simulacao" class="text-secondary font-bold hover:underline">Comece auditando uma operação</a>.
     </td></tr>`;
   }
 
@@ -198,7 +198,7 @@
           <td class="px-4 py-3">${d.n_apontamentos}</td>
           <td class="px-4 py-3 font-mono text-[12px]">${fmtData(d.criado_em)}</td>
           <td class="px-4 py-3 text-right">
-            <a href="/resultado.html?dossie_id=${encodeURIComponent(d.id)}" class="text-secondary hover:underline font-bold">ABRIR</a>
+            <a href="/resultado?dossie_id=${encodeURIComponent(d.id)}" class="text-secondary hover:underline font-bold">ABRIR</a>
           </td>
         </tr>`;
       }).join('');
@@ -236,7 +236,7 @@
     } catch {
       alvo.innerHTML = `<p class="text-[13px] text-on-surface-variant">
         Trilha indisponível neste ambiente. Abra a
-        <a class="text-secondary font-bold hover:underline" href="/resultado.html?dossie_id=${encodeURIComponent(dossie.id)}">última operação</a>
+        <a class="text-secondary font-bold hover:underline" href="/resultado?dossie_id=${encodeURIComponent(dossie.id)}">última operação</a>
         para ver a trilha completa.</p>`;
     }
   }

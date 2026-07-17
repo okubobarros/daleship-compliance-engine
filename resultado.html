@@ -602,7 +602,7 @@
               <div class="executive-title" id="executive-title">Operação consolidada para revisão humana</div>
               <div class="executive-copy" id="executive-copy">Invoice e Packing List formam a base mínima da análise. O relatório destaca o que está validado, o que permanece pendente e quais ajustes destravam a próxima decisão.</div>
               <div class="action-links">
-                <a class="primary" href="/simulacao.html">Ajustar documentos</a>
+                <a class="primary" href="/simulacao">Ajustar documentos</a>
                 <a href="/">Nova operação</a>
               </div>
             </div>
@@ -680,7 +680,7 @@
 
         <div class="foot">
           <span><a href="/">Voltar à home</a></span>
-          <span><a href="/simulacao.html">Rever preparação</a></span>
+          <span><a href="/simulacao">Rever preparação</a></span>
         </div>
       </div>
     </main>
@@ -1132,7 +1132,7 @@
     }
 
     function exigirLogin() {
-      location.href = '/login.html?next=' + encodeURIComponent(location.pathname + location.search);
+      location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search);
     }
 
     async function chamarApi(caminho, corpo) {

@@ -200,7 +200,7 @@
       (r.provedor ? 'Rerank: ' + r.provedor + ' • ' : '') +
       (r.sim_top1 != null ? 'Similaridade do 1º candidato: ' + r.sim_top1 + '%' : '');
     document.getElementById('link-custeio').href =
-      r.ncm ? '/custeio.html?ncm=' + encodeURIComponent(r.ncm) : '/custeio.html';
+      r.ncm ? '/custeio?ncm=' + encodeURIComponent(r.ncm) : '/custeio';
 
     const anuencia = document.getElementById('anuencia');
     anuencia.innerHTML = r.anuencia
@@ -240,7 +240,7 @@
         <td class="py-3 px-4">${esc(c.texto)}</td>
         <td class="py-3 px-4">${c.similaridade}%</td>
         <td class="py-3 px-4 text-right">
-          <a href="/custeio.html?ncm=${encodeURIComponent(c.ncm)}" class="text-secondary font-bold text-[12px] hover:underline">USAR NO CUSTEIO</a>
+          <a href="/custeio?ncm=${encodeURIComponent(c.ncm)}" class="text-secondary font-bold text-[12px] hover:underline">USAR NO CUSTEIO</a>
         </td>
       </tr>`).join('') ||
       '<tr><td colspan="4" class="py-6 px-4 text-center text-on-surface-variant">Sem candidatos retornados.</td></tr>';

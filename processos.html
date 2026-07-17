@@ -26,7 +26,7 @@
             auditoria append-only.
           </p>
         </div>
-        <a href="/simulacao.html"
+        <a href="/simulacao"
           class="px-5 py-2.5 bg-secondary text-white rounded-lg font-bold flex items-center gap-2 hover:opacity-90 transition-opacity shrink-0">
           <span class="material-symbols-outlined text-sm">add</span> Nova operação
         </a>
@@ -100,7 +100,7 @@
     const corpo = document.getElementById('tabela-processos');
     if (!dossies.length) {
       corpo.innerHTML = `<tr><td colspan="6" class="px-4 py-12 text-center text-on-surface-variant">
-        Nenhuma operação ainda. <a href="/simulacao.html" class="text-secondary font-bold hover:underline">Envie os documentos da primeira</a> —
+        Nenhuma operação ainda. <a href="/simulacao" class="text-secondary font-bold hover:underline">Envie os documentos da primeira</a> —
         Invoice, Packing List e B/L passam pelo motor real de conciliação.</td></tr>`;
       return;
     }
@@ -116,8 +116,8 @@
         <td class="px-4 py-3 max-w-md"><span class="line-clamp-2 text-on-surface-variant">${esc(d.mensagem || '—')}</span></td>
         <td class="px-4 py-3 font-mono text-[12px] whitespace-nowrap">${fmtData(d.criado_em)}</td>
         <td class="px-4 py-3 text-right whitespace-nowrap">
-          <a href="/resultado.html?dossie_id=${encodeURIComponent(d.id)}" class="text-secondary hover:underline font-bold mr-3">ABRIR</a>
-          <a href="/loading.html?dossie_id=${encodeURIComponent(d.id)}" class="text-on-surface-variant hover:text-secondary hover:underline font-bold" title="Acompanhar o processamento e a trilha">TRILHA</a>
+          <a href="/resultado?dossie_id=${encodeURIComponent(d.id)}" class="text-secondary hover:underline font-bold mr-3">ABRIR</a>
+          <a href="/loading?dossie_id=${encodeURIComponent(d.id)}" class="text-on-surface-variant hover:text-secondary hover:underline font-bold" title="Acompanhar o processamento e a trilha">TRILHA</a>
         </td>
       </tr>`;
     }).join('')

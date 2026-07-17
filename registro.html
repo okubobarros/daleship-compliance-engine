@@ -127,7 +127,7 @@
         <div class="error" id="registro-error"></div>
         <div class="success" id="registro-sucesso"></div>
       </form>
-      <p class="hint">Já tem conta? <a href="/login.html" style="color:#2563EB; font-weight:700;">Entrar</a></p>
+      <p class="hint">Já tem conta? <a href="/login" style="color:#2563EB; font-weight:700;">Entrar</a></p>
     </section>
   </div>
 
@@ -168,7 +168,7 @@
             expira_em: Math.floor(Date.now() / 1000) + (corpo.expires_in || 3600),
           };
           localStorage.setItem('daleship.sessao', JSON.stringify(sessao));
-          location.href = '/cockpit.html';
+          location.href = '/cockpit';
           return;
         }
         // Confirmação de e-mail ligada — sem sessão ainda, precisa clicar no link recebido.
