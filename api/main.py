@@ -32,13 +32,17 @@ SUPABASE_ANON_KEY = os.environ.get("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "").s
 MAX_UPLOAD_BYTES = int(os.environ.get("MAX_UPLOAD_BYTES", str(15 * 1024 * 1024)))
 VERSAO_API = "0.1.0"
 # Origens de CORS por env var (lista separada por vírgula) — setar no Render/Vercel sem editar
-# código a cada mudança de domínio. Default: o domínio de produção.
-ALLOWED_ORIGINS = [o.strip() for o in os.environ.get(
+# código a cada mudança de domínio. Default: o domínio de produção. Barra final é normalizada
+# (Origin do browser nunca tem barra — um "/" a mais na env var silenciosamente quebrava tudo).
+ALLOWED_ORIGINS = [o.strip().rstrip("/") for o in os.environ.get(
     "ALLOWED_ORIGINS",
     "https://despachantedebolso.com.br,https://www.despachantedebolso.com.br").split(",") if o.strip()]
 
 app = FastAPI(title="Despachante de Bolso — Índice de Confiança", version="0.1.0")
+# allow_origin_regex: o domínio do produto SEMPRE passa, mesmo que a env var ALLOWED_ORIGINS
+# esteja errada no host (aconteceu em produção em 17/07/2026 — cockpit inteiro sem CORS).
 app.add_middleware(CORSMiddleware, allow_origins=ALLOWED_ORIGINS,
+                   allow_origin_regex=r"https://(www\.)?despachantedebolso\.com\.br",
                    allow_methods=["GET", "POST"], allow_headers=["*"])
 
 
