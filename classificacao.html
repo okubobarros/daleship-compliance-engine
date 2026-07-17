@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Classificação Fiscal | Despachante de Bolso</title>
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="/assets/cockpit-tema.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/cockpit.css" />
+</head>
+<body class="bg-background text-on-background font-sans">
+<div class="flex h-screen overflow-hidden">
+  <div id="sidebar"></div>
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+    <div id="topbar"></div>
+    <main class="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
+
+      <div>
+        <h2 class="text-3xl font-bold tracking-tight text-on-surface">Classificação Fiscal</h2>
+        <p class="text-on-surface-variant mt-1 max-w-3xl">
+          Descreva a mercadoria e o motor sugere o NCM — mesma cadeia do dossiê real: busca semântica
+          na TEC vigente + reordenação por LLM aplicando as Regras Gerais de Interpretação.
+          A sugestão <strong>nunca é definitiva</strong>: verifique sempre e revise quando a confiança for baixa.
+        </p>
+      </div>
+
+      <!-- Busca -->
+      <div class="bg-white border border-outline-variant rounded-xl p-6 shadow-sm">
+        <form id="form-classificar" class="flex flex-col md:flex-row gap-3">
+          <div class="flex-1 flex border border-outline rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-secondary transition-all">
+            <div class="bg-surface-container px-3 flex items-center text-on-surface-variant border-r border-outline">
+              <span class="text-[11px] font-bold tracking-wider">BR&nbsp;NCM</span>
+            </div>
+            <input id="campo-descricao" type="text" required minlength="3"
+              placeholder="Descreva a mercadoria (ex.: fonte de alimentação chaveada 850W para computador)…"
+              class="flex-1 px-4 py-2.5 border-none focus:ring-0 text-sm" />
+          </div>
+          <button id="botao-classificar" type="submit"
+            class="bg-secondary text-white px-8 py-2.5 rounded-lg font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-sm">find_in_page</span>
+            <span id="rotulo-classificar">Classificar</span>
+          </button>
+        </form>
+        <p id="erro-classificar" class="hidden mt-3 text-[13px] text-error"></p>
+        <p id="aviso-tempo" class="hidden mt-3 text-[13px] text-on-surface-variant">
+          <span class="material-symbols-outlined text-sm girando">progress_activity</span>
+          Consultando a base normativa e aplicando as RGI — leva alguns segundos…
+        </p>
+      </div>
+
+      <!-- Resultado -->
+      <div id="resultado" class="hidden grid grid-cols-12 gap-4 items-start">
+        <!-- Sugestão -->
+        <div class="col-span-12 lg:col-span-5 ai-glow rounded-xl bg-white p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[11px] font-bold uppercase tracking-widest text-secondary">NCM sugerido</span>
+            <span id="badge-confianca"></span>
+          </div>
+          <p id="ncm-sugerido" class="text-4xl font-bold font-mono text-on-surface"></p>
+          <p id="texto-ncm" class="text-[13px] text-on-surface-variant mt-2"></p>
+          <div class="mt-4 pt-4 border-t border-dashed border-outline-variant space-y-2">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Justificativa (RGI <span id="rgi-usada"></span>)</p>
+            <p id="justificativa" class="text-[13px] leading-relaxed text-on-surface"></p>
+            <p id="meta-rerank" class="text-[10px] text-on-surface-variant"></p>
+          </div>
+          <div class="mt-4 flex gap-2">
+            <a id="link-custeio" href="#"
+              class="flex-1 text-center bg-secondary text-white py-2.5 rounded-lg font-bold text-[13px] hover:opacity-90 transition-opacity">
+              Calcular custeio com este NCM
+            </a>
+          </div>
+        </div>
+
+        <!-- Anuência + tributos -->
+        <div class="col-span-12 lg:col-span-7 space-y-4">
+          <div class="bg-white border border-outline-variant rounded-xl p-5 shadow-sm">
+            <h3 class="text-lg font-semibold flex items-center gap-2 mb-3">
+              <span class="material-symbols-outlined text-error">gavel</span> Anuência / Tratamento Administrativo
+            </h3>
+            <div id="anuencia" class="text-[13px]"></div>
+          </div>
+          <div class="bg-white border border-outline-variant rounded-xl p-5 shadow-sm">
+            <h3 class="text-lg font-semibold flex items-center gap-2 mb-3">
+              <span class="material-symbols-outlined text-on-surface-variant">payments</span> Alíquotas de referência
+            </h3>
+            <div id="tributos" class="text-[13px]"></div>
+          </div>
+        </div>
+
+        <!-- Candidatos -->
+        <div class="col-span-12 bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+          <div class="p-4 border-b border-outline-variant">
+            <h3 class="text-lg font-semibold">Candidatos avaliados (top da busca semântica)</h3>
+            <p class="text-[12px] text-on-surface-variant">Similaridade é o sinal do retrieval, não a decisão final — a escolha acima passou pelo rerank com RGI.</p>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-[13px]">
+              <thead class="border-b border-outline-variant bg-surface-container-low">
+                <tr class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+                  <th class="py-3 px-4">NCM</th>
+                  <th class="py-3 px-4">Descrição na TEC</th>
+                  <th class="py-3 px-4">Similaridade</th>
+                  <th class="py-3 px-4 text-right">Ação</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-candidatos"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Histórico local -->
+      <div class="bg-white border border-outline-variant rounded-xl p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-lg font-semibold">Consultas recentes (neste navegador)</h3>
+          <button id="limpar-historico" class="text-[12px] font-bold text-on-surface-variant hover:text-error transition-colors">LIMPAR</button>
+        </div>
+        <div id="historico" class="space-y-1 text-[13px]"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="/assets/comum.js"></script>
+<script>
+  const { api, esc, fmtPct, montarShell } = window.Cockpit;
+  montarShell('classificacao', { titulo: 'Classificação fiscal assistida' });
+
+  const CHAVE_HIST = 'daleship.classificacao.historico';
+  const form = document.getElementById('form-classificar');
+  const campo = document.getElementById('campo-descricao');
+  const botao = document.getElementById('botao-classificar');
+  const erroBox = document.getElementById('erro-classificar');
+  const avisoTempo = document.getElementById('aviso-tempo');
+
+  function historico() {
+    try { return JSON.parse(localStorage.getItem(CHAVE_HIST) || '[]'); } catch { return []; }
+  }
+  function renderHistorico() {
+    const itens = historico();
+    document.getElementById('historico').innerHTML = itens.length
+      ? itens.map((h) => `
+          <button data-descricao="${esc(h.descricao)}" class="item-historico w-full text-left flex items-center justify-between gap-3 px-3 py-2 rounded-lg hover:bg-surface-container-low transition-colors">
+            <span class="truncate">${esc(h.descricao)}</span>
+            <span class="font-mono font-bold text-secondary shrink-0">${esc(h.ncm || '—')}</span>
+          </button>`).join('')
+      : '<p class="text-on-surface-variant">Nenhuma consulta ainda.</p>';
+    document.querySelectorAll('.item-historico').forEach((el) =>
+      el.addEventListener('click', () => { campo.value = el.dataset.descricao; form.requestSubmit(); }));
+  }
+  document.getElementById('limpar-historico').addEventListener('click', () => {
+    localStorage.removeItem(CHAVE_HIST); renderHistorico();
+  });
+
+  function badgeConfianca(confianca) {
+    return confianca === 'alta'
+      ? '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-800 uppercase">Confiança alta</span>'
+      : '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-yellow-100 text-yellow-800 uppercase">Revisão necessária</span>';
+  }
+
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    erroBox.classList.add('hidden');
+    avisoTempo.classList.remove('hidden');
+    botao.disabled = true;
+    document.getElementById('rotulo-classificar').textContent = 'Classificando…';
+    try {
+      const r = await api('/classificacao', {
+        method: 'POST',
+        body: JSON.stringify({ descricao: campo.value.trim() }),
+      });
+      renderResultado(r);
+      const itens = [{ descricao: r.descricao, ncm: r.ncm }, ...historico()
+        .filter((h) => h.descricao !== r.descricao)].slice(0, 8);
+      localStorage.setItem(CHAVE_HIST, JSON.stringify(itens));
+      renderHistorico();
+    } catch (erro) {
+      erroBox.textContent = erro.message;
+      erroBox.classList.remove('hidden');
+    } finally {
+      avisoTempo.classList.add('hidden');
+      botao.disabled = false;
+      document.getElementById('rotulo-classificar').textContent = 'Classificar';
+    }
+  });
+
+  function renderResultado(r) {
+    document.getElementById('resultado').classList.remove('hidden');
+    document.getElementById('ncm-sugerido').textContent = r.ncm || 'Sem sugestão';
+    document.getElementById('texto-ncm').textContent = r.texto_ncm || 'A busca não retornou candidatos na base indexada.';
+    document.getElementById('badge-confianca').innerHTML = badgeConfianca(r.confianca);
+    document.getElementById('rgi-usada').textContent = r.rgi || '—';
+    document.getElementById('justificativa').textContent =
+      r.justificativa || 'Sem justificativa do rerank — resultado por similaridade pura (por isso a confiança é baixa).';
+    document.getElementById('meta-rerank').textContent =
+      (r.provedor ? 'Rerank: ' + r.provedor + ' • ' : '') +
+      (r.sim_top1 != null ? 'Similaridade do 1º candidato: ' + r.sim_top1 + '%' : '');
+    document.getElementById('link-custeio').href =
+      r.ncm ? '/custeio.html?ncm=' + encodeURIComponent(r.ncm) : '/custeio.html';
+
+    const anuencia = document.getElementById('anuencia');
+    anuencia.innerHTML = r.anuencia
+      ? `<div class="p-4 rounded-lg bg-error-container/30 border border-error/20">
+           <p class="font-bold text-on-error-container">Possível anuência: ${esc(r.anuencia.orgao || 'órgão não identificado')}</p>
+           <p class="text-on-surface-variant mt-1">${esc(r.anuencia.trecho)}…</p>
+           <p class="text-[11px] text-on-surface-variant mt-2">Fonte: ${esc(r.anuencia.identificador || '')}
+             ${r.anuencia.fonte_url ? `• <a class="text-secondary font-bold hover:underline" target="_blank" rel="noopener" href="${esc(r.anuencia.fonte_url)}">ver norma</a>` : ''}</p>
+         </div>`
+      : `<div class="p-4 rounded-lg bg-surface-container-low border border-outline-variant">
+           <p class="font-semibold">Nenhuma anuência localizada para este NCM no compilado de Tratamento Administrativo.</p>
+           <p class="text-on-surface-variant mt-1 text-[12px]">Busca lexical pelo código (8 e 6 dígitos). Ausência aqui não é garantia de dispensa — confirme no Portal Siscomex.</p>
+         </div>`;
+
+    const tributos = document.getElementById('tributos');
+    if (r.tributos) {
+      const t = r.tributos;
+      const alerta = (rotulo, valor) => (valor && valor !== 'Não')
+        ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-error-container text-on-error-container uppercase mr-2">${rotulo}: ${esc(valor)}</span>` : '';
+      tributos.innerHTML = `
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          ${[['II', t.ii], ['IPI', t.ipi], ['PIS', t.pis], ['COFINS', t.cofins]].map(([n, v]) => `
+            <div class="p-3 rounded-lg bg-surface-container-low border border-outline-variant text-center">
+              <p class="text-[10px] font-bold uppercase text-on-surface-variant">${n}</p>
+              <p class="text-lg font-bold">${fmtPct(v)}</p>
+            </div>`).join('')}
+        </div>
+        <div class="mt-3">${alerta('Antidumping', t.antidumping)}${alerta('CIDE', t.cide)}${alerta('Med. compensatórias', t.medidas_compensatorias)}</div>
+        <p class="text-[11px] text-on-surface-variant mt-2">Camada de referência interna (data: ${esc(t.data_referencia || '—')}) — confira a TEC vigente antes de registrar.</p>`;
+    } else {
+      tributos.innerHTML = '<p class="text-on-surface-variant">NCM sem linha na camada de referência de alíquotas — sem estimativa (não inventamos alíquota).</p>';
+    }
+
+    document.getElementById('tabela-candidatos').innerHTML = (r.candidatos || []).map((c) => `
+      <tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors">
+        <td class="py-3 px-4 font-mono font-bold ${c.ncm === r.ncm ? 'text-secondary' : ''}">${esc(c.ncm)}</td>
+        <td class="py-3 px-4">${esc(c.texto)}</td>
+        <td class="py-3 px-4">${c.similaridade}%</td>
+        <td class="py-3 px-4 text-right">
+          <a href="/custeio.html?ncm=${encodeURIComponent(c.ncm)}" class="text-secondary font-bold text-[12px] hover:underline">USAR NO CUSTEIO</a>
+        </td>
+      </tr>`).join('') ||
+      '<tr><td colspan="4" class="py-6 px-4 text-center text-on-surface-variant">Sem candidatos retornados.</td></tr>';
+
+    document.getElementById('resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  renderHistorico();
+  // Permite chegar com ?descricao= (ex.: de outra tela)
+  const param = new URLSearchParams(location.search).get('descricao');
+  if (param) { campo.value = param; form.requestSubmit(); }
+</script>
+</body>
+</html>

@@ -34,7 +34,8 @@ VERSAO_API = "0.1.0"
 # Origens de CORS por env var (lista separada por vírgula) — setar no Render/Vercel sem editar
 # código a cada mudança de domínio. Default: o domínio de produção.
 ALLOWED_ORIGINS = [o.strip() for o in os.environ.get(
-    "ALLOWED_ORIGINS", "https://despachantedebolso.com.br").split(",") if o.strip()]
+    "ALLOWED_ORIGINS",
+    "https://despachantedebolso.com.br,https://www.despachantedebolso.com.br").split(",") if o.strip()]
 
 app = FastAPI(title="Despachante de Bolso — Índice de Confiança", version="0.1.0")
 app.add_middleware(CORSMiddleware, allow_origins=ALLOWED_ORIGINS,
@@ -86,6 +87,161 @@ def exigir_sessao_cliente(authorization: str = Header(default="")) -> str:
 @app.get("/saude")
 def saude():
     return {"ok": True}
+
+
+@app.get("/noticias")
+def noticias_endpoint(limite: int = 60):
+    """Feed normativo com fontes REAIS (DOU Seção 1 filtrado para comex + RSS MDIC + RSS
+    Receita Federal), cache em memória com TTL — ver api/noticias.py. Público (é dado
+    público da Imprensa Nacional/gov.br; não expõe nada de cliente)."""
+    from api import noticias as noticias_mod
+    coleta = noticias_mod.obter()
+    return {
+        "gerado_em": coleta["gerado_em"],
+        "fontes": coleta["fontes"],
+        "total": len(coleta["itens"]),
+        "itens": coleta["itens"][:max(1, min(limite, 200))],
+    }
+
+
+@app.get("/dossies")
+def listar_dossies_endpoint(cliente_id: str = Depends(exigir_sessao_cliente)):
+    """Lista os dossiês do cliente logado — alimenta os KPIs do cockpit e a tela de
+    processos. Só campos de resumo (nunca o dado extraído bruto inteiro)."""
+    _importar_app()
+    import db
+    saida = []
+    for d in db.listar_dossies(cliente_id):
+        resumo = d.get("resumo_consolidado") or {}
+        saida.append({
+            "id": str(d["id"]),
+            "referencia": d.get("referencia"),
+            "estado_pipeline": d.get("estado_pipeline") or "recebido",
+            "status": d.get("status"),
+            "criado_em": d["criado_em"].isoformat() if d.get("criado_em") else None,
+            "n_apontamentos": d.get("n_apontamentos") or 0,
+            "score_risco": resumo.get("score_risco"),
+            "excecoes": resumo.get("excecoes"),
+            "mensagem": resumo.get("mensagem"),
+        })
+    return {"cliente_id": cliente_id, "total": len(saida), "dossies": saida}
+
+
+class ClassificacaoRequest(BaseModel):
+    descricao: str
+
+
+@app.post("/classificacao")
+def classificar_endpoint(body: ClassificacaoRequest,
+                         cliente_id: str = Depends(exigir_sessao_cliente)):
+    """Classificação fiscal sob demanda: descrição de mercadoria → sugestão de NCM
+    (retrieval HNSW + rerank LLM+RGI, o MESMO caminho do motor de dossiês —
+    rag.sugerir_ncm), com anuência (Tratamento Administrativo) e alíquotas de referência
+    do NCM sugerido. Nunca afirma: toda resposta carrega confiança + justificativa."""
+    descricao = body.descricao.strip()
+    if len(descricao) < 3:
+        raise HTTPException(400, "Descreva a mercadoria (mínimo 3 caracteres).")
+    _importar_app()
+    import rag
+    sugestao = rag.sugerir_ncm([descricao])[0]
+    resposta = {
+        "descricao": descricao,
+        "ncm": sugestao.get("ncm"),
+        "texto_ncm": sugestao.get("texto"),
+        "confianca": sugestao.get("confianca"),
+        "provedor": sugestao.get("provedor"),
+        "rgi": sugestao.get("rgi"),
+        "justificativa": sugestao.get("justificativa"),
+        "sim_top1": sugestao.get("sim_top1"),
+        "candidatos": [
+            {"ncm": c["identificador"].replace("NCM ", ""),
+             "texto": (c.get("texto") or "")[:220],
+             "similaridade": round((1 - c["distancia"]) * 100, 1)}
+            for c in (sugestao.get("candidatos") or [])[:8]
+        ],
+        "anuencia": None,
+        "tributos": None,
+    }
+    if resposta["ncm"]:
+        anuencia = rag.anuencia_por_ncm(resposta["ncm"])
+        if anuencia:
+            resposta["anuencia"] = {"orgao": anuencia.get("orgao"),
+                                    "identificador": anuencia.get("identificador"),
+                                    "trecho": (anuencia.get("texto") or "")[:300],
+                                    "fonte_url": anuencia.get("fonte_url")}
+        tributos = rag.tributos_por_ncm(resposta["ncm"])
+        if tributos:
+            tributos["data_referencia"] = str(tributos.get("data_referencia") or "")
+            resposta["tributos"] = tributos
+    return resposta
+
+
+def _normalizar_ncm(codigo: str) -> str:
+    digitos = "".join(ch for ch in (codigo or "") if ch.isdigit())
+    if len(digitos) != 8:
+        raise HTTPException(400, "NCM inválido — informe os 8 dígitos (ex.: 8471.30.12).")
+    return f"{digitos[:4]}.{digitos[4:6]}.{digitos[6:8]}"
+
+
+class CusteioRequest(BaseModel):
+    ncm: str
+    uf: str
+    preco_unitario: float
+    quantidade: float = 1.0
+    cambio: float
+    frete: float | None = None      # em BRL; None = estimativa do modelo
+    seguro: float | None = None     # em BRL; None = estimativa do modelo
+    modal: str = "maritimo"         # 'maritimo' | 'aereo' | 'rodoviario'
+
+
+@app.post("/custeio")
+def custeio_endpoint(body: CusteioRequest,
+                     cliente_id: str = Depends(exigir_sessao_cliente)):
+    """Calculadora de custeio de importação (VMLD/CIF + tributos + despesas → custo total).
+    Alíquotas vêm da camada de REFERÊNCIA (tributos_ncm/icms_uf com data_referencia) e o
+    cálculo é o mesmo módulo puro do motor (app/cti.py). Se o NCM não está na referência,
+    ABSTÉM (422) — nunca inventa alíquota (CLAUDE.md §4)."""
+    ncm = _normalizar_ncm(body.ncm)
+    if body.quantidade <= 0 or body.cambio <= 0 or body.preco_unitario < 0:
+        raise HTTPException(400, "Quantidade e câmbio devem ser positivos.")
+    _importar_app()
+    import cti
+    import rag
+    tributos = rag.tributos_por_ncm(ncm)
+    if not tributos:
+        raise HTTPException(422, f"NCM {ncm} não encontrado na referência de alíquotas — "
+                                 "não estimamos sem fonte.")
+    uf_info = rag.icms_por_uf(body.uf.strip())
+    if not uf_info:
+        raise HTTPException(422, f"UF '{body.uf}' não encontrada na referência de ICMS.")
+    resultado = cti.calcular_cti(
+        preco_unitario=body.preco_unitario, quantidade=body.quantidade, cambio=body.cambio,
+        ii=tributos.get("ii") or 0.0, ipi=tributos.get("ipi") or 0.0,
+        pis=tributos.get("pis") or 0.0, cofins=tributos.get("cofins") or 0.0,
+        icms=uf_info.get("icms") or 0.0,
+        frete=body.frete, seguro=body.seguro,
+        afrmm_pct=uf_info.get("afrmm") or 0.0, modal=body.modal,
+    )
+    return {
+        "ncm": ncm,
+        "uf": uf_info.get("uf"),
+        "estado": uf_info.get("estado"),
+        "modal": body.modal,
+        "aliquotas": {
+            "ii": tributos.get("ii"), "ipi": tributos.get("ipi"),
+            "pis": tributos.get("pis"), "cofins": tributos.get("cofins"),
+            "icms": uf_info.get("icms"), "afrmm": uf_info.get("afrmm"),
+            "data_referencia": str(tributos.get("data_referencia") or ""),
+        },
+        "alertas": {
+            "cide": tributos.get("cide"),
+            "antidumping": tributos.get("antidumping"),
+            "medidas_compensatorias": tributos.get("medidas_compensatorias"),
+        },
+        "frete_estimado": body.frete is None,
+        "seguro_estimado": body.seguro is None,
+        "resultado": {k: round(v, 2) for k, v in resultado.items()},
+    }
 
 
 @app.get("/dossies/{dossie_id}/resumo", dependencies=[Depends(_auth)])

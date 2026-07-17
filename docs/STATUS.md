@@ -1,4 +1,4 @@
-# STATUS.md — Estado real do projeto (10/07/2026)
+# STATUS.md — Estado real do projeto (atualizado 17/07/2026)
 
 Este documento é a **fonte de verdade sobre o que existe de fato hoje** — código rodando, deploy no
 ar, dado real na base. Os demais documentos em `docs/` (PRD, ARCHITECTURE, ROADMAP, PROJECT_STRUCTURE)
@@ -164,6 +164,60 @@ para quem não é dono, nunca vaza achado de outro cliente.
   ainda não foi presenciado por mim — só pelo dono, quando testar manualmente.
 
 `app/test_revisao_dossie.py` novo — regressão completa (12 arquivos `app/test_*.py`) passando.
+
+## 1d. Cockpit do Despachante — dashboard pós-login + classificação fiscal + custeio VMLD + feed normativo real (16-17/07/2026)
+
+Pedido do dono em 16/07/2026: o login não pode mais cair direto na simulação — passa a existir um
+**dashboard (cockpit)** como hub, com a simulação virando uma das funcionalidades, mais duas
+features novas (classificação fiscal sob demanda e calculadora de custeio de importação VMLD) e um
+feed normativo com **fontes reais** (DOU e notícias de comex). Mockups TradeGuard AI fornecidos
+pelo dono foram adaptados à marca Despachante de Bolso, em pt-BR, e **sem nenhum número fabricado**
+— todo widget ou é dado real ou é estado vazio honesto (os KPIs/tabelas fictícios dos mockups não
+foram reproduzidos).
+
+**Backend novo em `api/main.py` (todos verificados contra o banco/LLM reais):**
+- `GET /noticias` — feed normativo real, público, cache em memória TTL 30min (`api/noticias.py`):
+  DOU Seção 1 lido da Imprensa Nacional (`in.gov.br/leiturajornal`, JSON embutido na página
+  oficial, recua até 3 dias para fim de semana) filtrado para comex por órgão
+  (SECEX/GECEX/Receita) + palavras-chave aduaneiras; RSS gov.br do MDIC e da Receita Federal
+  entram inteiros. O payload relata o status real de cada fonte (`fontes: {ok, itens|erro}`) — a
+  UI mostra "fora do ar" quando uma coleta falha, nunca preenche com conteúdo inventado.
+  Verificado ao vivo: 58 itens reais (44 DOU + 4 MDIC + 10 RFB), incl. Portaria SECEX nº 523 de
+  15/07/2026.
+- `GET /dossies` — lista os dossiês do cliente logado (sessão Supabase), só campos de resumo.
+- `POST /classificacao` — classificação fiscal sob demanda: descrição → `rag.sugerir_ncm` (mesma
+  cadeia do motor: HNSW top-25 + rerank LLM+RGI) + anuência (`anuencia_por_ncm`) + alíquotas
+  (`tributos_por_ncm`). Verificado ao vivo: "fonte de alimentação chaveada 850W" → 8504.40.40,
+  confiança alta, RGI 1 e 6, anuência ANATEL real do Tratamento Administrativo.
+- `POST /custeio` — calculadora VMLD: `cti.calcular_cti` (módulo puro já existente) com alíquotas
+  reais de `tributos_ncm`/`icms_uf` (com `data_referencia` exposta). **Abstém com 422** quando o
+  NCM não está na referência — nunca inventa alíquota (CLAUDE.md §4). Verificado ao vivo.
+
+**Frontend novo (Tailwind CDN + shell compartilhado `assets/comum.js`/`cockpit-tema.js`/`cockpit.css`):**
+- `cockpit.html` — dashboard pós-login: KPIs calculados dos dossiês reais (em processamento / com
+  exceções / travadas-escaladas), operações recentes, radar normativo com contagem real, status
+  real das fontes coletadas, atalhos de ferramentas, trilha da última operação (via proxy
+  `/api/eventos`, com fallback honesto quando indisponível).
+- `classificacao.html` — busca por descrição, NCM sugerido com badge de confiança, justificativa
+  RGI, candidatos com similaridade, anuência, alíquotas, histórico local e ponte "usar no custeio".
+- `custeio.html` — formulário (NCM/UF/modal/preço/qtde/câmbio/frete/seguro opcionais) →
+  detalhamento completo (VMLE→VMLD/CIF→II/IPI/PIS/COFINS/ICMS por dentro/AFRMM/Siscomex), aceita
+  `?ncm=` vindo da classificação.
+- `feed.html` — feed com filtros por fonte + busca, links para a fonte oficial, painel de status
+  de coleta.
+- `processos.html` — lista completa de dossiês com filtro por situação e busca, links para
+  resultado/trilha.
+- `login.html`/`registro.html` — redirecionam para `/cockpit.html` (antes `/simulacao.html`) e
+  guardam o e-mail na sessão para o topbar.
+
+**Verificação (17/07/2026):** endpoints testados com `TestClient` + override de sessão (mesmo
+padrão de `app/test_*`) contra o Supabase real; telas verificadas em browser real servidas por
+API local com o mesmo override (sessão real continua bloqueada pela confirmação de e-mail, §1c),
+usando o cliente de teste com 3 dossiês reais — KPIs, tabelas, filtros, gate de login
+(sem sessão → `/login.html?next=...`) e zero erros de console. `.venv/` local criado (gitignorado).
+**Nota de escopo:** isto NÃO é o "dashboard executivo" vetado em CLAUDE.md §8 (BI/upsell) — é o
+cockpit operacional do usuário, pedido explicitamente pelo dono. O dono sinalizou que "a estrutura
+vem em seguida" (automações/estruturas de dados adicionais para alimentar o feed e as telas).
 
 ## 2. O motor (app/) — Fase 1 Comex, em Python, não em n8n
 

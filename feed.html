@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Feed Normativo | Despachante de Bolso</title>
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="/assets/cockpit-tema.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/cockpit.css" />
+</head>
+<body class="bg-background text-on-background font-sans">
+<div class="flex h-screen overflow-hidden">
+  <div id="sidebar"></div>
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+    <div id="topbar"></div>
+    <main class="flex-1 overflow-y-auto p-6 lg:p-8 space-y-5">
+
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h2 class="text-3xl font-bold tracking-tight text-on-surface">Feed Normativo</h2>
+          <p class="text-on-surface-variant mt-1">
+            Atos e notícias REAIS de comércio exterior — DOU Seção 1 (Imprensa Nacional), MDIC e Receita
+            Federal. Cada item linka para a fonte oficial; nada aqui é gerado ou resumido por IA.
+          </p>
+        </div>
+        <button id="botao-atualizar"
+          class="px-4 py-2 bg-white border border-outline-variant rounded-full text-sm font-semibold flex items-center gap-2 hover:bg-surface-container transition-colors shrink-0">
+          <span id="icone-atualizar" class="material-symbols-outlined text-sm">refresh</span> Atualizar
+        </button>
+      </div>
+
+      <!-- Chips de fonte -->
+      <div id="chips" class="flex items-center gap-2 overflow-x-auto pb-1"></div>
+
+      <div class="grid grid-cols-12 gap-4 items-start">
+        <!-- Lista -->
+        <div class="col-span-12 lg:col-span-8">
+          <div class="bg-white rounded-xl border border-outline-variant overflow-hidden">
+            <div class="p-4 border-b border-outline-variant flex justify-between items-center">
+              <span class="font-semibold">Atualizações recentes</span>
+              <span id="contagem" class="text-[13px] text-on-surface-variant">Carregando…</span>
+            </div>
+            <div id="lista-feed" class="divide-y divide-outline-variant">
+              <p class="p-6 text-[13px] text-on-surface-variant">Coletando as fontes oficiais…</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lateral -->
+        <div class="col-span-12 lg:col-span-4 space-y-4">
+          <div class="bg-primary-container text-white rounded-xl p-6 shadow-lg">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="material-symbols-outlined text-tertiary-fixed">monitoring</span>
+              <h3 class="text-lg font-semibold">Status da coleta</h3>
+            </div>
+            <div id="painel-fontes" class="space-y-3">
+              <p class="text-[13px] opacity-80">Verificando…</p>
+            </div>
+            <p id="painel-gerado" class="text-[11px] opacity-70 mt-4"></p>
+          </div>
+
+          <div class="bg-surface-container rounded-xl p-5 border border-outline-variant">
+            <h3 class="text-lg font-semibold mb-2">Como este feed funciona</h3>
+            <p class="text-[13px] text-on-surface-variant leading-relaxed">
+              O DOU Seção 1 do dia é lido na íntegra da Imprensa Nacional e filtrado para matérias de
+              comex (órgãos SECEX/GECEX/Receita Federal + palavras-chave aduaneiras). Os RSS do MDIC e
+              da Receita entram sem filtro. Se uma fonte falha, o painel acima mostra "fora do ar" —
+              nunca preenchemos com conteúdo inventado.
+            </p>
+            <div class="flex flex-wrap gap-2 mt-3">
+              <span class="px-3 py-1 bg-white border border-outline-variant rounded-lg text-[11px] font-semibold text-on-surface-variant">DOU Seção 1</span>
+              <span class="px-3 py-1 bg-white border border-outline-variant rounded-lg text-[11px] font-semibold text-on-surface-variant">MDIC</span>
+              <span class="px-3 py-1 bg-white border border-outline-variant rounded-lg text-[11px] font-semibold text-on-surface-variant">Receita Federal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="/assets/comum.js"></script>
+<script>
+  const { apiPublica, esc, fmtData, montarShell } = window.Cockpit;
+
+  let itens = [];
+  let fonteAtiva = 'Todas';
+  let termoBusca = '';
+
+  montarShell('feed', {
+    busca: {
+      placeholder: 'Filtrar por título, órgão ou tipo…',
+      aoFiltrar: (termo) => { termoBusca = termo; renderLista(); },
+    },
+  });
+
+  function fontesUnicas() {
+    return ['Todas', ...new Set(itens.map((i) => i.fonte))];
+  }
+
+  function renderChips() {
+    document.getElementById('chips').innerHTML = fontesUnicas().map((f) => f === fonteAtiva
+      ? `<button data-fonte="${esc(f)}" class="chip px-4 py-1.5 bg-secondary text-white rounded-full text-[12px] font-bold whitespace-nowrap">${esc(f)}</button>`
+      : `<button data-fonte="${esc(f)}" class="chip px-4 py-1.5 bg-white border border-outline-variant hover:border-secondary text-on-surface-variant rounded-full text-[12px] font-bold whitespace-nowrap transition-all">${esc(f)}</button>`
+    ).join('');
+    document.querySelectorAll('.chip').forEach((el) =>
+      el.addEventListener('click', () => { fonteAtiva = el.dataset.fonte; renderChips(); renderLista(); }));
+  }
+
+  function renderLista() {
+    const filtrados = itens.filter((i) =>
+      (fonteAtiva === 'Todas' || i.fonte === fonteAtiva) &&
+      (!termoBusca || (i.titulo + ' ' + i.orgao + ' ' + i.tipo).toLowerCase().includes(termoBusca)));
+    document.getElementById('contagem').textContent =
+      `Mostrando ${filtrados.length} de ${itens.length}`;
+    document.getElementById('lista-feed').innerHTML = filtrados.length ? filtrados.map((i) => `
+      <a href="${esc(i.url)}" target="_blank" rel="noopener" class="block p-5 hover:bg-surface-container-low transition-colors group">
+        <div class="flex justify-between items-start mb-2 gap-3">
+          <div class="flex gap-2 items-center flex-wrap">
+            <span class="px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant text-[10px] font-bold">${esc(i.fonte)}</span>
+            <span class="px-2 py-0.5 rounded bg-secondary-fixed/40 text-on-secondary-fixed-variant text-[10px] font-bold uppercase">${esc(i.tipo)}</span>
+            <span class="text-[12px] text-on-surface-variant">${fmtData(i.data)}</span>
+          </div>
+          <span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity text-sm">open_in_new</span>
+        </div>
+        <h4 class="text-[15px] font-semibold text-on-surface mb-1 group-hover:text-secondary transition-colors">${esc(i.titulo)}</h4>
+        ${i.resumo ? `<p class="text-[13px] text-on-surface-variant mb-2">${esc(i.resumo)}</p>` : ''}
+        <p class="text-[11px] text-on-surface-variant">${esc(i.orgao)}</p>
+      </a>`).join('')
+      : '<p class="p-6 text-[13px] text-on-surface-variant">Nenhum item com esse filtro.</p>';
+  }
+
+  function renderFontes(fontes, geradoEm) {
+    document.getElementById('painel-fontes').innerHTML = Object.entries(fontes).map(([nome, f]) => `
+      <div class="bg-white/10 p-3 rounded-lg border border-white/10 flex items-center justify-between">
+        <span class="text-[13px]">${esc(nome)}</span>
+        ${f.ok
+          ? `<span class="inline-flex items-center gap-1.5 text-tertiary-fixed font-bold text-[12px]"><span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim animate-pulse"></span>${f.itens} itens</span>`
+          : '<span class="inline-flex items-center gap-1.5 text-red-300 font-bold text-[12px]"><span class="w-2 h-2 rounded-full bg-red-400"></span>fora do ar</span>'}
+      </div>`).join('');
+    document.getElementById('painel-gerado').textContent = 'Última coleta real: ' + fmtData(geradoEm);
+  }
+
+  async function carregar() {
+    const icone = document.getElementById('icone-atualizar');
+    icone.classList.add('girando');
+    try {
+      const dados = await apiPublica('/noticias?limite=120');
+      itens = dados.itens || [];
+      renderChips();
+      renderLista();
+      renderFontes(dados.fontes || {}, dados.gerado_em);
+    } catch (erro) {
+      document.getElementById('lista-feed').innerHTML =
+        `<p class="p-6 text-[13px] text-error">Não foi possível coletar o feed agora: ${esc(erro.message)}. O motor pode estar iniciando (Render) — tente de novo em instantes.</p>`;
+      document.getElementById('contagem').textContent = '—';
+    } finally {
+      icone.classList.remove('girando');
+    }
+  }
+
+  document.getElementById('botao-atualizar').addEventListener('click', carregar);
+  carregar();
+</script>
+</body>
+</html>

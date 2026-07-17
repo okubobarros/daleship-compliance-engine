@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cockpit | Despachante de Bolso</title>
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="/assets/cockpit-tema.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/cockpit.css" />
+</head>
+<body class="bg-background text-on-background font-sans">
+<div class="flex h-screen overflow-hidden">
+  <div id="sidebar"></div>
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+    <div id="topbar"></div>
+    <main class="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
+
+      <div>
+        <h2 class="text-3xl font-bold tracking-tight text-on-surface">Cockpit de Operações</h2>
+        <p class="text-on-surface-variant mt-1">Visão geral das suas operações reais e do radar normativo — nada aqui é número decorativo.</p>
+      </div>
+
+      <!-- KPIs -->
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-xl border border-outline-variant shadow-sm">
+          <div class="flex justify-between items-start mb-4">
+            <div class="p-2 bg-surface-container text-secondary rounded-lg">
+              <span class="material-symbols-outlined preenchido">directions_boat</span>
+            </div>
+          </div>
+          <h3 class="text-on-surface-variant text-[11px] font-bold uppercase tracking-wider mb-1">Operações em processamento</h3>
+          <p id="kpi-ativas" class="text-4xl font-bold text-on-surface">—</p>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-outline-variant shadow-sm">
+          <div class="flex justify-between items-start mb-4">
+            <div class="p-2 bg-yellow-50 text-yellow-700 rounded-lg">
+              <span class="material-symbols-outlined preenchido">pending_actions</span>
+            </div>
+          </div>
+          <h3 class="text-on-surface-variant text-[11px] font-bold uppercase tracking-wider mb-1">Concluídas com exceções</h3>
+          <p id="kpi-excecoes" class="text-4xl font-bold text-on-surface">—</p>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-outline-variant shadow-sm">
+          <div class="flex justify-between items-start mb-4">
+            <div class="p-2 bg-error-container text-error rounded-lg">
+              <span class="material-symbols-outlined preenchido">warning</span>
+            </div>
+          </div>
+          <h3 class="text-on-surface-variant text-[11px] font-bold uppercase tracking-wider mb-1">Travadas / escaladas</h3>
+          <p id="kpi-bloqueadas" class="text-4xl font-bold text-on-surface">—</p>
+        </div>
+        <div class="ai-glow p-5 rounded-xl bg-white flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="material-symbols-outlined preenchido text-on-tertiary-container">auto_awesome</span>
+              <span class="font-bold text-[11px] uppercase tracking-wider text-on-tertiary-container">Radar normativo</span>
+            </div>
+            <p id="radar-texto" class="text-[13px] text-on-surface-variant leading-snug">Coletando DOU, MDIC e Receita Federal…</p>
+          </div>
+          <a href="/feed.html" class="text-secondary font-bold text-[11px] uppercase mt-3 flex items-center gap-1">
+            Abrir feed <span class="material-symbols-outlined text-xs">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+        <!-- Operações recentes -->
+        <div class="lg:col-span-2 bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col">
+          <div class="p-4 border-b border-outline-variant flex justify-between items-center">
+            <h2 class="text-lg font-semibold">Operações recentes</h2>
+            <a href="/processos.html" class="text-secondary font-bold text-[12px] uppercase hover:opacity-80">Ver todas</a>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-[13px]">
+              <thead>
+                <tr class="bg-surface-container-low text-on-surface-variant text-[11px] font-bold uppercase tracking-wider">
+                  <th class="px-4 py-3 border-b border-outline-variant">Referência</th>
+                  <th class="px-4 py-3 border-b border-outline-variant">Situação</th>
+                  <th class="px-4 py-3 border-b border-outline-variant">Achados</th>
+                  <th class="px-4 py-3 border-b border-outline-variant">Criada em</th>
+                  <th class="px-4 py-3 border-b border-outline-variant text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-operacoes">
+                <tr><td colspan="5" class="px-4 py-8 text-center text-on-surface-variant">Carregando operações…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Coluna direita -->
+        <div class="flex flex-col gap-4">
+          <div class="bg-white border border-outline-variant rounded-xl p-5 shadow-sm">
+            <h2 class="text-lg font-semibold mb-3">Ferramentas</h2>
+            <div class="space-y-2">
+              <a href="/classificacao.html" class="flex items-center gap-3 p-3 rounded-lg border border-outline-variant hover:border-secondary hover:bg-surface-container-low transition-colors">
+                <span class="material-symbols-outlined text-secondary">find_in_page</span>
+                <div>
+                  <p class="text-[13px] font-bold">Classificação fiscal</p>
+                  <p class="text-[11px] text-on-surface-variant">Descrição → NCM sugerido com RGI e confiança</p>
+                </div>
+              </a>
+              <a href="/custeio.html" class="flex items-center gap-3 p-3 rounded-lg border border-outline-variant hover:border-secondary hover:bg-surface-container-low transition-colors">
+                <span class="material-symbols-outlined text-secondary">calculate</span>
+                <div>
+                  <p class="text-[13px] font-bold">Custeio de importação (VMLD)</p>
+                  <p class="text-[11px] text-on-surface-variant">CIF + II/IPI/PIS/COFINS/ICMS + AFRMM/Siscomex</p>
+                </div>
+              </a>
+              <a href="/simulacao.html" class="flex items-center gap-3 p-3 rounded-lg border border-outline-variant hover:border-secondary hover:bg-surface-container-low transition-colors">
+                <span class="material-symbols-outlined text-secondary">upload_file</span>
+                <div>
+                  <p class="text-[13px] font-bold">Auditar documentos</p>
+                  <p class="text-[11px] text-on-surface-variant">Invoice × Packing List × B/L com o motor real</p>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <div class="bg-white border border-outline-variant rounded-xl p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-lg font-semibold">Fontes monitoradas</h2>
+              <span class="material-symbols-outlined text-on-surface-variant">sensors</span>
+            </div>
+            <div id="fontes-status" class="space-y-2 text-[13px]">
+              <p class="text-on-surface-variant">Verificando fontes…</p>
+            </div>
+            <p id="fontes-gerado" class="text-[10px] text-on-surface-variant mt-3"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+        <!-- Últimas do feed -->
+        <div class="bg-white border border-outline-variant rounded-xl p-5 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold">Últimas do feed normativo</h2>
+            <a href="/feed.html" class="text-secondary font-bold text-[12px] uppercase hover:opacity-80">Ver feed</a>
+          </div>
+          <div id="feed-preview" class="space-y-4">
+            <p class="text-[13px] text-on-surface-variant">Carregando notícias reais…</p>
+          </div>
+        </div>
+
+        <!-- Atividade da última operação -->
+        <div class="bg-white border border-outline-variant rounded-xl p-5 shadow-sm flex flex-col">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold">Trilha da última operação</h2>
+            <span class="text-[10px] font-bold text-on-surface-variant uppercase">log_auditoria real</span>
+          </div>
+          <div id="atividade" class="flex-1 space-y-4">
+            <p class="text-[13px] text-on-surface-variant">Carregando trilha…</p>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="/assets/comum.js"></script>
+<script>
+  const { api, apiPublica, esc, fmtData, badgeDossie, montarShell } = window.Cockpit;
+  montarShell('cockpit', { titulo: 'Visão geral' });
+
+  function estadoVazioOperacoes() {
+    return `<tr><td colspan="5" class="px-4 py-10 text-center text-on-surface-variant">
+      Nenhuma operação ainda.
+      <a href="/simulacao.html" class="text-secondary font-bold hover:underline">Comece auditando uma operação</a>.
+    </td></tr>`;
+  }
+
+  async function carregarDossies() {
+    try {
+      const dados = await api('/dossies');
+      const ds = dados.dossies || [];
+      const bloqueada = (d) => ['travado', 'escalado'].includes(d.status || '');
+      const concluida = (d) => ['concluido', 'concluido_com_excecoes'].includes(d.estado_pipeline);
+      document.getElementById('kpi-ativas').textContent =
+        ds.filter((d) => !concluida(d) && !bloqueada(d)).length;
+      document.getElementById('kpi-excecoes').textContent =
+        ds.filter((d) => d.estado_pipeline === 'concluido_com_excecoes' && !bloqueada(d)).length;
+      document.getElementById('kpi-bloqueadas').textContent = ds.filter(bloqueada).length;
+
+      const corpo = document.getElementById('tabela-operacoes');
+      if (!ds.length) { corpo.innerHTML = estadoVazioOperacoes(); return; }
+      corpo.innerHTML = ds.slice(0, 6).map((d) => {
+        const [rotulo, classes, ponto] = badgeDossie(d);
+        return `<tr class="hover:bg-surface-container-low border-b border-outline-variant transition-colors">
+          <td class="px-4 py-3 font-medium">${esc(d.referencia || d.id.slice(0, 8))}</td>
+          <td class="px-4 py-3">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${classes}">
+              <span class="w-1.5 h-1.5 rounded-full ${ponto} mr-1.5"></span>${rotulo}</span>
+          </td>
+          <td class="px-4 py-3">${d.n_apontamentos}</td>
+          <td class="px-4 py-3 font-mono text-[12px]">${fmtData(d.criado_em)}</td>
+          <td class="px-4 py-3 text-right">
+            <a href="/resultado.html?dossie_id=${encodeURIComponent(d.id)}" class="text-secondary hover:underline font-bold">ABRIR</a>
+          </td>
+        </tr>`;
+      }).join('');
+
+      carregarAtividade(ds[0]);
+    } catch (erro) {
+      document.getElementById('tabela-operacoes').innerHTML =
+        `<tr><td colspan="5" class="px-4 py-8 text-center text-error">Não foi possível carregar: ${esc(erro.message)}</td></tr>`;
+    }
+  }
+
+  async function carregarAtividade(dossie) {
+    const alvo = document.getElementById('atividade');
+    if (!dossie) {
+      alvo.innerHTML = '<p class="text-[13px] text-on-surface-variant">Sem operações — a trilha de auditoria aparece aqui quando você processar a primeira.</p>';
+      return;
+    }
+    try {
+      // Mesmo proxy Vercel usado por loading.html (guarda o API_TOKEN no servidor).
+      const resposta = await fetch('/api/eventos?dossie_id=' + encodeURIComponent(dossie.id));
+      if (!resposta.ok) throw new Error('proxy indisponível');
+      const dados = await resposta.json();
+      const eventos = (dados.eventos || []).slice(-6).reverse();
+      if (!eventos.length) throw new Error('sem eventos');
+      alvo.innerHTML =
+        `<p class="text-[11px] text-on-surface-variant mb-2">Operação <strong>${esc(dossie.referencia || dossie.id.slice(0, 8))}</strong></p>` +
+        eventos.map((e) => `
+          <div class="flex gap-3 items-start">
+            <div class="w-2 h-2 rounded-full bg-secondary mt-2 shrink-0"></div>
+            <div>
+              <p class="text-[13px]">${esc(e.narrativa)}</p>
+              <p class="text-[10px] text-on-surface-variant">${fmtData(e.criado_em)} • ${esc(e.evento)}</p>
+            </div>
+          </div>`).join('');
+    } catch {
+      alvo.innerHTML = `<p class="text-[13px] text-on-surface-variant">
+        Trilha indisponível neste ambiente. Abra a
+        <a class="text-secondary font-bold hover:underline" href="/resultado.html?dossie_id=${encodeURIComponent(dossie.id)}">última operação</a>
+        para ver a trilha completa.</p>`;
+    }
+  }
+
+  async function carregarNoticias() {
+    try {
+      const dados = await apiPublica('/noticias?limite=6');
+      const itens = dados.itens || [];
+      document.getElementById('radar-texto').innerHTML = itens.length
+        ? `<strong>${dados.total}</strong> atos e notícias de comex na última coleta real (DOU Seção 1, MDIC e Receita Federal).`
+        : 'Nenhum item coletado agora — as fontes podem estar fora do ar.';
+
+      document.getElementById('feed-preview').innerHTML = itens.length ? itens.slice(0, 4).map((i) => `
+        <a href="${esc(i.url)}" target="_blank" rel="noopener" class="block group">
+          <div class="flex gap-3 items-start">
+            <span class="px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant text-[10px] font-bold shrink-0 mt-0.5">${esc(i.fonte)}</span>
+            <div>
+              <p class="text-[13px] font-semibold group-hover:text-secondary transition-colors">${esc(i.titulo)}</p>
+              <p class="text-[10px] text-on-surface-variant">${fmtData(i.data)} • ${esc(i.orgao)}</p>
+            </div>
+          </div>
+        </a>`).join('')
+        : '<p class="text-[13px] text-on-surface-variant">Sem itens no momento.</p>';
+
+      const fontes = dados.fontes || {};
+      document.getElementById('fontes-status').innerHTML = Object.entries(fontes).map(([nome, f]) => `
+        <div class="flex items-center justify-between">
+          <span>${esc(nome)}</span>
+          ${f.ok
+            ? `<span class="inline-flex items-center gap-1.5 text-green-700 font-semibold text-[12px]"><span class="w-2 h-2 rounded-full bg-green-500"></span>${f.itens} itens</span>`
+            : '<span class="inline-flex items-center gap-1.5 text-error font-semibold text-[12px]"><span class="w-2 h-2 rounded-full bg-red-500"></span>fora do ar</span>'}
+        </div>`).join('');
+      document.getElementById('fontes-gerado').textContent = 'Última coleta: ' + fmtData(dados.gerado_em);
+    } catch (erro) {
+      document.getElementById('radar-texto').textContent = 'Feed indisponível: ' + erro.message;
+      document.getElementById('fontes-status').innerHTML = '<p class="text-error text-[13px]">Não foi possível consultar as fontes.</p>';
+      document.getElementById('feed-preview').innerHTML = '<p class="text-[13px] text-error">Feed indisponível no momento.</p>';
+    }
+  }
+
+  carregarDossies();
+  carregarNoticias();
+</script>
+</body>
+</html>

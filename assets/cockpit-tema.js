@@ -1,0 +1,48 @@
+// Tema compartilhado do Cockpit do Despachante (Tailwind CDN) — mesma paleta em todas as
+// telas do painel logado. Carregar DEPOIS do script cdn.tailwindcss.com.
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "surface-dim": "#cbdbf5",
+        "tertiary-fixed-dim": "#4edea3",
+        "surface-container-lowest": "#ffffff",
+        "on-primary": "#ffffff",
+        "outline-variant": "#c6c6cd",
+        "on-surface": "#0b1c30",
+        "on-secondary": "#ffffff",
+        "surface-bright": "#f8f9ff",
+        "inverse-surface": "#213145",
+        "surface-variant": "#d3e4fe",
+        "secondary": "#0051d5",
+        "secondary-fixed": "#dbe1ff",
+        "secondary-container": "#316bf3",
+        "error": "#ba1a1a",
+        "error-container": "#ffdad6",
+        "on-error-container": "#93000a",
+        "tertiary-fixed": "#6ffbbe",
+        "outline": "#76777d",
+        "surface-container-highest": "#d3e4fe",
+        "inverse-on-surface": "#eaf1ff",
+        "on-tertiary-container": "#009668",
+        "on-primary-fixed": "#131b2e",
+        "on-error": "#ffffff",
+        "on-surface-variant": "#45464d",
+        "on-secondary-fixed-variant": "#003ea8",
+        "surface-container": "#e5eeff",
+        "primary-container": "#131b2e",
+        "surface-container-high": "#dce9ff",
+        "surface-container-low": "#eff4ff",
+        "background": "#f8f9ff",
+        "on-secondary-container": "#fefcff",
+        "on-background": "#0b1c30",
+        "surface": "#f8f9ff",
+      },
+      fontFamily: {
+        sans: ["Inter", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "monospace"],
+      },
+    },
+  },
+};

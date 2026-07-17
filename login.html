@@ -129,7 +129,7 @@
 
     function proximaPagina() {
       const params = new URLSearchParams(window.location.search);
-      return params.get('next') || '/simulacao.html';
+      return params.get('next') || '/cockpit.html';
     }
 
     function sessaoValida() {
@@ -168,6 +168,7 @@
         const sessao = {
           token: corpo.access_token,
           cliente_id: corpo.user?.id,
+          email: corpo.user?.email,
           expira_em: Math.floor(Date.now() / 1000) + (corpo.expires_in || 3600),
         };
         localStorage.setItem('daleship.sessao', JSON.stringify(sessao));

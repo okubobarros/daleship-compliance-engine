@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Custeio de Importação (VMLD) | Despachante de Bolso</title>
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="/assets/cockpit-tema.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/cockpit.css" />
+</head>
+<body class="bg-background text-on-background font-sans">
+<div class="flex h-screen overflow-hidden">
+  <div id="sidebar"></div>
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+    <div id="topbar"></div>
+    <main class="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
+
+      <div>
+        <h2 class="text-3xl font-bold tracking-tight text-on-surface">Custeio de Importação (VMLD)</h2>
+        <p class="text-on-surface-variant mt-1 max-w-3xl">
+          Estimativa transparente do custo de desembaraço: VMLE → VMLD (CIF) → II, IPI, PIS, COFINS,
+          ICMS por dentro, AFRMM e Taxa Siscomex. Alíquotas vêm da camada de referência com data —
+          <strong>estimativa de planejamento, não cálculo definitivo</strong>.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-12 gap-4 items-start">
+        <!-- Formulário -->
+        <div class="col-span-12 lg:col-span-5 bg-white border border-outline-variant rounded-xl p-6 shadow-sm">
+          <h3 class="text-lg font-semibold mb-4">Parâmetros da operação</h3>
+          <form id="form-custeio" class="space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+              <div class="col-span-2">
+                <label class="block text-[12px] font-bold text-on-surface-variant mb-1">NCM (8 dígitos) *</label>
+                <input id="c-ncm" required placeholder="8471.30.12"
+                  class="w-full border border-outline rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-secondary focus:border-secondary" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-bold text-on-surface-variant mb-1">UF de destino *</label>
+                <select id="c-uf" required class="w-full border border-outline rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-secondary focus:border-secondary"></select>
+              </div>
+              <div>
+                <label class="block text-[12px] font-bold text-on-surface-variant mb-1">Modal *</label>
+                <select id="c-modal" class="w-full border border-outline rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-secondary focus:border-secondary">
+                  <option value="maritimo">Marítimo (com AFRMM)</option>
+                  <option value="aereo">Aéreo</option>
+                  <option value="rodoviario">Rodoviário</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[12px] font-bold text-on-surface-variant mb-1">Preço unitário (moeda estrangeira) *</label>
+                <input id="c-preco" type="number" step="any" min="0" required placeholder="100.00"
+                  class="w-full border border-outline rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-secondary focus:border-secondary" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-bold text-on-surface-variant mb-1">Quantidade *</label>
+                <input id="c-qtde" type="number" step="any" min="0.0001" required placeholder="500"
+                  class="w-full border border-outline rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-secondary focus:border-secondary" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-bold text-on-surface-variant mb-1">Câmbio (BRL por unidade da moeda) *</label>
+                <input id="c-cambio" type="number" step="any" min="0.0001" required placeholder="5.50"
+                  class="w-full border border-outline rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-secondary focus:border-secondary" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-bold text-on-surface-variant mb-1">Frete internacional (BRL)</label>
+                <input id="c-frete" type="number" step="any" min="0" placeholder="vazio = estimar (20%)"
+                  class="w-full border border-outline rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-secondary focus:border-secondary" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-bold text-on-surface-variant mb-1">Seguro (BRL)</label>
+                <input id="c-seguro" type="number" step="any" min="0" placeholder="vazio = estimar (0,2%)"
+                  class="w-full border border-outline rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-secondary focus:border-secondary" />
+              </div>
+            </div>
+            <button id="botao-calcular" type="submit"
+              class="w-full bg-secondary text-white py-3 rounded-lg font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-sm">calculate</span>
+              <span id="rotulo-calcular">Calcular custeio</span>
+            </button>
+            <p id="erro-custeio" class="hidden text-[13px] text-error"></p>
+          </form>
+          <p class="text-[11px] text-on-surface-variant mt-4 pt-4 border-t border-dashed border-outline-variant">
+            Não sabe o NCM? <a href="/classificacao.html" class="text-secondary font-bold hover:underline">Use a classificação fiscal</a> e volte com o código preenchido.
+          </p>
+        </div>
+
+        <!-- Resultado -->
+        <div class="col-span-12 lg:col-span-7 space-y-4">
+          <div id="resultado-vazio" class="bg-white border border-dashed border-outline-variant rounded-xl p-10 text-center text-on-surface-variant">
+            <span class="material-symbols-outlined text-4xl mb-2">receipt_long</span>
+            <p class="text-sm">Preencha os parâmetros e calcule — cada componente da conta aparece separado aqui, com as alíquotas e a data de referência usadas.</p>
+          </div>
+
+          <div id="painel-resultado" class="hidden space-y-4">
+            <div class="ai-glow rounded-xl bg-white p-6 shadow-sm">
+              <div class="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <p class="text-[11px] font-bold uppercase tracking-widest text-secondary">Custo total estimado (desembaraço)</p>
+                  <p id="r-total" class="text-4xl font-bold text-on-surface mt-1"></p>
+                  <p id="r-unitario" class="text-[13px] text-on-surface-variant mt-1"></p>
+                </div>
+                <div class="text-right">
+                  <p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">VMLD (CIF)</p>
+                  <p id="r-cif" class="text-2xl font-bold text-on-surface"></p>
+                </div>
+              </div>
+              <div id="r-alertas" class="mt-3"></div>
+            </div>
+
+            <div class="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+              <div class="p-4 border-b border-outline-variant flex items-center justify-between">
+                <h3 class="text-lg font-semibold">Detalhamento da conta</h3>
+                <span id="r-referencia" class="text-[11px] text-on-surface-variant"></span>
+              </div>
+              <table class="w-full text-left text-[13px]">
+                <tbody id="tabela-detalhe"></tbody>
+              </table>
+              <div class="p-4 bg-surface-container-low border-t border-outline-variant">
+                <p class="text-[11px] text-on-surface-variant">
+                  <span id="r-estimados"></span>
+                  ICMS calculado "por dentro" (gross-up), como na importação real. Camada de alíquotas é
+                  referência interna não-oficial — valide na TEC/legislação vigente antes de decidir.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="/assets/comum.js"></script>
+<script>
+  const { api, esc, fmtBRL, fmtPct, montarShell } = window.Cockpit;
+  montarShell('custeio', { titulo: 'Calculadora de custeio de importação' });
+
+  const UFS = [
+    ['AC','Acre'],['AL','Alagoas'],['AP','Amapá'],['AM','Amazonas'],['BA','Bahia'],['CE','Ceará'],
+    ['DF','Distrito Federal'],['ES','Espírito Santo'],['GO','Goiás'],['MA','Maranhão'],
+    ['MT','Mato Grosso'],['MS','Mato Grosso do Sul'],['MG','Minas Gerais'],['PA','Pará'],
+    ['PB','Paraíba'],['PR','Paraná'],['PE','Pernambuco'],['PI','Piauí'],['RJ','Rio de Janeiro'],
+    ['RN','Rio Grande do Norte'],['RS','Rio Grande do Sul'],['RO','Rondônia'],['RR','Roraima'],
+    ['SC','Santa Catarina'],['SP','São Paulo'],['SE','Sergipe'],['TO','Tocantins'],
+  ];
+  const seletorUf = document.getElementById('c-uf');
+  seletorUf.innerHTML = UFS.map(([uf, nome]) => `<option value="${uf}" ${uf === 'SP' ? 'selected' : ''}>${uf} — ${nome}</option>`).join('');
+
+  const ncmParam = new URLSearchParams(location.search).get('ncm');
+  if (ncmParam) document.getElementById('c-ncm').value = ncmParam;
+
+  const form = document.getElementById('form-custeio');
+  const botao = document.getElementById('botao-calcular');
+  const erroBox = document.getElementById('erro-custeio');
+
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    erroBox.classList.add('hidden');
+    botao.disabled = true;
+    document.getElementById('rotulo-calcular').textContent = 'Calculando…';
+    const num = (id) => {
+      const v = document.getElementById(id).value.trim();
+      return v === '' ? null : Number(v);
+    };
+    try {
+      const r = await api('/custeio', {
+        method: 'POST',
+        body: JSON.stringify({
+          ncm: document.getElementById('c-ncm').value.trim(),
+          uf: seletorUf.value,
+          modal: document.getElementById('c-modal').value,
+          preco_unitario: num('c-preco'),
+          quantidade: num('c-qtde'),
+          cambio: num('c-cambio'),
+          frete: num('c-frete'),
+          seguro: num('c-seguro'),
+        }),
+      });
+      render(r);
+    } catch (erro) {
+      erroBox.textContent = erro.message;
+      erroBox.classList.remove('hidden');
+    } finally {
+      botao.disabled = false;
+      document.getElementById('rotulo-calcular').textContent = 'Calcular custeio';
+    }
+  });
+
+  function render(r) {
+    document.getElementById('resultado-vazio').classList.add('hidden');
+    document.getElementById('painel-resultado').classList.remove('hidden');
+    const res = r.resultado;
+    document.getElementById('r-total').textContent = fmtBRL(res.custo_total);
+    document.getElementById('r-unitario').textContent = 'Custo unitário: ' + fmtBRL(res.custo_unitario);
+    document.getElementById('r-cif').textContent = fmtBRL(res.cif);
+    document.getElementById('r-referencia').textContent =
+      `NCM ${r.ncm} • ${r.uf} (${r.estado}) • referência ${r.aliquotas.data_referencia}`;
+
+    const a = r.aliquotas;
+    const linhas = [
+      ['Mercadoria (VMLE)', res.mercadoria, null, false],
+      ['Frete internacional' + (r.frete_estimado ? ' (estimado)' : ''), res.frete, null, false],
+      ['Seguro' + (r.seguro_estimado ? ' (estimado)' : ''), res.seguro, null, false],
+      ['VMLD / CIF', res.cif, null, true],
+      ['II — Imposto de Importação', res.ii, a.ii, false],
+      ['IPI', res.ipi, a.ipi, false],
+      ['PIS-Importação', res.pis, a.pis, false],
+      ['COFINS-Importação', res.cofins, a.cofins, false],
+      ['ICMS (por dentro)', res.icms, a.icms, false],
+      ['AFRMM' + (r.modal !== 'maritimo' ? ' (não se aplica ao modal)' : ''), res.afrmm, a.afrmm, false],
+      ['Taxa Siscomex (base, 1 adição)', res.siscomex, null, false],
+      ['Total de impostos', res.impostos, null, true],
+      ['Custo total', res.custo_total, null, true],
+    ];
+    document.getElementById('tabela-detalhe').innerHTML = linhas.map(([nome, valor, aliq, destaque]) => `
+      <tr class="border-b border-outline-variant ${destaque ? 'bg-surface-container-low font-bold' : ''}">
+        <td class="px-4 py-2.5">${esc(nome)}</td>
+        <td class="px-4 py-2.5 text-on-surface-variant">${aliq != null ? fmtPct(aliq) : ''}</td>
+        <td class="px-4 py-2.5 text-right font-mono">${fmtBRL(valor)}</td>
+      </tr>`).join('');
+
+    const alerta = (rotulo, valor) => (valor && valor !== 'Não')
+      ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-error-container text-on-error-container uppercase mr-2 mt-1">${rotulo}: ${esc(valor)}</span>` : '';
+    document.getElementById('r-alertas').innerHTML =
+      alerta('Antidumping', r.alertas.antidumping) + alerta('CIDE', r.alertas.cide) +
+      alerta('Medidas compensatórias', r.alertas.medidas_compensatorias);
+
+    document.getElementById('r-estimados').textContent =
+      (r.frete_estimado || r.seguro_estimado)
+        ? 'Frete/seguro sem input foram estimados (20% / 0,2% do valor da mercadoria). '
+        : '';
+  }
+</script>
+</body>
+</html>
